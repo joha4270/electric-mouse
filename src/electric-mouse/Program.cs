@@ -18,7 +18,7 @@ namespace electric_mouse
             var host = new WebHostBuilder()
                 .UseKestrel(options =>
                 {
-                    options.UseHttps("testCert.pfx", "testPassword");
+                    options.UseHttps("testCert.pfx", "");
                 })
                 .UseUrls("https://localhost:5001")
                 .UseContentRoot(Directory.GetCurrentDirectory())
