@@ -44,7 +44,7 @@ function viewRoute(route_id)
 {
   $('.modal-content h4').html('Loading');
   $('#modal_content').html('');
-  $.getJSON("api.php?route=" + route_id, function(result){
+  /*$.getJSON("api.php?route=" + route_id, function(result){
         var d = new Date(result['date']); // + ' - ' + d.getDate() + '/' + (d.getMonth()+1) + '/' + d.getFullYear()
 
         $('.modal-content h4').html('Route #' + route_id);
@@ -67,6 +67,7 @@ function viewRoute(route_id)
           users += '</p>';
         $('#modal_content').append(users);
         $('#modal_content').append('<p><b>Note</b>: ' + result['note'] + '</p>');
-    });
+    });*/
+        $('#modal_content').html('API not implemented yet');
   $('#modal1').openModal();
 }

@@ -1,3 +1,10 @@
+@using Microsoft.AspNetCore.Identity
+@using electric_mouse.Models
+@using Microsoft.AspNetCore.Authentication.Cookies
+
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -16,16 +23,43 @@
   <nav>
     <div class="nav-wrapper">
       <div class="nav-content">
-        <a class="brand-logo">Klatreklub</a>
-        <a href="#" onclick="toggleSearchMenu()"><i class="material-icons right">search</i></a>
-        <a href="#" data-activates="mobile-nav" class="button-collapse"><i class="material-icons">menu</i></a>
+        <a class="brand-logo" href="/">Klatreklub</a>
+        @if (ViewData["search"] == "1")
+        {
+            <a href="javascript:void(0)" onclick="toggleSearchMenu()"><i class="material-icons right">search</i></a>
+        }
+
+        <a href="javascript:void(0)" data-activates="mobile-nav" class="button-collapse"><i class="material-icons">menu</i></a>
         <ul class="right hide-on-med-and-down">
-          <li><a href="#">Routes</a></li>
-          <li><a href="#">Login</a></li>
+          <li><a href="/route">Routes</a></li>
+            @if (SignInManager.IsSignedIn(User))
+            {
+                <li>
+                  <form asp-area="" asp-controller="Account" asp-action="LogOff" method="post" id="logoutForm">
+                    <a href="javascript:void(0)" onclick="$(this).closest('form').submit()">Log Out</a>
+                  </form>
+                </li>
+            }
+            else
+            {
+              <li><a href="/Account/Login">Login</a></li>
+            }
+
         </ul>
         <ul class="side-nav" id="mobile-nav">
           <li><a href="#"><i class="material-icons">home</i>Routes</a></li>
-          <li><a href="#"><i class="material-icons">person</i>Login</a></li>
+            @if (SignInManager.IsSignedIn(User))
+            {
+                <li>
+                  <form asp-area="" asp-controller="Account" asp-action="LogOff" method="post" id="logoutForm">
+                    <a href="javascript:void(0)" onclick="$(this).closest('form').submit()">Log Out</a>
+                  </form>
+                </li>
+            }
+            else
+            {
+                <li><a href="/Account/Login"><i class="material-icons">person</i>Login</a></li>
+            }
         </ul>
       </div>
       <form class="nav-search">

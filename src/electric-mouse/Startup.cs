@@ -92,6 +92,9 @@ namespace electric_mouse
                 routes.MapRoute(
                     name: "default",
                     template: "{controller=Home}/{action=Index}/{id?}");
+                routes.MapRoute(
+                    name: "route",
+                    template: "{controller=Route}/{action=List}/{id?}");
             });
         }
     }
