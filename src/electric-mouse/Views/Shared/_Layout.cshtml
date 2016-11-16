@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title></title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+  <link href="//fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/materialize/0.97.7/css/materialize.min.css" />
+  <link rel="stylesheet" type="text/css" href="//cdn.datatables.net/1.10.12/css/jquery.dataTables.min.css" />
+  <link rel="stylesheet" type="text/css" href="/layout.css" />
+  <link rel="manifest" href="/manifest.json">
+</head>
+<body>
+
+<div class="navbar-fixed">
+  <nav>
+    <div class="nav-wrapper">
+      <div class="nav-content">
+        <a class="brand-logo">Klatreklub</a>
+        <a href="#" onclick="toggleSearchMenu()"><i class="material-icons right">search</i></a>
+        <a href="#" data-activates="mobile-nav" class="button-collapse"><i class="material-icons">menu</i></a>
+        <ul class="right hide-on-med-and-down">
+          <li><a href="#">Routes</a></li>
+          <li><a href="#">Login</a></li>
+        </ul>
+        <ul class="side-nav" id="mobile-nav">
+          <li><a href="#"><i class="material-icons">home</i>Routes</a></li>
+          <li><a href="#"><i class="material-icons">person</i>Login</a></li>
+        </ul>
+      </div>
+      <form class="nav-search">
+        <div class="input-field">
+          <input id="search" type="search" required>
+          <label for="search"><i class="material-icons">search</i></label>
+          <i class="material-icons">close</i>
+        </div>
+      </form>
+
+    </div>
+  </nav>
+</div>
+
+<div class="container">
+  @RenderBody()
+</div>
+
+<div id="modal1" class="modal modal-fixed-footer">
+  <div class="modal-content">
+    <h4>Modal Header</h4>
+    <div id="modal_content"></div>
+  </div>
+  <div class="modal-footer">
+    <a href="#!" class=" modal-action modal-close waves-effect waves-green btn-flat">Close</a>
+  </div>
+</div>
+</body>
+<script src="//ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js" integrity="sha384-3ceskX3iaEnIogmQchP8opvBy3Mi7Ce34nWjpBIwVTHfGYWQS9jwHDVRnpKKHJg7" crossorigin="anonymous"></script>
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/materialize/0.97.7/js/materialize.min.js"></script>
+
+<script type="text/javascript" src="//cdn.datatables.net/1.10.12/js/jquery.dataTables.min.js"></script>
+<script type="text/javascript" src="/code.js"></script>
+</html>
