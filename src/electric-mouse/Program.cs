@@ -20,7 +20,7 @@ namespace electric_mouse
                 {
                     options.UseHttps("testCert.pfx", "");
                 })
-                .UseUrls("https://localhost:5001")
+                .UseUrls("https://*:5001")
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .UseIISIntegration()
                 .UseStartup<Startup>()
