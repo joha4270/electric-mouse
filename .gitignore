@@ -251,3 +251,4 @@ paket-files/
 .idea/
 *.sln.iml
 src/electric-mouse/secrets.txt
+src/electric-mouse/wwwroot/lib
