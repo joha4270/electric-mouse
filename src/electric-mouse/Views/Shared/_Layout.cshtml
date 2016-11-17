@@ -37,41 +37,49 @@
     <div class="nav-wrapper">
       <div class="nav-content">
         <a class="brand-logo" href="/">Klatreklub</a>
-        @if (ViewData["search"] == "1")
-        {
-            <a href="javascript:void(0)" onclick="toggleSearchMenu()"><i class="material-icons right">search</i></a>
-        }
+
 
         <a href="javascript:void(0)" data-activates="mobile-nav" class="button-collapse"><i class="material-icons">menu</i></a>
+
         <ul class="right hide-on-med-and-down">
-          <li><a href="/route">Routes</a></li>
-            @if (SignInManager.IsSignedIn(User))
-            {
-                <li>
-                  <a class="dropdown-button" href="#" data-activates="user_dropdown" data-beloworigin="true">@UserManager.GetUserName(User)<i class="material-icons right" style="margin-left: 0;">arrow_drop_down</i></a>
-                </li>
-            }
-            else
-            {
+          <li><a href="/route"><i class="material-icons left">place</i>Routes</a></li>
+
+          @if (SignInManager.IsSignedIn(User))
+          {
+              <li>
+                <a class="dropdown-button" href="#" data-activates="user_dropdown" data-beloworigin="true"><i class="material-icons left">person</i>@UserManager.GetUserName(User)<i class="material-icons right" style="margin-left: 0;">arrow_drop_down</i></a>
+              </li>
+          }
+          else
+          {
               <li><a href="/Account/Login">Login</a></li>
-            }
+          }
 
         </ul>
         <ul class="side-nav" id="mobile-nav">
-          <li><a href="#"><i class="material-icons">home</i>Routes</a></li>
-            @if (SignInManager.IsSignedIn(User))
-            {
-                <li>
-                  <form asp-area="" asp-controller="Account" asp-action="LogOff" method="post" id="logoutForm">
-                    <a href="javascript:void(0)" onclick="$(this).closest('form').submit()">Log Out</a>
-                  </form>
-                </li>
-            }
-            else
-            {
-                <li><a href="/Account/Login"><i class="material-icons">person</i>Login</a></li>
-            }
+          <li><a href="/"><i class="material-icons">home</i>Home</a></li>
+          <li><a href="/routes"><i class="material-icons">place</i>Routes</a></li>
+          @if (SignInManager.IsSignedIn(User))
+          {
+              <li>
+                <form asp-area="" asp-controller="Account" asp-action="LogOff" method="post" id="logoutForm">
+                  <a href="javascript:void(0)" onclick="$(this).closest('form').submit()"><i class="material-icons">exit_to_app</i>Log Out</a>
+                </form>
+              </li>
+          }
+          else
+          {
+              <li><a href="/Account/Login"><i class="material-icons">person</i>Login</a></li>
+          }
         </ul>
+        @if (ViewData["search"] == "1")
+        {
+            <ul class="right search_button">
+              <li>
+                <a href="javascript:void(0)" onclick="toggleSearchMenu()"><i class="material-icons left">search</i><span class="search_text">Search</span></a>
+              </li>
+            </ul>
+        }
       </div>
       <form class="nav-search">
         <div class="input-field">

@@ -30,6 +30,12 @@ html {
   padding: 0 15px;
 }
 
+@media only screen and (max-width: 992px) {
+    .nav-content { padding: 0 15px; }
+    .nav-content .search_button a > span { display: none; }
+    .nav-content .search_button a { padding: 0; }
+}
+
   nav a:hover {
     text-decoration: none;
     color: inherit;
@@ -54,4 +60,22 @@ html {
     display: block;
     line-height: 22px;
     padding: 14px 16px;
+}
+
+/* .sidenav form > a {
+    color: rgba(0,0,0,0.87);
+    display: block;
+    font-size: 14px;
+    font-weight: 500;
+    height: 48px;
+    line-height: 48px;
+
+} */
+
+.side-nav form a > i {
+    float: left;
+    line-height: 48px;
+    margin: 0 32px 0 0;
+    width: 24px;
+    color: rgba(0,0,0,0.54);
 }
