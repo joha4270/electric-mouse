@@ -19,6 +19,19 @@
 </head>
 <body>
 
+
+@* Login navigation *@
+@if (SignInManager.IsSignedIn(User))
+{
+    <ul id="user_dropdown" class="dropdown-content">
+      <li>
+        <form asp-area="" asp-controller="Account" asp-action="LogOff" method="post" id="logoutForm">
+          <a href="javascript:void(0)" onclick="$(this).closest('form').submit()">Log Out</a>
+        </form>
+      </li>
+    </ul>
+}
+
 <div class="navbar-fixed">
   <nav>
     <div class="nav-wrapper">
@@ -35,9 +48,7 @@
             @if (SignInManager.IsSignedIn(User))
             {
                 <li>
-                  <form asp-area="" asp-controller="Account" asp-action="LogOff" method="post" id="logoutForm">
-                    <a href="javascript:void(0)" onclick="$(this).closest('form').submit()">Log Out</a>
-                  </form>
+                  <a class="dropdown-button" href="#" data-activates="user_dropdown" data-beloworigin="true">@UserManager.GetUserName(User)<i class="material-icons right" style="margin-left: 0;">arrow_drop_down</i></a>
                 </li>
             }
             else
