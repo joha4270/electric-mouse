@@ -49,8 +49,8 @@ function viewRoute(route_id)
 
         $('.modal-content h4').html('Route #' + route_id);
 
-        $('#modal_content').append('<p><b>Section</b>: ' + result['section'] + '</p>');
-        $('#modal_content').append('<p><b>Difficulty</b>: ' + result['difficulty'] + '</p>');
+        $('#modal_content').append('<p><b>RouteSection</b>: ' + result['section'] + '</p>');
+        $('#modal_content').append('<p><b>RouteDifficulty</b>: ' + result['difficulty'] + '</p>');
         $('#modal_content').append('<p><b>Grip</b>: ' + result['grip'] + '</p>');
         $('#modal_content').append('<p><b>Date</b>: ' + d.getDate() + '/' + (d.getMonth()+1) + '/' + d.getFullYear() + '</p>');
         // Users
