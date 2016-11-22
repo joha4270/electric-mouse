@@ -50,12 +50,14 @@ namespace electric_mouse
                 .AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddDefaultTokenProviders();
 
-            services.AddMvc();
+            services.AddMvc(options => options.Filters.Add(typeof(Filters.AddLanguageFilter)));
             services.Configure<MvcOptions>(options => { options.Filters.Add(new RequireHttpsAttribute()); });
 
             // Add application services.
             services.AddTransient<IEmailSender, AuthMessageSender>();
             services.AddTransient<ISmsSender, AuthMessageSender>();
+
+            services.AddSingleton<LanguageCache>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -74,6 +76,8 @@ namespace electric_mouse
             {
                 app.UseExceptionHandler("/Home/Error");
             }
+
+            
 
             app.UseStaticFiles();
 
