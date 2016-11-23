@@ -19,7 +19,7 @@ namespace electric_mouse.Models
         }
 
         
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        /*protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             // Route section relation
             modelBuilder.Entity<RouteSectionRelation>()
@@ -34,7 +34,7 @@ namespace electric_mouse.Models
                 .HasOne(pt => pt.RouteSection)
                 .WithMany(t => t.Routes)
                 .HasForeignKey(pt => pt.RouteSectionID);
-        }
+        }*/
 
         public DbSet<Route> Routes { get; set; }
         public DbSet<RouteHall> RouteHalls { get; set; }

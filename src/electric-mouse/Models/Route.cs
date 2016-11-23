@@ -43,7 +43,9 @@ namespace electric_mouse.Models
         /// <summary>
         /// The section the route is placed in.
         /// </summary>
-        public virtual ICollection<RouteSectionRelation> Sections { get; set; }
+        // public virtual ICollection<RouteSectionRelation> Sections { get; set; }
+
+        
 
         /// <summary>
         /// A collection of the users who built the route.
@@ -60,10 +62,6 @@ namespace electric_mouse.Models
         /// </summary>
         public string Note { get; set; }
 
-        public Route()
-        {
-            Sections = new List<RouteSectionRelation>();
-        }
 
         ///// <summary>
         ///// 

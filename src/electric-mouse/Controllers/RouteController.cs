@@ -24,17 +24,15 @@ namespace electric_mouse.Controllers
         {
             RouteHall rh = new RouteHall {Name = "hall1"};
             _dbContext.RouteHalls.Add(rh);
-            
-
-            RouteSection sec = new RouteSection {RouteHall = rh, Name = "A"};
-            _dbContext.RouteSections.Add(sec);
-
             RouteDifficulty dif = new RouteDifficulty { Name = "Pink" };
             _dbContext.RouteDifficulties.Add(dif);
+            
+            RouteSection sec = new RouteSection {RouteHall = rh, Name = "A"};
 
             Route r = new Route {Note = "Plof", Difficulty = dif, RouteID = 1, GripColour = "Black"};
-            r.Sections.Add(new RouteSectionRelation {RouteSection = sec, Route = r});
-            _dbContext.Routes.Add(r);
+
+            sec.Routes.Add(new RouteSectionRelation { RouteSection = sec, Route = r });
+            _dbContext.RouteSections.Add(sec);
 
             _dbContext.SaveChanges();
 
