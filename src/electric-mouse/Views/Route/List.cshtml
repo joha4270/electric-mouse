@@ -1,10 +1,12 @@
+@model electric_mouse.Models.RouteViewModels.RouteListViewModel
+
 <div class="row">
 <table class="table">
   <thead>
     <tr>
       <th class="app_id">#</th>
-      <th class="app_section">RouteSection</th>
-      <th class="app_difficulty">RouteDifficulty</th>
+      <th class="app_section">Section</th>
+      <th class="app_difficulty">Difficulty</th>
       <th class="app_color">Grip Color</th>
       <th class="app_builder">Builders</th>
       <th class="app_date">Date</th>
@@ -12,16 +14,18 @@
     </tr>
   </thead>
   <tbody>
-
-  <tr style="cursor: pointer; cursor: hand;">
-    <td class="app_id">1</td>
-    <td class="app_section">A</td>
-    <td class="app_difficulty">Hvid</td>
-    <td class="app_color">Purple</td>
-    <td class="app_builder">Morten, Clare</td>
-    <td class="app_date">03-07-16</td>
-    <td class="app_note">Dummy text</td>
-  </tr>
+@foreach (var item in Model.Routes)
+{
+    <tr style="cursor: pointer; cursor: hand;">
+        <td class="app_id">@item.RouteID</td>
+        <td class="app_section">A</td>
+        <td class="app_difficulty">@item.Difficulty.Name</td>
+        <td class="app_color">@item.GripColour</td>
+        <td class="app_builder">Morten, Clare</td>
+        <td class="app_date">03-07-16</td>
+        <td class="app_note">@item.Note</td>
+    </tr>
+}
 
   </tbody>
 </table>

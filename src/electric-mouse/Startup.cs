@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using electric_mouse.Controllers;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
@@ -14,6 +15,7 @@ using electric_mouse.Data;
 using electric_mouse.Models;
 using electric_mouse.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.Options;
 
 namespace electric_mouse
@@ -43,7 +45,16 @@ namespace electric_mouse
         public void ConfigureServices(IServiceCollection services)
         {
             // Add framework services.
-            services.AddDbContext<ApplicationDbContext>(options =>
+            //services.AddDbContext<ApplicationDbContext>(options =>
+            //    options.UseSqlite(Configuration.GetConnectionString("DefaultConnection")));
+
+            //services.AddDbContext<RouteContext>(options =>
+            //    options.UseSqlite(Configuration.GetConnectionString("DefaultConnection")));
+
+            services.AddEntityFramework()
+                .AddDbContext<ApplicationDbContext>(options =>
+                options.UseSqlite(Configuration.GetConnectionString("DefaultConnection")))
+                .AddDbContext<RouteContext>(options =>
                 options.UseSqlite(Configuration.GetConnectionString("DefaultConnection")));
 
             services.AddIdentity<ApplicationUser, IdentityRole>()
