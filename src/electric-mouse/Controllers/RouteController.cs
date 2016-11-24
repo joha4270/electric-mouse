@@ -44,9 +44,24 @@ namespace electric_mouse.Controllers
             // TODO: Make this a more viable solution
             ViewData["search"] = "1";
 
-            IQueryable<Route> routes = _dbContext.Routes.Include(c => c.Difficulty);
+            // Can probably be done using LINQ and lambda, this'll do though
+            IQueryable<Route> routes = _dbContext.Routes.Include(c => c.Difficulty); // Using include for 'recursion'
+            IList<Route> routeList = new List<Route>();
 
-            RouteListViewModel model = new RouteListViewModel {Routes = routes.ToList()};
+            foreach (var r in routes.ToList())
+            {
+                r.Sections = new List<RouteSection>();
+                List<RouteSectionRelation> relations = _dbContext.RouteSectionRelations.Where(t => t.RouteID == r.ID).ToList();
+                foreach (var s in relations)
+                {
+                    RouteSection section = _dbContext.RouteSections.First(t => s.RouteSectionID == t.RouteSectionID);
+                    r.Sections.Add(section);
+                }
+
+                routeList.Add(r);
+            }
+
+            RouteListViewModel model = new RouteListViewModel {Routes = routeList};
             return View(model);
         }
         

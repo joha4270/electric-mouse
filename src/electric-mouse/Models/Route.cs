@@ -43,7 +43,8 @@ namespace electric_mouse.Models
         /// <summary>
         /// The section the route is placed in.
         /// </summary>
-        // public virtual ICollection<RouteSectionRelation> Sections { get; set; }
+        [NotMapped]
+        public ICollection<RouteSection> Sections { get; set; }
 
         
 

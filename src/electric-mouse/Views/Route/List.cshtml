@@ -16,9 +16,25 @@
   <tbody>
 @foreach (var item in Model.Routes)
 {
+    int i = 0;
     <tr style="cursor: pointer; cursor: hand;">
         <td class="app_id">@item.RouteID</td>
-        <td class="app_section">A</td>
+        <td class="app_section">
+            @foreach (var sec in item.Sections)
+            {
+                @* Lets make it pretty by doing comma seperation *@
+                i++;
+                if (i < item.Sections.Count)
+                {
+                    @:@sec.Name,
+                }
+                else
+                {
+                    @:@sec.Name
+                }
+
+            }
+        </td>
         <td class="app_difficulty">@item.Difficulty.Name</td>
         <td class="app_color">@item.GripColour</td>
         <td class="app_builder">Morten, Clare</td>
