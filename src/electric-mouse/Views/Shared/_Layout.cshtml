@@ -19,14 +19,13 @@
 </head>
 <body>
 
-
 @* Login navigation *@
 @if (SignInManager.IsSignedIn(User))
 {
     <ul id="user_dropdown" class="dropdown-content">
       <li>
         <form asp-area="" asp-controller="Account" asp-action="LogOff" method="post" id="logoutForm">
-          <a href="javascript:void(0)" onclick="$(this).closest('form').submit()">Log Out</a>
+          <a href="javascript:void(0)" onclick="$(this).closest('form').submit()"><i class="material-icons">exit_to_app</i>Log Out</a>
         </form>
       </li>
     </ul>

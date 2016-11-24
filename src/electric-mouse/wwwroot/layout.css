@@ -56,21 +56,19 @@ html {
 /* Form workaround */
 .dropdown-content form > a {
     font-size: 16px;
-    color: #ee6e73;
+    color: rgba(0,0,0,0.87);
     display: block;
     line-height: 22px;
     padding: 14px 16px;
 }
 
-/* .sidenav form > a {
-    color: rgba(0,0,0,0.87);
-    display: block;
-    font-size: 14px;
-    font-weight: 500;
-    height: 48px;
-    line-height: 48px;
-
-} */
+.dropdown-content form a > i {
+    float: left;
+    line-height: 22px;
+    margin: 0 22px 0 0;
+    width: 22px;
+    color: rgba(0,0,0,0.54);
+}
 
 .side-nav form a > i {
     float: left;
