@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using electric_mouse.Models;
+using electric_mouse.Models.RouteItems;
 
 namespace electric_mouse.Data
 {
@@ -14,6 +15,12 @@ namespace electric_mouse.Data
             : base(options)
         {
         }
+
+        public DbSet<Route> Routes { get; set; }
+        public DbSet<RouteHall> RouteHalls { get; set; }
+        public DbSet<RouteSection> RouteSections { get; set; }
+        public DbSet<RouteDifficulty> RouteDifficulties { get; set; }
+        public DbSet<RouteSectionRelation> RouteSectionRelations { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {

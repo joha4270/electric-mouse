@@ -8,13 +8,13 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title></title>
+  <title>Klatreklub</title>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
   <link href="//fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/materialize/0.97.7/css/materialize.min.css" />
   <link rel="stylesheet" type="text/css" href="//cdn.datatables.net/1.10.12/css/jquery.dataTables.min.css" />
-  <link rel="stylesheet" type="text/css" href="/layout.css" />
+  <link rel="stylesheet" type="text/css" href="/css/layout.css" />
   <link rel="manifest" href="/manifest.json">
 </head>
 <body>
@@ -41,7 +41,7 @@
         <a href="javascript:void(0)" data-activates="mobile-nav" class="button-collapse"><i class="material-icons">menu</i></a>
 
         <ul class="right hide-on-med-and-down">
-          <li><a href="/route"><i class="material-icons left">place</i>Routes</a></li>
+          <li><a href="/route"><img src="/images/climber.svg" class="left" />@*<i class="material-icons left">place</i>*@Routes</a></li>
 
           @if (SignInManager.IsSignedIn(User))
           {
@@ -71,22 +71,7 @@
               <li><a href="/Account/Login"><i class="material-icons">person</i>Login</a></li>
           }
         </ul>
-        @if (ViewData["search"] == "1")
-        {
-            <ul class="right search_button">
-              <li>
-                <a href="javascript:void(0)" onclick="toggleSearchMenu()"><i class="material-icons left">search</i><span class="search_text">Search</span></a>
-              </li>
-            </ul>
-        }
       </div>
-      <form class="nav-search">
-        <div class="input-field">
-          <input id="search" type="search" required>
-          <label for="search"><i class="material-icons">search</i></label>
-          <i class="material-icons">close</i>
-        </div>
-      </form>
 
     </div>
   </nav>
@@ -110,6 +95,6 @@
 <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/materialize/0.97.7/js/materialize.min.js"></script>
 
 <script type="text/javascript" src="//cdn.datatables.net/1.10.12/js/jquery.dataTables.min.js"></script>
-<script type="text/javascript" src="/code.js"></script>
+<script type="text/javascript" src="/js/code.js"></script>
 @RenderSection("scripts", required: false)
 </html>

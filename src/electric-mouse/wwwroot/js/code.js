@@ -12,28 +12,21 @@ $(document).ready(function(){
         { "searchable": false, "targets": 3}
       ]
     });
+
+    $('select').material_select();
+
+    $('.datepicker').pickadate({
+        selectMonths: true, // Creates a dropdown to control month
+        selectYears: 15, // Creates a dropdown of 15 years to control year
+        format: "dd-mm-yyyy",
+        onStart: function()
+        {
+            var date = new Date();
+            this.set('select', [date.getFullYear(), date.getMonth(), date.getDate()]);
+        }
+    });
 });
 
-$('#search').keyup(function(){
-      table.search($(this).val()).draw();
-});
-
-$('.nav-search i').click(function() {toggleSearchMenu();});
-
-function toggleSearchMenu()
-{
-  if ($(".nav-content").is(":visible")) {
-    $(".nav-content").hide();
-    $(".nav-search").show();
-    $("#search").focus().select();
-  } else {
-    $("#search").val('').blur();
-    $(".nav-content").show();
-    $(".nav-search").hide();
-    table.search("").draw();
-  }
-
-}
 
 $('tbody tr').click(function () {
   id = $(this).children('.app_id').text();
@@ -49,8 +42,8 @@ function viewRoute(route_id)
 
         $('.modal-content h4').html('Route #' + route_id);
 
-        $('#modal_content').append('<p><b>Section</b>: ' + result['section'] + '</p>');
-        $('#modal_content').append('<p><b>Difficulty</b>: ' + result['difficulty'] + '</p>');
+        $('#modal_content').append('<p><b>RouteSection</b>: ' + result['section'] + '</p>');
+        $('#modal_content').append('<p><b>RouteDifficulty</b>: ' + result['difficulty'] + '</p>');
         $('#modal_content').append('<p><b>Grip</b>: ' + result['grip'] + '</p>');
         $('#modal_content').append('<p><b>Date</b>: ' + d.getDate() + '/' + (d.getMonth()+1) + '/' + d.getFullYear() + '</p>');
         // Users
