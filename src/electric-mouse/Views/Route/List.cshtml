@@ -1,8 +1,8 @@
 @model electric_mouse.Models.RouteViewModels.RouteListViewModel
 
 <div class="row">
-<table class="table">
-  <thead>
+  <table class="table">
+    <thead>
     <tr>
       <th class="app_id">#</th>
       <th class="app_section">Section</th>
@@ -12,14 +12,14 @@
       <th class="app_date">Date</th>
       <th class="app_note">Note</th>
     </tr>
-  </thead>
-  <tbody>
-@foreach (var item in Model.Routes)
-{
-    int i = 0;
-    <tr style="cursor: pointer; cursor: hand;">
-        <td class="app_id">@item.RouteID</td>
-        <td class="app_section">
+    </thead>
+    <tbody>
+    @foreach (var item in Model.Routes)
+    {
+        int i = 0;
+        <tr style="cursor: pointer; cursor: hand;" data-id="@item.ID">
+          <td class="app_id">@item.RouteID</td>
+          <td class="app_section">
             @foreach (var sec in item.Sections)
             {
                 @* Lets make it pretty by doing comma seperation *@
@@ -34,15 +34,27 @@
                 }
 
             }
-        </td>
-        <td class="app_difficulty">@item.Difficulty.Name</td>
-        <td class="app_color">@item.GripColour</td>
-        <td class="app_builder">Morten, Clare</td>
-        <td class="app_date">03-07-16</td>
-        <td class="app_note">@item.Note</td>
-    </tr>
-}
+          </td>
+          <td class="app_difficulty">@item.Difficulty.Name</td>
+          <td class="app_color">@item.GripColour</td>
+          <td class="app_builder">Morten, Clare</td>
+          <td class="app_date">
+            @if (@item.Date != null)
+            {
+                @item.Date.Value.ToString("dd-MM-yy")
+            }
 
-  </tbody>
-</table>
+          </td>
+          <td class="app_note">@item.Note</td>
+        </tr>
+    }
+
+    </tbody>
+  </table>
+</div>
+
+<div class="fixed-action-btn">
+  <a class="btn-floating btn-large red" href="/route/create">
+    <i class="large material-icons">add</i>
+  </a>
 </div>

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using electric_mouse.Data;
 using electric_mouse.Models;
 using electric_mouse.Models.RouteItems;
 using electric_mouse.Models.RouteViewModels;
@@ -13,30 +14,38 @@ namespace electric_mouse.Controllers
 {
     public class RouteController : Controller
     {
-        private RouteContext _dbContext;
+        private ApplicationDbContext _dbContext;
 
-        public RouteController(RouteContext dbContext)
+        public RouteController(ApplicationDbContext dbContext)
         {
             _dbContext = dbContext;
         }
 
-        public string Create()
+        public IActionResult Create()
         {
-            RouteHall rh = new RouteHall {Name = "hall1"};
-            _dbContext.RouteHalls.Add(rh);
-            RouteDifficulty dif = new RouteDifficulty { Name = "Pink" };
-            _dbContext.RouteDifficulties.Add(dif);
+            return View();
+        }
+
+        [HttpPost] // async
+        public async Task<IActionResult> Create(RouteCreateViewModel model)
+        {
+            model.Hall = new RouteHall {Name = "hall1"};
+            _dbContext.RouteHalls.Add(model.Hall);
+            model.Difficulty = new RouteDifficulty { Name = "Pink" };
+            _dbContext.RouteDifficulties.Add(model.Difficulty);
             
-            RouteSection sec = new RouteSection {RouteHall = rh, Name = "A"};
+            model.Section = new RouteSection {RouteHall = model.Hall, Name = "A"};
 
-            Route r = new Route {Note = "Plof", Difficulty = dif, RouteID = 1, GripColour = "Black"};
+            model.Route = new Route {Note = "Plof", Difficulty = model.Difficulty, RouteID = 1, GripColour = "Black", Date = DateTime.Now};
 
-            sec.Routes.Add(new RouteSectionRelation { RouteSection = sec, Route = r });
-            _dbContext.RouteSections.Add(sec);
+            model.Section.Routes.Add(new RouteSectionRelation { RouteSection = model.Section, Route = model.Route });
+            _dbContext.RouteSections.Add(model.Section);
 
             _dbContext.SaveChanges();
 
-            return "Din dejlige hello world hehe";
+            return RedirectToAction(nameof(List), "Route");
+
+            //return "Sample Data Created";
         }
 
         public IActionResult List()

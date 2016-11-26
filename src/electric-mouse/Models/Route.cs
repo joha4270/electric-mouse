@@ -63,6 +63,8 @@ namespace electric_mouse.Models
         /// </summary>
         public string Note { get; set; }
 
+        public DateTime? Date { get; set; }
+
 
         ///// <summary>
         ///// 
