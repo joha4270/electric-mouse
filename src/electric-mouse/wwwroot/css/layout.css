@@ -49,9 +49,16 @@ html {
 .table td, .table th {border-radius: 0;}
 .table {min-width: 100%;}
 
-.nav-search, .dataTables_filter {display: none;}
+.dataTables_filter {display: none;}
 .nav-search input {width: 100%;}
 .input-field input[type=search] ~ .material-icons {color: #fff;}
+.nav-search .input-field { margin-top: 0; }
+
+nav ul img {
+    margin-top: 20px;
+    height: 24px;
+    padding-right: 15px;
+}
 
 /* Form workaround */
 .dropdown-content form > a {
@@ -76,4 +83,9 @@ html {
     margin: 0 32px 0 0;
     width: 24px;
     color: rgba(0,0,0,0.54);
+}
+
+.app_routetable tr {
+    cursor: pointer;
+    cursor: hand;
 }

@@ -21,12 +21,13 @@ namespace electric_mouse.Controllers
             _dbContext = dbContext;
         }
 
+        // RouteCreate name instead? - We'll have to implement hall etc create seperately
         public IActionResult Create()
         {
             return View();
         }
 
-        [HttpPost] // async
+        [HttpPost]
         public async Task<IActionResult> Create(RouteCreateViewModel model)
         {
             model.Hall = new RouteHall {Name = "hall1"};

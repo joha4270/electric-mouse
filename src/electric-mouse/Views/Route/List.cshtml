@@ -1,5 +1,31 @@
 @model electric_mouse.Models.RouteViewModels.RouteListViewModel
 
+@* Difficulty Test, do not attempt to make it work yourself *@
+<div class="row" style="margin-top: 10px;">
+  <div class="col s8">
+    <a class="btn red" style="padding: 0 1rem;">
+      <input type="checkbox" class="filled-in" id="difficulty_red"/>
+      <label for="difficulty_red" style="color: #fff;">Red</label>
+    </a>
+    <a class="btn blue" style="padding: 0 1rem;">
+      <input type="checkbox" class="filled-in" id="difficulty_blue"/>
+      <label for="difficulty_blue" style="color: #fff;">Blue</label>
+    </a>
+  </div>
+
+  <div class="col s4">
+    <form class="nav-search">
+      <div class="input-field">
+        <i class="material-icons prefix" style="bottom: 8px;">search</i>
+        <input id="search" type="search" required>
+        <label for="search">Search</label>
+        <i class="material-icons">close</i>
+      </div>
+    </form>
+  </div>
+</div>
+
+@* Table *@
 <div class="row">
   <table class="table">
     <thead>
@@ -13,11 +39,11 @@
       <th class="app_note">Note</th>
     </tr>
     </thead>
-    <tbody>
+    <tbody class="app_routetable">
     @foreach (var item in Model.Routes)
     {
         int i = 0;
-        <tr style="cursor: pointer; cursor: hand;" data-id="@item.ID">
+        <tr data-id="@item.ID">
           <td class="app_id">@item.RouteID</td>
           <td class="app_section">
             @foreach (var sec in item.Sections)
@@ -58,3 +84,11 @@
     <i class="large material-icons">add</i>
   </a>
 </div>
+@section scripts
+{
+    <script>
+        $('#search').keyup(function(){
+            table.search($(this).val()).draw();
+        });
+    </script>
+}
