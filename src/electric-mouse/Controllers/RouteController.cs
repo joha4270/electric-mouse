@@ -51,9 +51,6 @@ namespace electric_mouse.Controllers
 
         public IActionResult List()
         {
-            // TODO: Make this a more viable solution
-            ViewData["search"] = "1";
-
             // Can probably be done using LINQ and lambda, this'll do though
             IQueryable<Route> routes = _dbContext.Routes.Include(c => c.Difficulty); // Using include for 'recursion'
             IList<Route> routeList = new List<Route>();
