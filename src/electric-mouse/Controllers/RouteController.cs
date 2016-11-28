@@ -71,7 +71,45 @@ namespace electric_mouse.Controllers
             RouteListViewModel model = new RouteListViewModel {Routes = routeList};
             return View(model);
         }
-        
 
+        public async Task<IActionResult> Details(int id)
+        {
+            List<CommentViewModel> root = new List<CommentViewModel> {
+                new CommentViewModel
+                {
+                    Content = "Min mor laver ikke burgere",
+                },
+                new CommentViewModel
+                {
+                    Content = "Pancakes",
+                    Children =
+                    {
+                        new CommentViewModel {Content = "Med is!" },
+                        new CommentViewModel {Content = "Med syltetøj" }
+                    }
+                }
+            };
+
+
+
+            var routes = _dbContext
+                .Routes
+                .Where(r => r.ID == id)
+                .Include(x => x.Difficulty).ToList().First();
+            RouteSection section = null;
+            RouteHall hall = null;
+
+
+            foreach (var s in _dbContext.RouteSectionRelations.Where(t => t.RouteID == routes.ID).ToList())
+            {
+                section = _dbContext.RouteSections.First(t => s.RouteSectionID == t.RouteSectionID);
+                hall = _dbContext.RouteHalls.First(p => p.RouteHallID == section.RouteHallID);
+                break;
+            }
+            
+            
+            return PartialView(new RouteDetailViewModel(routes, section, hall, root));
+
+        }
     }
 }
