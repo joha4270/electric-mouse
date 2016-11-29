@@ -4,15 +4,17 @@
 
 <div class="col s12">
     <div class="row">
-        <form asp-controller="Hall" asp-action="Create" method="post">
-            <div class="input-field col s2">
-                <button type="submit" class="btn waves-effect waves-light red right"> + New Hall </button>
+      <form asp-controller="Hall" asp-action="Create" method="post">
+            <div class="input-field col">
+              <button type="submit" class="btn-large waves-effect waves-light red" style="padding: 0 15px;"><i class="material-icons left">add</i>
+                New Hall
+              </button>
             </div>
-            <div class="input-field col s8">
-                <input type="text" min="1" name="Name" />
-                <label for="Name">Name</label>
+            <div class="input-field col s4">
+              <input type="text" name="Name"/>
+              <label for="Name">Hall Name</label>
             </div>
-        </form>
+      </form>
     </div>
 </div>
 

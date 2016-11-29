@@ -22,7 +22,7 @@ namespace electric_mouse.Controllers
         public IActionResult Create()
         {
             IQueryable<RouteHall> halls = _dbContext.RouteHalls.Include(s => s.Sections);
-            HallCreateViewModel model = new HallCreateViewModel { Halls = halls.ToList()};
+            HallCreateViewModel model = new HallCreateViewModel { Halls = halls.ToList() };
             return View(model);
         }
 
@@ -31,7 +31,7 @@ namespace electric_mouse.Controllers
         {
             if(!string.IsNullOrEmpty(model.Name))
             {
-                _dbContext.RouteHalls.Add(new RouteHall { Name = model.Name, Sections = new List<RouteSection>()});
+                _dbContext.RouteHalls.Add(new RouteHall { Name = model.Name, Sections = new List<RouteSection>() });
                 _dbContext.SaveChanges();
             }
 
@@ -41,14 +41,13 @@ namespace electric_mouse.Controllers
         [HttpPost]
         public async Task<IActionResult> Delete(HallCreateViewModel model)
         {
-
             var hall = _dbContext.RouteHalls.Include(s => s.Sections).First(h => h.RouteHallID == model.ID);
+
             if (hall.Sections?.Count <= 0)
             {
                 _dbContext.RouteHalls.Remove(hall);
                 _dbContext.SaveChanges();
             }
-            
 
             return RedirectToAction(nameof(Create), "Hall");
         }
