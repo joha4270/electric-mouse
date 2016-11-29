@@ -78,7 +78,7 @@ namespace electric_mouse
             app.UseStaticFiles();
 
             app.UseIdentity();
-            RoleSetup.AddRoles(serviceProvider, RoleSetup.Admin, RoleSetup.Post);
+            RoleHandler.AddRoles(serviceProvider, RoleHandler.Admin, RoleHandler.Post);
 
             // Add external authentication middleware below. To configure them please see http://go.microsoft.com/fwlink/?LinkID=532715
             string[] conf = File.ReadAllLines("secrets.txt");
