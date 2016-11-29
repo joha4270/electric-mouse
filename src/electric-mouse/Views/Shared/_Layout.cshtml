@@ -1,4 +1,4 @@
-@using Microsoft.AspNetCore.Identity
+﻿@using Microsoft.AspNetCore.Identity
 @using electric_mouse.Models
 @using Microsoft.AspNetCore.Authentication.Cookies
 
@@ -37,24 +37,30 @@
       <div class="nav-content">
         <a class="brand-logo" href="/">Klatreklub</a>
 
-
         <a href="javascript:void(0)" data-activates="mobile-nav" class="button-collapse"><i class="material-icons">menu</i></a>
 
-        <ul class="right hide-on-med-and-down">
-          <li><a href="/route"><img src="/images/climber.svg" class="left" />@*<i class="material-icons left">place</i>*@Routes</a></li>
+          <ul class="right hide-on-med-and-down">
 
-          @if (SignInManager.IsSignedIn(User))
-          {
-              <li>
-                <a class="dropdown-button" href="#" data-activates="user_dropdown" data-beloworigin="true"><i class="material-icons left">person</i>@UserManager.GetUserName(User)<i class="material-icons right" style="margin-left: 0;">arrow_drop_down</i></a>
-              </li>
-          }
-          else
-          {
-              <li><a href="/Account/Login"><i class="material-icons left">person</i>Login</a></li>
-          }
+              @if (true @*Add admin logic here*@)
+              {
+                <li><a href="/hall/create"><img src="/images/climber.svg" class="left" />Create Hall</a></li>
+              }
 
-        </ul>
+              
+              <li><a href="/route"><img src="/images/climber.svg" class="left"/>@*<i class="material-icons left">place</i>*@Routes</a></li>
+
+              @if (SignInManager.IsSignedIn(User))
+              {
+                  <li>
+                      <a class="dropdown-button" href="#" data-activates="user_dropdown" data-beloworigin="true"><i class="material-icons left">person</i>@UserManager.GetUserName(User)<i class="material-icons right" style="margin-left: 0;">arrow_drop_down</i></a>
+                  </li>
+              }
+              else
+              {
+                  <li><a href="/Account/Login"><i class="material-icons left">person</i>Login</a></li>
+              }
+
+          </ul>
         <ul class="side-nav" id="mobile-nav">
           <li><a href="/"><i class="material-icons">home</i>Home</a></li>
           <li><a href="/route"><i class="material-icons">place</i>Routes</a></li>
