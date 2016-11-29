@@ -1,0 +1,86 @@
+﻿@model electric_mouse.Models.RouteViewModels.SectionListViewModel
+
+@* Difficulty Test, do not attempt to make it work yourself *@
+<div class="row s1">
+    <div class="col s0">
+        <button class="btn waves-effect waves-light red right" type="submit" name="action" onclick="openCreateDialog();">
+            + Ny sektion
+        </button>
+    </div>
+</div>
+
+@* Table *@
+<div class="row">
+    <table class="table">
+        <thead>
+            <tr>
+                <th class="app_name">Navn</th>
+                <th class="app_hallname">Hal</th>
+                <th class="app_routeamount">Antal ruter</th>
+            </tr>
+        </thead>
+        <tbody class="app_sectiontable">
+            @foreach (var item in Model.Sections)
+            {
+                <tr data-id="@item.RouteSectionID">
+                    <td class="app_name">@item.Name</td>
+                    <td class="app_hallname">@item.RouteHall.Name</td>
+                    <td class="app_routeamount">@item.Routes.Count</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+
+<div id="createDialog" class="modal modal-fixed-footer">
+    <div class="modal-content">
+        <h4>Skriv navn på ny sektion:</h4>
+        <div id="modal_content">
+            <div class="row">
+                <form asp-controller="Section" asp-action="Create" method="post">
+                <div class="input-field col s12">
+                    <label for="SectionName">Sektionsnavn</label>
+                    <input type="text" id="SectionName" name="SectionName" />
+                </div>
+            </div>
+            <div class="row">
+                <div class="input-field col s12">
+                    <select name="Hall" id="Hall">
+                        <option disabled selected value=""></option>
+                        @foreach (var hall in Model.Halls)
+                        {
+                            <option value="@hall.RouteHallID">@hall.Name</option>
+                        }
+                    </select>
+                    <label for="Hall">Hal</label>
+                </div>
+                <div class="input-field col s12">
+                    <input type="submit" />
+                </div>
+            </div>
+                </form>
+        </div>
+    </div>
+</div>
+
+    
+
+    <div class="modal-footer">
+        <a href="#!" class=" modal-action waves-effect waves-green btn-flat">OK</a>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function openCreateDialog()
+        {
+            $("#createDialog").openModal();
+
+        }
+
+        $(document).ready(function () {
+            $('select').material_select();
+        });
+    </script>
+}
