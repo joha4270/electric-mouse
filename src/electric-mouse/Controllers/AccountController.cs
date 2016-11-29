@@ -184,11 +184,44 @@ namespace electric_mouse.Controllers
             }
             else
             {
-                // If the user does not have an account, then ask the user to create an account.
-                ViewData["ReturnUrl"] = returnUrl;
-                ViewData["LoginProvider"] = info.LoginProvider;
-                var email = info.Principal.FindFirstValue(ClaimTypes.Email);
-                return View("ExternalLoginConfirmation", new ExternalLoginConfirmationViewModel { Email = email });
+                if (info == null)
+                {
+                    return View("ExternalLoginFailure");
+                }
+
+                var user = new ApplicationUser
+                {
+                    UserName = info.ProviderKey,
+                    Email = info.Principal.FindFirstValue(ClaimTypes.Email),
+                    DisplayName = info.ProviderDisplayName
+                };
+
+                IdentityResult identity = await _userManager.CreateAsync(user);
+                if(identity.Succeeded)
+                {
+                    identity = await _userManager.AddLoginAsync(user, info);
+                    if(identity.Succeeded)
+                    {
+                        identity = await _userManager.AddToRoleAsync(user, RoleSetup.Post);
+                        if(identity.Succeeded)
+                        {
+                            await _signInManager.SignInAsync(user, isPersistent: false);
+                            _logger.LogInformation(6, "User created an account using {Name} provider.", info.LoginProvider);
+                            return RedirectToLocal(returnUrl);
+                        }
+                        AddErrors(identity);
+                    }
+                    AddErrors(identity);
+                }
+                AddErrors(identity);
+
+                return View("Error");
+
+                //// If the user does not have an account, then ask the user to create an account.
+                //ViewData["ReturnUrl"] = returnUrl;
+                //ViewData["LoginProvider"] = info.LoginProvider;
+                //var email = info.Principal.FindFirstValue(ClaimTypes.Email);
+                //return View("ExternalLoginConfirmation", new ExternalLoginConfirmationViewModel { Email = email });
             }
         }
 
