@@ -1,71 +1,95 @@
 ﻿@model electric_mouse.Models.RouteViewModels.RouteCreateViewModel
 <h2>DEMO CONTENT</h2>
-<form asp-controller="Route" asp-action="Create" method="post">
-  <button type="submit" class="btn btn-default">Create Route (With test junk)</button>
+<form asp-controller="Route" asp-action="CreateSampleRoute" method="post">
+    <button type="submit" class="btn btn-default">Create Route (With test junk)</button>
 </form>
 
 <h2>Stuff</h2>
-<form class="col s12">
-  <div class="row">
-    <div class="input-field col s2">
-      <input type="number" min="1" name="id"/>
-      <label for="id">Route ID</label>
+<form asp-controller="Route" asp-action="CreateRoute" method="post" class="col s12">
+    <div class="row">
+        <div class="input-field col s2">
+            <input type="number" min="1" name="idNumber" />
+            <label for="id">Route ID</label>
+        </div>
+        <div class="input-field col s10">
+            <select name="hallSelect">
+                @{int i = 0;}
+                @foreach (var hall in Model.Halls)
+                {
+                    <option value="@i">@hall.Name</option>
+                    i++;
+                }
+            </select>
+            <label>Hal</label>
+        </div>
     </div>
-    <div class="input-field col s10">
-      <select>
-        <option value="1">A</option>
-      </select>
-      <label>Hal</label>
-    </div>
-  </div>
 
-  <div class="row">
-    <div class="input-field col s6">
-      <select>
-        <option value="1">Green</option>
-      </select>
-      <label>Difficulty</label>
+    <div class="row">
+        <div class="input-field col s6">
+            <select name="difficultySelect">
+                @{i = 0;}
+                @foreach (var difficulty in Model.Difficulties)
+                {
+                    <option value="@i">@difficulty.Name</option>
+                    i++;
+                }
+            </select>
+            <label>Difficulty</label>
+        </div>
+        <div class="input-field col s6">
+            <select>
+                <option value="1">Boulder</option>
+            </select>
+            <label>Route Type</label>
+        </div>
     </div>
-    <div class="input-field col s6">
-      <select>
-        <option value="1">Boulder</option>
-      </select>
-      <label>Route Type</label>
-    </div>
-  </div>
 
-  <div class="row">
-    <div class="input-field col s12">
-      <label for="date">Date</label>
-      <input type="date" class="datepicker" name="date">
+    <div class="row">
+        <div class="input-field col s12">
+            <select name="sectionSelect">
+                @{i = 0;}
+                @foreach (var s in Model.Sections)
+                {
+                    <option value="@i">@s.Name</option>
+                    i++;
+                }
+            </select>
+        </div>
     </div>
-  </div>
 
-  <div class="row">
-    <div class="input-field col s12">
-      <input id="grip_color" type="text">
-      <label for="grip_color">Grip Color</label>
+    <div class="row">
+        <div class="input-field col s12">
+            <label for="date">Date</label>
+            <input type="date" class="datepicker" name="datePicker">
+        </div>
     </div>
-  </div>
 
-  <div class="row">
-    <div class="col s12">
-      <p>Image & Video row</p>
+    <div class="row">
+        <div class="input-field col s12">
+            <input id="grip_color" type="text" name="gripColor">
+            <label for="grip_color">Grip Color</label>
+        </div>
     </div>
-  </div>
 
-  <div class="row">
-    <div class="input-field col s12">
-      <textarea id="textarea1" class="materialize-textarea"></textarea>
-      <label for="textarea1">Note</label>
+    <div class="row">
+        <div class="col s12">
+            <p>Image & Video row</p>
+        </div>
     </div>
-  </div>
 
-  <div class="row">
-    <div class="col s12">
-      <button class="btn waves-effect waves-light red right" type="submit" name="action">Create Route
-        <i class="material-icons right">send</i>
-      </button>
+    <div class="row">
+        <div class="input-field col s12">
+            <textarea id="textarea1" class="materialize-textarea" name="noteText"></textarea>
+            <label for="textarea1">Note</label>
+        </div>
     </div>
-  </div>
+
+    <div class="row">
+        <div class="col s12">
+            <input class="btn waves-effect waves-light red right" type="submit">
+            Create Route
+            <i class="material-icons right">send</i>
+            </input>
+        </div>
+    </div>
 </form>
