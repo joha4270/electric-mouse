@@ -1,0 +1,47 @@
+﻿@model electric_mouse.Models.DifficultyViewModels.DifficultyCreateViewModel
+
+<div class="col s12">
+    <div class="row">
+        <form asp-controller="Difficulty" asp-action="Create" method="post">
+            <div class="input-field col">
+                <button type="submit" class="btn-large waves-effect waves-light red" style="padding: 0 15px;">
+                    <i class="material-icons left">add</i>
+                    New Difficulty
+                </button>
+            </div>
+            <div class="input-field col s4">
+                <input type="text" name="Name" />
+                <label for="Name">Difficulty Name</label>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="col s12">
+    <div class="row">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th class="app_Name">Name</th>
+                    <th>count</th>
+                    <th></th>
+                </tr>
+            </thead>                
+            <tbody>
+                @foreach (var item in Model.Difficulties)
+                {
+                    <tr>
+                        <td>@item.Name</td>
+                        <td>count</td>
+                        <td>
+                            <form asp-controller="Difficulty" asp-action="Delete" method="post">
+                                    <button type="submit" class="btn waves-effect waves-light red right">Delete</button>
+                                   <input type="hidden" name="ID" value="@item.RouteDifficultyID" />
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
