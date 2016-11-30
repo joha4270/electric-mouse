@@ -7,6 +7,7 @@ using electric_mouse.Data;
 using electric_mouse.Models.RouteItems;
 using electric_mouse.Models.RouteViewModels;
 using Microsoft.EntityFrameworkCore;
+using electric_mouse.Models;
 
 namespace electric_mouse.Controllers
 {
@@ -58,11 +59,23 @@ namespace electric_mouse.Controllers
         [HttpPost]
         public async Task<IActionResult> Clear(SectionListViewModel model)
         {
+
+            //_dbContext.RouteSectionRelations.Include(rs => rs.Route);
+
             RouteSection section = _dbContext.RouteSections.Include(s => s.Routes).First(s => s.RouteSectionID == model.SectionID);
 
-            _
+            Route tempRoute = section.Routes.First().Route;
 
+            // Routes also has a relation to sections, so here we remove them as well
+            //_dbContext.Routes.Select(r => r.Sections.Where(s => s.RouteSectionID == section.RouteSectionID))
+            foreach (Route route in _dbContext.Routes.Include(r => r.Sections))
+            {
+                if (route.Sections.Contains(section))
+                    route.Sections.Remove(section);
+            }
 
+            // When clearing, we remove the sections relation to any routes
+            section.Routes = null;
 
             return RedirectToAction(nameof(List), "Section");
         }
