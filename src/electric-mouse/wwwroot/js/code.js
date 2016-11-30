@@ -27,12 +27,6 @@ $(document).ready(function(){
     });
 });
 
-
-$('tbody tr').click(function () {
-  id = $(this).children('.app_id').text();
-  viewRoute(id);
-});
-
 function viewRoute(route_id)
 {
   $('.modal-content h4').html('Loading');
