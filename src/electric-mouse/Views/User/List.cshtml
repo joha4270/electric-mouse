@@ -1,0 +1,86 @@
+﻿@model electric_mouse.Models.UserViewModels.UserListViewModel
+s
+<h2>User View</h2>
+
+
+<div class="col s12">
+    <div class="row">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th class="app_Name">Name</th>
+                    <th>User Status</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.Users)
+                {
+                    <tr>
+                        <td>Kurt@*@item.Name*@</td>
+                        @if (false@*item.State > 1*@)
+                        {
+                            <td>Administrator</td>
+                            <td>
+                                <button type="submit" class="btn waves-effect waves-light red right" disabled>Promote to Admin</button>
+                                <button type="submit" class="btn waves-effect waves-light red right" disabled>Ban</button>
+                            </td>
+                        }
+                        else if (false@*item.State > 0*@)
+                        {
+                            <td>Active</td>
+                            <td>
+                                <form asp-controller="User" asp-action="Promote" method="post">
+                                    <button type="submit" class="btn waves-effect waves-light red right">Promote to Admin</button>
+                                    @*<input type="hidden" name="ID" value="@item.ID"/>
+                                    <input type="hidden" name="State" value="@item.State"/>
+                                    Add admin ID as well
+                                    *@
+                                </form>
+                                <form asp-controller="User" asp-action="Demote" method="post">
+                                    <button type="submit" class="btn waves-effect waves-light red right">Ban</button>
+                                    @*<input type="hidden" name="ID" value="@item.ID"/>
+                                    <input type="hidden" name="State" value="@item.State"/>
+                                    Add admin ID as well
+                                    *@
+                                </form>
+                            </td>
+                        }
+                        else
+                        {
+                            <td>Banned</td>
+                            <td>
+                                <button type="submit" class="btn waves-effect waves-light red right" disabled>Promote to Admin</button>
+                                <form asp-controller="User" asp-action="Promote" method="post">
+                                    <button type="submit" class="btn waves-effect waves-light red right">Unban</button>
+                                    @*<input type="hidden" name="ID" value="@item.ID"/>
+                                    <input type="hidden" name="State" value="@item.State"/>
+                                    Add admin ID as well
+                                    *@
+                                </form>
+                            </td>
+                        }
+
+                        @*
+                            
+                            <td>
+                                <form asp-controller="Hall" asp-action="Delete" method="post">
+                                    @if (item.Sections.Count > 0)
+                                    {
+                                        <button type="submit" class="btn waves-effect waves-light red right" disabled>Delete</button>
+                                    }
+                                    else
+                                    {
+                                        <button type="submit" class="btn waves-effect waves-light red right">Delete</button>
+                                    }
+
+                                    <input type="hidden" name="ID" value="@item.RouteHallID"/>
+                                </form>
+                            </td>
+                            *@
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
