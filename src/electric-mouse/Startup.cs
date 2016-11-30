@@ -70,7 +70,7 @@ namespace electric_mouse
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory, IServiceProvider serviceProvider)
         {
             loggerFactory.AddConsole(Configuration.GetSection("Logging"));
             loggerFactory.AddDebug();
@@ -89,9 +89,11 @@ namespace electric_mouse
             app.UseStaticFiles();
 
             app.UseIdentity();
+            RoleHandler.AddRoles(serviceProvider, RoleHandler.Admin, RoleHandler.Post);
 
             // Add external authentication middleware below. To configure them please see http://go.microsoft.com/fwlink/?LinkID=532715
             string[] conf = File.ReadAllLines("secrets.txt");
+            
             app.UseFacebookAuthentication(new FacebookOptions()
             {
                 AppId = conf[0],

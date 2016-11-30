@@ -89,3 +89,7 @@ nav ul img {
     cursor: pointer;
     cursor: hand;
 }
+
+.small_margin {
+    margin-bottom: 0;
+}

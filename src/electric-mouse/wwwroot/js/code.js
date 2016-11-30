@@ -30,31 +30,20 @@ $(document).ready(function(){
 function viewRoute(route_id)
 {
   $('.modal-content h4').html('Loading');
-  $('#modal_content').html('');
-  /*$.getJSON("api.php?route=" + route_id, function(result){
-        var d = new Date(result['date']); // + ' - ' + d.getDate() + '/' + (d.getMonth()+1) + '/' + d.getFullYear()
-
-        $('.modal-content h4').html('Route #' + route_id);
-
-        $('#modal_content').append('<p><b>RouteSection</b>: ' + result['section'] + '</p>');
-        $('#modal_content').append('<p><b>RouteDifficulty</b>: ' + result['difficulty'] + '</p>');
-        $('#modal_content').append('<p><b>Grip</b>: ' + result['grip'] + '</p>');
-        $('#modal_content').append('<p><b>Date</b>: ' + d.getDate() + '/' + (d.getMonth()+1) + '/' + d.getFullYear() + '</p>');
-        // Users
-        users = "";
-          seperator = ", ";
-          users += '<p><b>Users</b>: ';
-          $.each(result['users'], function(i, field) {
-            if (i >= $(result['users']).length - 1) {seperator = "";}
-            users += '<a href="#">' + result['users'][i]['first_name'];
-            if (!$.isEmptyObject(result['users'][i]['last_name'])) { users += ' ' + result['users'][i]['last_name']; }
-            users += '</a>';
-            users += seperator;
-          });
-          users += '</p>';
-        $('#modal_content').append(users);
-        $('#modal_content').append('<p><b>Note</b>: ' + result['note'] + '</p>');
-    });*/
-        $('#modal_content').html('API not implemented yet');
+  $.get("/Route/Details/" + route_id, function (data) {
+      $(".modal-content").html(data);
+  });
   $('#modal1').openModal();
+}
+
+function togglemore()
+{
+    var element = $('#long_content');
+    var size = element.css("max-height");
+    if (size === "300px") {
+        element.css('max-height', "3000px")
+    } else {
+        element.css('max-height', "300px")
+    }
+
 }
