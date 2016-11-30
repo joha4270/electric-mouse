@@ -9,9 +9,9 @@
     <form asp-controller="Route" asp-action="Archive" asp-route-id="@Model.Routes.ID">
       <input class="col" type="submit" value="Slet"/>
     </form>
-    <form asp-controller="Route" asp-action="Update" asp-route-id="@Model.Routes.ID">
+    <a asp-controller="Route" asp-action="Update" asp-route-id="@Model.Routes.ID">
       <input class="col" type="submit" value="Rediger"/>
-    </form>
+    </a>
 }
     </div>
     <div class="row">
@@ -43,7 +43,7 @@
       <div class="col s12">
         @foreach (ApplicationUser user in Model.Creators)
         {
-            <a sp-controller="Route" asp-action="List" asp-route-creator="@user.Id">@user.UserName</a>@(user == Model.Creators[Model.Creators.Count -1] ? "" : ", ")
+            <a asp-controller="Route" asp-action="List" asp-route-creator="@user.Id">@user.UserName</a>@(user == Model.Creators[Model.Creators.Count -1] ? "" : ", ")
         }
       </div>
     </div>

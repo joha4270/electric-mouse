@@ -1,11 +1,6 @@
 ﻿@model electric_mouse.Models.RouteViewModels.RouteCreateViewModel
-<h2>DEMO CONTENT</h2>
-<form asp-controller="Route" asp-action="CreateSampleRoute" method="post">
-    <button type="submit" class="btn btn-default">Create Route (With test junk)</button>
-</form>
-
 <h2>Stuff</h2>
-<form asp-controller="Route" asp-action="Create" method="post" class="col s12">
+<form asp-controller="Route" asp-action="@(ViewBag.Update != null && ViewBag.Update == true ? "Update" : "Create")" method="post" class="col s12">
   <div class="row">
     <div class="input-field col s2">
       <input type="number" min="1" name="RouteID" />
@@ -91,14 +86,14 @@
 
 <script>
     var sections = {
-        @foreach (var h in Model.Halls)
+        @foreach (var hall in Model.Halls)
         {
-            @Html.Raw("'")@h.RouteHallID@Html.Raw("': {")
-             foreach (var s in Model.Sections.Where(i => i.RouteHallID == h.RouteHallID))
-             {
-                 @Html.Raw("'")@s.RouteSectionID@Html.Raw("': '")@s.Name@Html.Raw("'")
-             }
-            @Html.Raw("},")
+            @Html.Raw("'")@Html.Raw(hall.RouteHallID)@Html.Raw("': {")
+            foreach (var s in Model.Sections.Where(i => i.RouteHallID == hall.RouteHallID))
+            {
+                @Html.Raw("'")@s.RouteSectionID@Html.Raw("': '")@s.Name@Html.Raw("', ")
+            }
+            @Html.Raw("},\n")
         }
     };
 

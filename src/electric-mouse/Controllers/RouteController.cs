@@ -79,30 +79,29 @@ namespace electric_mouse.Controllers
             return RedirectToAction(nameof(List), "Route");
         }
 
-        [HttpPost]
-        public async Task<IActionResult> CreateSampleRoute(RouteCreateViewModel model)
+        public IActionResult List(string archived = "false", string creator = null)
         {
-            var Hall = new RouteHall { Name = "hall1" };
-            _dbContext.RouteHalls.Add(Hall);
-            var Difficulty = new RouteDifficulty { Name = "Pink" };
-            _dbContext.RouteDifficulties.Add(Difficulty);
+            IQueryable<Route> routes = _dbContext.Routes;
 
-            var Section = new RouteSection { RouteHall = Hall, Name = "A" };
+            //Build search query
+            if (archived == "yes")
+            {
+                routes = routes.Where(r => r.Archived == true);
+            }
+            else if (archived == "both") { } //noop
+            //Catch all case here as instead of if yes else if no ; as it makes it less likely to expose on accident
+            else
+            {
+                routes = routes.Where(r => r.Archived == false);
+            }
 
-            var Route = new Route { Note = "Plof", Difficulty = Difficulty, RouteID = 1, GripColour = "Black", Date = DateTime.Now };
+            if (!string.IsNullOrEmpty(creator))
+            {
+                routes = routes.Include(x => x.Creators)
+                    .Where(x => x.Creators.Any(c => c.ApplicationUserRefId == creator));
+            }
 
-            Section.Routes.Add(new RouteSectionRelation { RouteSection = Section, Route = Route });
-            _dbContext.RouteSections.Add(Section);
-
-            _dbContext.SaveChanges();
-
-            return RedirectToAction(nameof(List), "Route");
-        }
-
-        public IActionResult List()
-        {
-            // Can probably be done using LINQ and lambda, this'll do though
-            IQueryable<Route> routes = _dbContext.Routes.Include(c => c.Difficulty); // Using include for 'recursion'
+            routes = routes .Include(c => c.Difficulty);
             IList<Route> routeList = new List<Route>();
 
             foreach (var r in routes.ToList())
@@ -197,15 +196,51 @@ namespace electric_mouse.Controllers
         //TODO: UNCOMMENT [Authorize(Roles=RoleSetup.Post)]
         public async Task<IActionResult> Update(int id)
         {
+            ApplicationUser user = await _userManager.GetUserAsync(User);
+            if (
+                await
+                    _dbContext.RouteUserRelations.AnyAsync(x => x.RouteRefId == id && x.ApplicationUserRefId == user.Id) ||
+                await _userManager.IsInRoleAsync(user, "Administrator"))
+            {
+
+                Route route = await _dbContext.Routes.FirstOrDefaultAsync(x => x.ID == id);
+                IQueryable<RouteHall> routeHalls = _dbContext.RouteHalls.Include(s => s.Sections);
+                IQueryable<RouteSection> routeSections = _dbContext.RouteSections;
+
+                RouteCreateViewModel model = new RouteCreateViewModel
+                {
+                    Halls = routeHalls.ToList(),
+                    Difficulties = _dbContext.RouteDifficulties.ToList(),
+                    Sections = routeSections.ToList(),
+                    Date = route.Date.ToString("dd-MM-yy"),
+                    GripColor = route.GripColour,
+                    Note = route.Note,
+                    RouteDifficultyID = route.RouteDifficultyID,
+                    //todo: hall RouteHallID =
+                    RouteID = route.ID
+                };
+
+
+                ViewBag.Update = true;
+                return View("Create", model);
+            }
+            HttpContext.Response.StatusCode = (int) HttpStatusCode.Forbidden;
+            return Content("You don't have access to this action. 403 Forbidden");
+        }
+
+        //TODO: UNCOMMENT [Authorize(Roles=RoleSetup.Post)]
+        [HttpPost]
+        public async Task<IActionResult> Update(RouteCreateViewModel model)
+        {
             //Cannot be null as Role requires user being logged in
             ApplicationUser user = await _userManager.GetUserAsync(User);
             if (
-                await _dbContext.RouteUserRelations.AnyAsync(x => x.RouteRefId == id && x.ApplicationUserRefId == user.Id) ||
+                //await _dbContext.RouteUserRelations.AnyAsync(x => x.RouteRefId == id && x.ApplicationUserRefId == user.Id) ||
                 await _userManager.IsInRoleAsync(user, "Administrator"))
             {
-                _logger.LogInformation("Updating route with id = {id}",id);
+                //_logger.LogInformation("Updating route with id = {id}",id);
 
-                //todo: create route information with existing id
+                //todo: refresh route information with existing id
             }
 
             HttpContext.Response.StatusCode = (int) HttpStatusCode.Forbidden;
