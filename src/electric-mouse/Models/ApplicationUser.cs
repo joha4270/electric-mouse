@@ -10,5 +10,9 @@ namespace electric_mouse.Models
     public class ApplicationUser : IdentityUser
     {
         public string DisplayName { get; set; }
+        public string FacebookID { get; set; }
+        public string URLPath { get; set; }
+        public string AuthToken { get; set; }
+        public DateTime AuthTokenExpiration { get; set; }
     }
 }
