@@ -22,7 +22,7 @@ namespace electric_mouse.Controllers
         [HttpPost]
         public async Task<IActionResult> Create(SectionListViewModel model)
         {
-            if (!string.IsNullOrEmpty(model.SectionName) || !string.IsNullOrEmpty(model.Hall))
+            if (!string.IsNullOrEmpty(model.SectionName) && model.HallID != null)
             {
                 RouteSection section = new RouteSection { Name = model.SectionName, RouteHall = _dbContext.RouteHalls.First() };
                 _dbContext.RouteSections.Add(section);
@@ -41,6 +41,30 @@ namespace electric_mouse.Controllers
             return View(model);
         }
 
+        [HttpPost]
+        public async Task<IActionResult> Delete(SectionListViewModel model)
+        {
+            RouteSection section = _dbContext.RouteSections.Include(s => s.Routes).First(s => s.RouteSectionID == model.SectionID);
 
+            if (section.Routes.Count <= 0)
+            {
+                _dbContext.RouteSections.Remove(section);
+                _dbContext.SaveChanges();
+            }
+
+            return RedirectToAction(nameof(List), "Section");
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Clear(SectionListViewModel model)
+        {
+            RouteSection section = _dbContext.RouteSections.Include(s => s.Routes).First(s => s.RouteSectionID == model.SectionID);
+
+            _
+
+
+
+            return RedirectToAction(nameof(List), "Section");
+        }
     }
 }

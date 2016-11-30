@@ -30,6 +30,5 @@ namespace electric_mouse.Models.RouteItems
         {
             Routes = new List<RouteSectionRelation>();
         }
-
     }
 }
