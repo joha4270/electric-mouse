@@ -1,19 +1,23 @@
 ﻿@model electric_mouse.Models.RouteViewModels.RouteCreateViewModel
 <h2>DEMO CONTENT</h2>
-<form asp-controller="Route" asp-action="Create" method="post">
-  <button type="submit" class="btn btn-default">Create Route (With test junk)</button>
+<form asp-controller="Route" asp-action="CreateSampleRoute" method="post">
+    <button type="submit" class="btn btn-default">Create Route (With test junk)</button>
 </form>
 
 <h2>Stuff</h2>
-<form class="col s12">
+<form asp-controller="Route" asp-action="Create" method="post" class="col s12">
   <div class="row">
     <div class="input-field col s2">
-      <input type="number" min="1" name="id"/>
+      <input type="number" min="1" name="RouteID" />
       <label for="id">Route ID</label>
     </div>
     <div class="input-field col s10">
-      <select>
-        <option value="1">A</option>
+      <select name="hallSelect" id="hallSelect">
+        <option value="" disabled selected>Select a Hall</option>
+        @foreach (var hall in Model.Halls)
+        {
+            <option value="@hall.RouteHallID">@hall.Name</option>
+        }
       </select>
       <label>Hal</label>
     </div>
@@ -21,8 +25,11 @@
 
   <div class="row">
     <div class="input-field col s6">
-      <select>
-        <option value="1">Green</option>
+      <select name="RouteDifficultyID">
+        @foreach (var difficulty in Model.Difficulties)
+        {
+            <option value="@difficulty.RouteDifficultyID">@difficulty.Name</option>
+        }
       </select>
       <label>Difficulty</label>
     </div>
@@ -36,14 +43,23 @@
 
   <div class="row">
     <div class="input-field col s12">
-      <label for="date">Date</label>
-      <input type="date" class="datepicker" name="date">
+      <select name="RouteSectionID" id="SectionSelect">
+        <option value="" disabled selected>No Sections Found</option>
+      </select>
+      <label for="sections">Section</label>
     </div>
   </div>
 
   <div class="row">
     <div class="input-field col s12">
-      <input id="grip_color" type="text">
+      <label for="date">Date</label>
+      <input type="date" class="datepicker" name="Date">
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="input-field col s12">
+      <input id="grip_color" type="text" name="GripColor">
       <label for="grip_color">Grip Color</label>
     </div>
   </div>
@@ -56,16 +72,46 @@
 
   <div class="row">
     <div class="input-field col s12">
-      <textarea id="textarea1" class="materialize-textarea"></textarea>
+      <textarea id="textarea1" class="materialize-textarea" name="Note"></textarea>
       <label for="textarea1">Note</label>
     </div>
   </div>
 
   <div class="row">
     <div class="col s12">
-      <button class="btn waves-effect waves-light red right" type="submit" name="action">Create Route
+      <button class="btn waves-effect waves-light red right" type="submit">
+        Create Route
         <i class="material-icons right">send</i>
       </button>
     </div>
   </div>
 </form>
+
+@section scripts {
+
+<script>
+    var sections = {
+        @foreach (var h in Model.Halls)
+        {
+            @Html.Raw("'")@h.RouteHallID@Html.Raw("': {")
+             foreach (var s in Model.Sections.Where(i => i.RouteHallID == h.RouteHallID))
+             {
+                 @Html.Raw("'")@s.RouteSectionID@Html.Raw("': '")@s.Name@Html.Raw("'")
+             }
+            @Html.Raw("},")
+        }
+    };
+
+    $("#hallSelect").on('change', function() {
+        var data = "";
+        var parent = $(this).val();
+        $.each(sections[parent], function(key, val) {
+            data += '<option value="' + key + '">' + val + '</option>';
+        });
+        if(data == "") {data = '<option value="" disabled selected>No Sections Found</option>'}
+        $("#SectionSelect").material_select("destroy");
+        $("#SectionSelect").html(data);
+        $("#SectionSelect").material_select();
+    });
+</script>
+}

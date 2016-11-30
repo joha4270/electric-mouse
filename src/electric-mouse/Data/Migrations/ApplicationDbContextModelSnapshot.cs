@@ -71,7 +71,7 @@ namespace electric_mouse.Data.Migrations
 
                     b.Property<bool>("Archived");
 
-                    b.Property<DateTime?>("Date");
+                    b.Property<DateTime>("Date");
 
                     b.Property<string>("GripColour");
 
