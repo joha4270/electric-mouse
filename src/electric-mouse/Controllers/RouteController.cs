@@ -1,7 +1,6 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using electric_mouse.Data;
@@ -27,46 +26,41 @@ namespace electric_mouse.Controllers
         // RouteCreate name instead? - We'll have to implement hall etc create seperately
         public IActionResult Create()
         {
+            IQueryable<RouteHall> routeHalls = _dbContext.RouteHalls.Include(s => s.Sections);
+            IQueryable<RouteSection> routeSections = _dbContext.RouteSections;
+
             RouteCreateViewModel model = new RouteCreateViewModel();
-            model.Halls = _dbContext.RouteHalls.AsEnumerable();
-            model.Difficulties = _dbContext.RouteDifficulties.AsEnumerable();
-            model.Sections = model.Halls.ElementAt(0).Sections.AsEnumerable();
+            model.Halls = routeHalls.ToList();
+            model.Difficulties = _dbContext.RouteDifficulties.ToList();
+            model.Sections = routeSections.ToList();
 
             return View(model);
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateRoute(RouteCreateViewModel model)
+        public async Task<IActionResult> Create(RouteCreateViewModel model)
         {
-            IEnumerable<RouteHall> routeHalls = _dbContext.RouteHalls.AsEnumerable();
-            IEnumerable<RouteDifficulty> difficulties = _dbContext.RouteDifficulties.AsEnumerable();
-            IEnumerable<RouteSection> sections = _dbContext.RouteSections.AsEnumerable();
 
-            int routeID = int.Parse(Request.Form["idNumber"]);
-            RouteHall hall = routeHalls.ElementAt(int.Parse(Request.Form["hallSelect"]));
-            RouteDifficulty difficulty = difficulties.ElementAt(int.Parse(Request.Form["difficultySelect"]));
+            //int routeID = int.Parse(Request.Form["idNumber"]);
+            RouteDifficulty difficulty =
+                _dbContext.RouteDifficulties.First(d => d.RouteDifficultyID == model.RouteDifficultyID);
             //TODO: Implement route type (Boulder/Sport)
-            DateTime date = DateTime.Parse(Request.Form["datePicker"]);
-            string gripColour = Request.Form["gripColor"];
+            DateTime date = DateTime.ParseExact(model.Date, "dd-MM-yyyy", CultureInfo.InvariantCulture);
             //TODO: Implement image and video data
             //TODO: Make it possible to add a route to more than one section
             //TODO: Make only the relevant sections visible (ie. only sections that are contained in the selected hall)
-            RouteSection section = sections.ElementAt(int.Parse(Request.Form["sectionSelect"]));
-            string note = Request.Form["noteText"];
-            //TODO: Make exceptionhandling if the server could not parse the input (specially routeID could have problems)
+            RouteSection section = _dbContext.RouteSections.Include(h => h.RouteHall).First(s => s.RouteSectionID == model.RouteSectionID);
 
-            model.Route = new Route
+            Route route = new Route
             {
-                Note = note,
+                Note = model.Note,
                 Difficulty = difficulty,
-                RouteID = routeID,
-                GripColour = gripColour,
-                Date = date,
+                RouteID = model.RouteID,
+                GripColour = model.GripColor,
+                Date = date
             };
-            model.Hall = hall;
 
-            model.Section = section;
-            model.Section.Routes.Add(new RouteSectionRelation { RouteSection = model.Section, Route = model.Route });
+            section.Routes.Add(new RouteSectionRelation { RouteSection = section, Route = route });
 
             _dbContext.SaveChanges();
 
@@ -76,17 +70,17 @@ namespace electric_mouse.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateSampleRoute(RouteCreateViewModel model)
         {
-            model.Hall = new RouteHall { Name = "hall1" };
-            _dbContext.RouteHalls.Add(model.Hall);
-            model.Difficulty = new RouteDifficulty { Name = "Pink" };
-            _dbContext.RouteDifficulties.Add(model.Difficulty);
+            var Hall = new RouteHall { Name = "hall1" };
+            _dbContext.RouteHalls.Add(Hall);
+            var Difficulty = new RouteDifficulty { Name = "Pink" };
+            _dbContext.RouteDifficulties.Add(Difficulty);
 
-            model.Section = new RouteSection { RouteHall = model.Hall, Name = "A" };
+            var Section = new RouteSection { RouteHall = Hall, Name = "A" };
 
-            model.Route = new Route { Note = "Plof", Difficulty = model.Difficulty, RouteID = 1, GripColour = "Black", Date = DateTime.Now };
+            var Route = new Route { Note = "Plof", Difficulty = Difficulty, RouteID = 1, GripColour = "Black", Date = DateTime.Now };
 
-            model.Section.Routes.Add(new RouteSectionRelation { RouteSection = model.Section, Route = model.Route });
-            _dbContext.RouteSections.Add(model.Section);
+            Section.Routes.Add(new RouteSectionRelation { RouteSection = Section, Route = Route });
+            _dbContext.RouteSections.Add(Section);
 
             _dbContext.SaveChanges();
 

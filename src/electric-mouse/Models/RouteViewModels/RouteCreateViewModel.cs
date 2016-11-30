@@ -5,12 +5,16 @@ namespace electric_mouse.Models.RouteViewModels
 {
     public class RouteCreateViewModel
     {
-        public RouteHall Hall { get; set; }
-        public IEnumerable<RouteHall> Halls { get; set; }
-        public RouteDifficulty Difficulty { get; set; }
-        public IEnumerable<RouteDifficulty> Difficulties { get; set; }
-        public RouteSection Section { get; set; }
-        public IEnumerable<RouteSection> Sections { get; set; }
-        public Route Route { get; set; }
+        public IList<RouteHall> Halls { get; set; }
+        public IList<RouteDifficulty> Difficulties { get; set; }
+        public IList<RouteSection> Sections { get; set; }
+
+        public int RouteID { get; set; }
+        public int RouteHallID { get; set; }
+        public int RouteSectionID { get; set; }
+        public int RouteDifficultyID { get; set; }
+        public string Date { get; set; }
+        public string GripColor { get; set; }
+        public string Note { get; set; }
     }
 }
