@@ -3,7 +3,16 @@
 <div class="col s12">
     <div class="row small_margin" style="padding-top: 20px;">
         <div class="col s3" style="font-size:0.75em">GREEN</div>
-        <div class="col s9" style="font-size:0.75em">BLUE</div>
+      <div class="col s6" style="font-size:0.75em">BLUE</div>
+@if (Model.EditRights)
+{
+    <form asp-controller="Route" asp-action="Archive" asp-route-id="@Model.Routes.ID">
+      <input class="col" type="submit" value="Slet"/>
+    </form>
+    <form asp-controller="Route" asp-action="Update" asp-route-id="@Model.Routes.ID">
+      <input class="col" type="submit" value="Rediger"/>
+    </form>
+}
     </div>
     <div class="row">
         <div class="col s3"><h1>@Model.Routes.RouteID</h1></div>
@@ -31,7 +40,12 @@
         <div class="col s3" style="font-size:0.75em;">Afsat</div>
     </div>
     <div class="row">
-        <div class="col s12">@("Jens jensen & co")</div>
+      <div class="col s12">
+        @foreach (ApplicationUser user in Model.Creators)
+        {
+            <a sp-controller="Route" asp-action="List" asp-route-creator="@user.Id">@user.UserName</a>@(user == Model.Creators[Model.Creators.Count -1] ? "" : ", ")
+        }
+      </div>
     </div>
     <div class="row small_margin">
         <div class="col s6">Hund</div>

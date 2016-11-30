@@ -65,7 +65,7 @@ namespace electric_mouse.Models
 
         public DateTime? Date { get; set; }
 
-
+        public List<RouteApplicationUserRelation> Creators { get; set; }
         ///// <summary>
         ///// 
         ///// </summary>
@@ -86,6 +86,6 @@ namespace electric_mouse.Models
         //{
         //    Sections?.Add(section);
         //}
-        
+        public bool Archived { get; set; }
     }
 }

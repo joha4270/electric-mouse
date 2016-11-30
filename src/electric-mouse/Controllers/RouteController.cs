@@ -1,35 +1,50 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
 using System.Threading.Tasks;
 using electric_mouse.Data;
 using electric_mouse.Models;
 using electric_mouse.Models.RouteItems;
 using electric_mouse.Models.RouteViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting.Internal;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Server.Kestrel;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace electric_mouse.Controllers
 {
     public class RouteController : Controller
     {
         private ApplicationDbContext _dbContext;
+        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly SignInManager<ApplicationUser> _signInManager;
+        private readonly ILogger _logger;
 
-        public RouteController(ApplicationDbContext dbContext)
+        public RouteController(ApplicationDbContext dbContext, UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, ILoggerFactory logger)
         {
             _dbContext = dbContext;
+            _userManager = userManager;
+            _signInManager = signInManager;
+            _logger = logger.CreateLogger<RouteController>();
         }
 
         // RouteCreate name instead? - We'll have to implement hall etc create seperately
         public IActionResult Create()
         {
+
             return View();
         }
 
         [HttpPost]
         public async Task<IActionResult> Create(RouteCreateViewModel model)
         {
+
             model.Hall = new RouteHall {Name = "hall1"};
             _dbContext.RouteHalls.Add(model.Hall);
             model.Difficulty = new RouteDifficulty { Name = "Pink" };
@@ -40,7 +55,10 @@ namespace electric_mouse.Controllers
             model.Route = new Route {Note = "Plof", Difficulty = model.Difficulty, RouteID = 1, GripColour = "Black", Date = DateTime.Now};
 
             model.Section.Routes.Add(new RouteSectionRelation { RouteSection = model.Section, Route = model.Route });
+
             _dbContext.RouteSections.Add(model.Section);
+
+            _dbContext.RouteUserRelations.Add(new RouteApplicationUserRelation{User = await _userManager.GetUserAsync(User), Route = model.Route});
 
             _dbContext.SaveChanges();
 
@@ -106,10 +124,60 @@ namespace electric_mouse.Controllers
                 hall = _dbContext.RouteHalls.First(p => p.RouteHallID == section.RouteHallID);
                 break;
             }
-            
-            
-            return PartialView(new RouteDetailViewModel(routes, section, hall, root));
 
+            List<ApplicationUser> creators = _dbContext.RouteUserRelations.Where(r => r.Route == routes).Select(r => r.User).ToList();
+            bool creatorOrAdmin = false;
+
+            if (_signInManager.IsSignedIn(User))
+            {
+                ApplicationUser user = await _userManager.GetUserAsync(User);
+                creatorOrAdmin = creators.Contains(user) || (await _userManager.IsInRoleAsync(user, "Administrator")); //TODO const when merging
+            }
+
+            return PartialView(new RouteDetailViewModel(routes, section, hall, root, creators, creatorOrAdmin));
+
+        }
+
+
+        //TODO: UNCOMMENT [Authorize(Roles=RoleSetup.Post)]
+        [HttpPost]
+        public async Task<IActionResult> Archive(int id)
+        {
+            //Cannot be null as Role requires user being logged in
+            ApplicationUser user = await _userManager.GetUserAsync(User);
+            if (
+                await _dbContext.RouteUserRelations.AnyAsync(x => x.RouteRefId == id && x.ApplicationUserRefId == user.Id) ||
+                await _userManager.IsInRoleAsync(user, "Administrator"))
+            {
+                _logger.LogInformation("Deleting route with id = {id}", id);
+
+                Route route = await _dbContext.Routes.FirstOrDefaultAsync<Route>(x => x.ID == id);
+                route.Archived = true;
+                await _dbContext.SaveChangesAsync();
+                return RedirectToAction("List"); //TODO: return to earlier search
+            }
+
+
+            HttpContext.Response.StatusCode = (int) HttpStatusCode.Forbidden;
+            return Content("You don't have access to this action. 403 Forbidden");
+        }
+
+        //TODO: UNCOMMENT [Authorize(Roles=RoleSetup.Post)]
+        public async Task<IActionResult> Update(int id)
+        {
+            //Cannot be null as Role requires user being logged in
+            ApplicationUser user = await _userManager.GetUserAsync(User);
+            if (
+                await _dbContext.RouteUserRelations.AnyAsync(x => x.RouteRefId == id && x.ApplicationUserRefId == user.Id) ||
+                await _userManager.IsInRoleAsync(user, "Administrator"))
+            {
+                _logger.LogInformation("Updating route with id = {id}",id);
+
+                //todo: create route information with existing id
+            }
+
+            HttpContext.Response.StatusCode = (int) HttpStatusCode.Forbidden;
+            return Content("You don't have access to this action. 403 Forbidden");
         }
     }
 }

@@ -29,8 +29,8 @@ $(document).ready(function(){
 
 
 $('tbody tr').click(function () {
-  id = $(this).children('.app_id').text();
-  viewRoute(id);
+    var id = this.attributes['data-id'].value;
+    viewRoute(id);
 });
 
 function viewRoute(route_id)
