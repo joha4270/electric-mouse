@@ -1,0 +1,112 @@
+﻿@model electric_mouse.Models.RouteViewModels.SectionListViewModel
+
+@* Difficulty Test, do not attempt to make it work yourself *@
+<div class="row s1">
+    <div class="col s0">
+        <button class="btn waves-effect waves-light red right" type="submit" name="action" onclick="openCreateDialog();">
+            + Ny sektion
+        </button>
+    </div>
+</div>
+
+@* Table *@
+<div class="row">
+    <table class="table">
+        <thead>
+            <tr>
+                <th class="app_name">Name</th>
+                <th class="app_hallname">Hall</th>
+                <th class="app_routeamount">Amount of Routes</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody class="app_sectiontable">
+            @foreach (var item in Model.Sections)
+            {
+                <tr data-id="@item.RouteSectionID">
+                    <td class="app_name">@item.Name</td>
+                    <td class="app_hallname">@item.RouteHall.Name</td>
+                    <td class="app_routeamount">@item.Routes.Count</td>
+
+                    <td>
+                        <form asp-controller="Section" asp-action="Clear" method="post">
+                            @* We gray out the buttons if there are no routes (the buttons dont do anything then) *@
+                            @if (item.Routes.Count > 0)
+                            {
+                                <button class="btn waves-effect waves-light red left" type="submit">Clear</button>
+                            }
+                            else
+                            {
+                                <button class="btn waves-effect waves-light red left" type="submit" disabled>Clear</button>
+                            }
+
+                            <input type="hidden" name="SectionID" value="@item.RouteSectionID" />
+                        </form>
+                        <form asp-controller="Section" asp-action="Delete" method="post">
+                            @if (item.Routes.Count > 0)
+                            {
+                                <button class="btn waves-effect waves-light red align-middle" type="submit" disabled>Delete</button>
+                            }
+                            else
+                            {
+                                <button class="btn waves-effect waves-light red align-middle" type="submit">Delete</button>
+                            }
+
+                            <input type="hidden" name="SectionID" value="@item.RouteSectionID"/>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@* This is HTML for the create dialog when pressing the create section button *@
+<div id="createDialog" class="modal modal-fixed-footer">
+    <div class="modal-content">
+        <h4>New Section Name:</h4>
+        <div id="modal_content">
+            <form asp-controller="Section" asp-action="Create" method="post">
+                <div class="row">
+                    <div class="input-field col s12">
+                        <label>Section Name</label>
+                        <input type="text" id="SectionName" name="SectionName"/>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="input-field col s12">
+                        <select name="HallID" id="HallID">
+                            <option disabled selected value=""></option>
+                            @foreach (var hall in Model.Halls)
+                            {
+                                <option value="@hall.RouteHallID">@hall.Name</option>
+                            }
+                        </select>
+                        <label>Hall</label>
+                    </div>
+                    <div class="input-field col s12">
+                        <button class="btn waves-effect waves-light red align-middle" type="submit">Create</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal-footer">
+        <a href="#!" class="modal-action modal-close waves-effect waves-green btn-flat">Annuller</a>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function openCreateDialog()
+        {
+            $("#createDialog").openModal();
+
+        }
+
+        $(document).ready(function () {
+            $('select').material_select();
+        });
+    </script>
+}
