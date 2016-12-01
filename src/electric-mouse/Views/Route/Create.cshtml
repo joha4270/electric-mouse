@@ -5,7 +5,8 @@
 </form>
 
 <h2>Stuff</h2>
-<form asp-controller="Route" asp-action="Create" method="post" class="col s12">
+@* enctype="multipart/form-data" is for getting all the image files *@
+<form asp-controller="Route" asp-action="Create" method="post" enctype="multipart/form-data" class="col s12">
   <div class="row">
     <div class="input-field col s2">
       <input type="number" min="1" name="RouteID" />
@@ -70,6 +71,12 @@
         <label asp-for="VideoUrl">VideoUrl</label>
     </div>
   </div>
+
+    @* IMAGE UPLOAD *@
+    <div class="row">
+        <input type="file" asp-for="Images" class="hidden"/>
+    </div>
+
 
   <div class="row">
     <div class="input-field col s12">

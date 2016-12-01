@@ -11,16 +11,20 @@ using Microsoft.AspNetCore.Hosting.Internal;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Hosting;
+using System.IO;
 
 namespace electric_mouse.Controllers
 {
     public class RouteController : Controller
     {
         private ApplicationDbContext _dbContext;
+        private IHostingEnvironment _environment;
 
-        public RouteController(ApplicationDbContext dbContext)
+        public RouteController(ApplicationDbContext dbContext, IHostingEnvironment environment)
         {
             _dbContext = dbContext;
+            _environment = environment;
         }
 
         // RouteCreate name instead? - We'll have to implement hall etc create seperately
@@ -68,13 +72,27 @@ namespace electric_mouse.Controllers
                 section.Routes.Add(new RouteSectionRelation { RouteSection = section, Route = route });
             }
 
+            // Add the video attachment to the database
             RouteAttachment attachment = new RouteAttachment { VideoUrl = model.VideoUrl, Route = route, ID = route.ID };
             _dbContext.RouteAttachments.Add(attachment);
+
+            // Add the image(s) attachment to the database
+            string uploadPath = Path.Combine(_environment.WebRootPath, "uploads");
+
+            foreach (IFormFile image in model.Images)
+            {
+                using (var fileStream = new FileStream(Path.Combine(uploadPath, $"{DateTime.UtcNow.Ticks.ToString()}.{image.}"), FileMode.Create))
+                {
+                    await image.CopyToAsync(fileStream);
+                }
+            }
 
             _dbContext.SaveChanges();
 
             return RedirectToAction(nameof(List), "Route");
         }
+
+
 
         [HttpPost]
         public async Task<IActionResult> CreateSampleRoute(RouteCreateViewModel model)

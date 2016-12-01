@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Http;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -20,5 +21,8 @@ namespace electric_mouse.Models.RouteItems
         public Route Route { get; set; }
         
         public string VideoUrl { get; set; }
+
+        // this is to reference the images on the server from the database
+        public IList<string> ImagePaths { get; set; }
     }
 }
