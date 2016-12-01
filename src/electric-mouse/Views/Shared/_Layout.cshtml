@@ -55,6 +55,8 @@
                 ApplicationUser user = await UserManager.GetUserAsync(User);
                 if (await UserManager.IsInRoleAsync(user, electric_mouse.Services.RoleHandler.Admin))
                 {
+                    <li><a href="/user/list"><i class="material-icons left">people</i>Users</a></li>
+                    <li><a href="/hall/create"><i class="material-icons left">room</i>Halls</a></li>
                     <li>
                       <a class="dropdown-button" href="#" data-activates="admin_dropdown" data-beloworigin="true">Admin<i class="material-icons right" style="margin-left: 0;">arrow_drop_down</i></a>
                     </li>

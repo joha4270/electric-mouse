@@ -62,13 +62,16 @@ namespace electric_mouse.Controllers
             _dbContext.SaveChanges();
 
             // Create Section Relation
-            foreach (var sectionId in model.RouteSectionID)
+            if (model.RouteSectionID != null)
             {
-                RouteSection section = _dbContext.RouteSections.Include(h => h.RouteHall).First(s => s.RouteSectionID == sectionId);
-                section.Routes.Add(new RouteSectionRelation { RouteSection = section, Route = route });
-            }
+                foreach (var sectionId in model.RouteSectionID)
+                {
+                    RouteSection section = _dbContext.RouteSections.Include(h => h.RouteHall).First(s => s.RouteSectionID == sectionId);
+                    section.Routes.Add(new RouteSectionRelation { RouteSection = section, Route = route });
+                }
 
-            _dbContext.SaveChanges();
+                _dbContext.SaveChanges();
+            }
 
             return RedirectToAction(nameof(List), "Route");
         }
