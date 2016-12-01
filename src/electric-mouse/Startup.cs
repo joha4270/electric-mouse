@@ -67,6 +67,7 @@ namespace electric_mouse
             // Add application services.
             services.AddTransient<IEmailSender, AuthMessageSender>();
             services.AddTransient<ISmsSender, AuthMessageSender>();
+            services.AddTransient<FacebookAPI>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -97,7 +98,8 @@ namespace electric_mouse
             app.UseFacebookAuthentication(new FacebookOptions()
             {
                 AppId = conf[0],
-                AppSecret = conf[1]
+                AppSecret = conf[1],
+                SaveTokens = true
             });
 
             app.UseMvc(routes =>

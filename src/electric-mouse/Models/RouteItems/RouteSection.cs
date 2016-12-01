@@ -11,7 +11,7 @@ namespace electric_mouse.Models.RouteItems
     public class RouteSection
     {
         /// <summary>
-        /// Section wich contains one or more routes
+        /// Section which contains one or more routes
         /// </summary>
         [Key]
         [Required]
@@ -30,6 +30,5 @@ namespace electric_mouse.Models.RouteItems
         {
             Routes = new List<RouteSectionRelation>();
         }
-
     }
 }

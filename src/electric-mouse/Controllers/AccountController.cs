@@ -11,6 +11,10 @@ using Microsoft.Extensions.Logging;
 using electric_mouse.Models;
 using electric_mouse.Models.AccountViewModels;
 using electric_mouse.Services;
+using Microsoft.AspNetCore.Http;
+using NuGet.Common;
+using NuGet.Protocol.Core.v3;
+using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace electric_mouse.Controllers
 {
@@ -19,6 +23,7 @@ namespace electric_mouse.Controllers
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
+        private readonly FacebookAPI _fbapi;
         private readonly IEmailSender _emailSender;
         private readonly ISmsSender _smsSender;
         private readonly ILogger _logger;
@@ -26,12 +31,14 @@ namespace electric_mouse.Controllers
         public AccountController(
             UserManager<ApplicationUser> userManager,
             SignInManager<ApplicationUser> signInManager,
+            FacebookAPI fbapi,
             IEmailSender emailSender,
             ISmsSender smsSender,
             ILoggerFactory loggerFactory)
         {
             _userManager = userManager;
             _signInManager = signInManager;
+            _fbapi = fbapi;
             _emailSender = emailSender;
             _smsSender = smsSender;
             _logger = loggerFactory.CreateLogger<AccountController>();
@@ -41,10 +48,21 @@ namespace electric_mouse.Controllers
         // GET: /Account/Login
         [HttpGet]
         [AllowAnonymous]
-        public IActionResult Login(string returnUrl = null)
+        public async Task<IActionResult> Login(string returnUrl = null)
         {
+            if ((returnUrl != null) && returnUrl.Split('?')[0] == "/Account/AccessDenied")
+            {
+                return await AccessDenied(returnUrl);
+            }
             ViewData["ReturnUrl"] = returnUrl;
             return View();
+        }
+
+        public Task<IActionResult> AccessDenied(string returnUrl)
+        {
+            _logger.LogWarning("User had access denied. Resting identity cookie");
+            Response.Cookies.Append("Identity.External", "", new CookieOptions { Expires = new DateTimeOffset(DateTime.Now - TimeSpan.FromDays(-1)) });
+            return Login("");
         }
 
         //
@@ -59,7 +77,10 @@ namespace electric_mouse.Controllers
             {
                 // This doesn't count login failures towards account lockout
                 // To enable password failures to trigger account lockout, set lockoutOnFailure: true
-                var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, lockoutOnFailure: false);
+                var result =
+                    await
+                        _signInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe,
+                            lockoutOnFailure: false);
                 if (result.Succeeded)
                 {
                     _logger.LogInformation(1, "User logged in.");
@@ -67,7 +88,7 @@ namespace electric_mouse.Controllers
                 }
                 if (result.RequiresTwoFactor)
                 {
-                    return RedirectToAction(nameof(SendCode), new { ReturnUrl = returnUrl, RememberMe = model.RememberMe });
+                    return RedirectToAction(nameof(SendCode), new {ReturnUrl = returnUrl, RememberMe = model.RememberMe});
                 }
                 if (result.IsLockedOut)
                 {
@@ -105,7 +126,7 @@ namespace electric_mouse.Controllers
             ViewData["ReturnUrl"] = returnUrl;
             if (ModelState.IsValid)
             {
-                var user = new ApplicationUser { UserName = model.Email, Email = model.Email };
+                var user = new ApplicationUser {UserName = model.Email, Email = model.Email};
                 var result = await _userManager.CreateAsync(user, model.Password);
                 if (result.Succeeded)
                 {
@@ -126,6 +147,12 @@ namespace electric_mouse.Controllers
             return View(model);
         }
 
+        public async Task<IActionResult> LogOut()
+        {
+            await _signInManager.SignOutAsync();
+            return RedirectToAction(nameof(RouteController.List), "Route");
+        }
+
         //
         // POST: /Account/LogOff
         [HttpPost]
@@ -137,6 +164,7 @@ namespace electric_mouse.Controllers
             return RedirectToAction(nameof(HomeController.Index), "Home");
         }
 
+
         //
         // POST: /Account/ExternalLogin
         [HttpPost]
@@ -145,7 +173,7 @@ namespace electric_mouse.Controllers
         public IActionResult ExternalLogin(string provider, string returnUrl = null)
         {
             // Request a redirect to the external login provider.
-            var redirectUrl = Url.Action("ExternalLoginCallback", "Account", new { ReturnUrl = returnUrl });
+            var redirectUrl = Url.Action("ExternalLoginCallback", "Account", new {ReturnUrl = returnUrl});
             var properties = _signInManager.ConfigureExternalAuthenticationProperties(provider, redirectUrl);
             return Challenge(properties, provider);
         }
@@ -161,14 +189,15 @@ namespace electric_mouse.Controllers
                 ModelState.AddModelError(string.Empty, $"Error from external provider: {remoteError}");
                 return View(nameof(Login));
             }
-            var info = await _signInManager.GetExternalLoginInfoAsync();
+            ExternalLoginInfo info = await _signInManager.GetExternalLoginInfoAsync();
             if (info == null)
             {
                 return RedirectToAction(nameof(Login));
             }
 
             // Sign in the user with this external login provider if the user already has a login.
-            var result = await _signInManager.ExternalLoginSignInAsync(info.LoginProvider, info.ProviderKey, isPersistent: false);
+            var result =
+                await _signInManager.ExternalLoginSignInAsync(info.LoginProvider, info.ProviderKey, isPersistent: false);
             if (result.Succeeded)
             {
                 _logger.LogInformation(5, "User logged in with {Name} provider.", info.LoginProvider);
@@ -176,7 +205,7 @@ namespace electric_mouse.Controllers
             }
             if (result.RequiresTwoFactor)
             {
-                return RedirectToAction(nameof(SendCode), new { ReturnUrl = returnUrl });
+                return RedirectToAction(nameof(SendCode), new {ReturnUrl = returnUrl});
             }
             if (result.IsLockedOut)
             {
@@ -184,11 +213,52 @@ namespace electric_mouse.Controllers
             }
             else
             {
-                // If the user does not have an account, then ask the user to create an account.
-                ViewData["ReturnUrl"] = returnUrl;
-                ViewData["LoginProvider"] = info.LoginProvider;
-                var email = info.Principal.FindFirstValue(ClaimTypes.Email);
-                return View("ExternalLoginConfirmation", new ExternalLoginConfirmationViewModel { Email = email });
+                if (info == null)
+                {
+                    return View("ExternalLoginFailure");
+                }
+
+
+                Dictionary<string, string> tokenData = info.AuthenticationTokens.ToDictionary(x => x.Name, x => x.Value);
+
+                var user = new ApplicationUser
+                {
+                    FacebookID = info.ProviderKey,
+                    Email = info.Principal.FindFirstValue(ClaimTypes.Email),
+                    DisplayName = info.Principal.FindFirstValue("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"),
+                    UserName = info.ProviderKey,
+                    AuthToken = tokenData["access_token"],
+                    AuthTokenExpiration = DateTime.Parse(tokenData["expires_at"]),
+                    URLPath = await _fbapi.GetAvatarURL(info.ProviderKey)
+                };
+
+                IdentityResult identity = await _userManager.CreateAsync(user);
+                if(identity.Succeeded)
+                {
+                    identity = await _userManager.AddLoginAsync(user, info);
+                    if(identity.Succeeded)
+                    {
+                        identity = await _userManager.AddToRoleAsync(user, RoleHandler.Post);
+                                                
+                        if(identity.Succeeded)
+                        {
+                            await _signInManager.SignInAsync(user, isPersistent: false);
+                            _logger.LogInformation(6, "User created an account using {Name} provider.", info.LoginProvider);
+                            return RedirectToLocal(returnUrl);
+                        }
+                        AddErrors(identity);
+                    }
+                    AddErrors(identity);
+                }
+                AddErrors(identity);
+
+                return View("Error");
+
+                //// If the user does not have an account, then ask the user to create an account.
+                //ViewData["ReturnUrl"] = returnUrl;
+                //ViewData["LoginProvider"] = info.LoginProvider;
+                //var email = info.Principal.FindFirstValue(ClaimTypes.Email);
+                //return View("ExternalLoginConfirmation", new ExternalLoginConfirmationViewModel { Email = email });
             }
         }
 
