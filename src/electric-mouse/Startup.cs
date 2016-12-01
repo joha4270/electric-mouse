@@ -87,7 +87,8 @@ namespace electric_mouse
             app.UseFacebookAuthentication(new FacebookOptions()
             {
                 AppId = conf[0],
-                AppSecret = conf[1]
+                AppSecret = conf[1],
+                SaveTokens = true
             });
 
             app.UseMvc(routes =>

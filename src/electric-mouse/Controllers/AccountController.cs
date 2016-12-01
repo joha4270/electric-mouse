@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
@@ -56,6 +56,13 @@ namespace electric_mouse.Controllers
             }
             ViewData["ReturnUrl"] = returnUrl;
             return View();
+        }
+
+        public Task<IActionResult> AccessDenied(string returnUrl)
+        {
+            _logger.LogWarning("User had access denied. Resting identity cookie");
+            Response.Cookies.Append("Identity.External", "", new CookieOptions { Expires = new DateTimeOffset(DateTime.Now - TimeSpan.FromDays(-1)) });
+            return Login("");
         }
 
         //
