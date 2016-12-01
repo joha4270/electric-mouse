@@ -8,9 +8,10 @@ using electric_mouse.Data;
 namespace electric_mouse.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20161201200641_imagepaths")]
+    partial class imagepaths
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
             modelBuilder
                 .HasAnnotation("ProductVersion", "1.0.0-rtm-21431");
@@ -64,12 +65,28 @@ namespace electric_mouse.Data.Migrations
                     b.ToTable("AspNetUsers");
                 });
 
+            modelBuilder.Entity("electric_mouse.Models.AttachmentPathRelation", b =>
+                {
+                    b.Property<int>("AttachmentPathRelationID")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<string>("ImagePath");
+
+                    b.Property<int>("RouteAttachmentID");
+
+                    b.HasKey("AttachmentPathRelationID");
+
+                    b.HasIndex("RouteAttachmentID");
+
+                    b.ToTable("AttachmentPathRelations");
+                });
+
             modelBuilder.Entity("electric_mouse.Models.Route", b =>
                 {
                     b.Property<int>("ID")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<DateTime?>("Date");
+                    b.Property<DateTime>("Date");
 
                     b.Property<string>("GripColour");
 
@@ -91,7 +108,9 @@ namespace electric_mouse.Data.Migrations
                     b.Property<int>("RouteAttachmentID")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<int>("ID");
+                    b.Property<int?>("ID");
+
+                    b.Property<int>("RouteID");
 
                     b.Property<string>("VideoUrl");
 
@@ -267,6 +286,14 @@ namespace electric_mouse.Data.Migrations
                     b.ToTable("AspNetUserTokens");
                 });
 
+            modelBuilder.Entity("electric_mouse.Models.AttachmentPathRelation", b =>
+                {
+                    b.HasOne("electric_mouse.Models.RouteItems.RouteAttachment", "RouteAttachment")
+                        .WithMany()
+                        .HasForeignKey("RouteAttachmentID")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
             modelBuilder.Entity("electric_mouse.Models.Route", b =>
                 {
                     b.HasOne("electric_mouse.Models.RouteItems.RouteDifficulty", "Difficulty")
@@ -279,8 +306,7 @@ namespace electric_mouse.Data.Migrations
                 {
                     b.HasOne("electric_mouse.Models.Route", "Route")
                         .WithMany()
-                        .HasForeignKey("ID")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .HasForeignKey("ID");
                 });
 
             modelBuilder.Entity("electric_mouse.Models.RouteItems.RouteSection", b =>

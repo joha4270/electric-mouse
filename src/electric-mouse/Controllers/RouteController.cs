@@ -73,18 +73,36 @@ namespace electric_mouse.Controllers
             }
 
             // Add the video attachment to the database
-            RouteAttachment attachment = new RouteAttachment { VideoUrl = model.VideoUrl, Route = route, ID = route.ID };
+            RouteAttachment attachment = new RouteAttachment { VideoUrl = model.VideoUrl, Route = route, RouteID = route.ID };
             _dbContext.RouteAttachments.Add(attachment);
 
             // Add the image(s) attachment to the database
-            string uploadPath = Path.Combine(_environment.WebRootPath, "uploads");
+            // generate a random file name for all the images that are being uploaded
+            string[] imageFileNames = model.Images.Select(image => GetRandomFileNameWithOriginalExtension(image.FileName)).ToArray();
+            // get all the relative paths (uploads\<filename>)
+            string[] relativeImagePaths = imageFileNames.Select(filename => $"uploads\\{filename}").ToArray();
+            // get the full path (c:\...\wwwroot\uploads\<filename)
+            string[] fullImagePaths = relativeImagePaths.Select(path => Path.Combine(_environment.WebRootPath, path)).ToArray();
+            int i = 0;
 
             foreach (IFormFile image in model.Images)
             {
-                using (var fileStream = new FileStream(Path.Combine(uploadPath, $"{DateTime.UtcNow.Ticks.ToString()}.{image.}"), FileMode.Create))
+                if (image.Length < 0 && image.Length > ConvertMegabytesToBytes(5)) // image size should not exceed 5 megabytes
+                    continue; // skip the iteration; dont upload the image
+
+                
+                
+                using (FileStream fileStream = new FileStream(fullImagePaths[i], FileMode.Create))
                 {
+                    _dbContext.AttachmentPathRelations.Add(new AttachmentPathRelation
+                    {
+                        ImagePath = relativeImagePaths[i],
+                        RouteAttachment = attachment
+                    });
+
                     await image.CopyToAsync(fileStream);
                 }
+                i++;
             }
 
             _dbContext.SaveChanges();
@@ -92,7 +110,13 @@ namespace electric_mouse.Controllers
             return RedirectToAction(nameof(List), "Route");
         }
 
+        #region These should probably be moved (can be made extension methods)
 
+        public long ConvertMegabytesToBytes(long megabytes) => megabytes * 1000L * 1000L;
+
+        public string GetRandomFileNameWithOriginalExtension(string fileName) => $"{Path.GetFileNameWithoutExtension(Path.GetRandomFileName())}{Path.GetExtension(fileName)}";
+
+        #endregion
 
         [HttpPost]
         public async Task<IActionResult> CreateSampleRoute(RouteCreateViewModel model)

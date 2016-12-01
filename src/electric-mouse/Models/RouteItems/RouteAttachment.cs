@@ -8,21 +8,21 @@ using System.Threading.Tasks;
 
 namespace electric_mouse.Models.RouteItems
 {
+    [Table("RouteAttachments")]
     public class RouteAttachment
     {
         [Key]
         [Required]
         public int RouteAttachmentID { get; set; }
-
-        // this is the route id
-        public int ID { get; set; }
+        
+        public int RouteID { get; set; }
 
         [ForeignKey("ID")]
         public Route Route { get; set; }
         
         public string VideoUrl { get; set; }
 
-        // this is to reference the images on the server from the database
-        public IList<string> ImagePaths { get; set; }
+        [NotMapped]
+        public ICollection<string> ImagePaths { get; set; }
     }
 }
