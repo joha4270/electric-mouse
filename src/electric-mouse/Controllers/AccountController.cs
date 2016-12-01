@@ -147,6 +147,12 @@ namespace electric_mouse.Controllers
             return View(model);
         }
 
+        public async Task<IActionResult> LogOut()
+        {
+            await _signInManager.SignOutAsync();
+            return RedirectToAction(nameof(RouteController.List), "Route");
+        }
+
         //
         // POST: /Account/LogOff
         [HttpPost]

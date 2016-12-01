@@ -1,21 +1,15 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using electric_mouse.Models;
 using Microsoft.Extensions.Logging;
-using Remotion.Linq.Parsing.Structure.IntermediateModel;
 
 namespace electric_mouse.Services
 {
     public class FacebookAPI
     {
         private readonly ILogger<FacebookAPI> _logger;
-
-        private const string token =
-            "EAAX1ZBZArFrxwBABPjRMYpEJFlx5VpMElRs5ZCQaGz7ZCi8VnXWu7hQhOweBZC4bfn3u11bcWfZAuwSlZAsxKfB6JrhgrnYIUHvrM7p9IRAoznTRBZAIRmtBsJmOo1W8QVfZCOYZBBsNHZBnaL7TOzQsmzaZBmW6kEsItmbZBngmwZAAUREwZDZD";
 
         private HttpClient _client = new HttpClient(new HttpClientHandler(){AllowAutoRedirect = false});
 
@@ -44,14 +38,11 @@ namespace electric_mouse.Services
             {
                 string re = await resp.Content.ReadAsStringAsync();
                 dynamic d = Newtonsoft.Json.JsonConvert.DeserializeObject<dynamic>(re);
+
                 if (d.data != null)
-                {
                     return d.data.url;
-                }
                 else
-                {
                     _logger.LogError("Facebook avatar request returned error. Content = {resp}", re);
-                }
             }
             else
             {
