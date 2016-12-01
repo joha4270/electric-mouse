@@ -90,7 +90,8 @@ namespace electric_mouse.Controllers
                 if (image.Length < 0 && image.Length > ConvertMegabytesToBytes(5)) // image size should not exceed 5 megabytes
                     continue; // skip the iteration; dont upload the image
 
-                
+                if (image.ContentType.Contains("image") == false)
+                    continue; // if it isnt an image being uploaded; skip it!
                 
                 using (FileStream fileStream = new FileStream(fullImagePaths[i], FileMode.Create))
                 {
