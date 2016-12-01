@@ -49,7 +49,6 @@ namespace electric_mouse.Controllers
         [HttpPost]
         public async Task<IActionResult> Create(RouteCreateViewModel model)
         {
-            //int routeID = int.Parse(Request.Form["idNumber"]);
             RouteDifficulty difficulty =
                 _dbContext.RouteDifficulties.First(d => d.RouteDifficultyID == model.RouteDifficultyID);
             //TODO: Implement route type (Boulder/Sport)
@@ -57,8 +56,8 @@ namespace electric_mouse.Controllers
             //TODO: Implement image and video data
             //TODO: Make it possible to add a route to more than one section
             //TODO: Make only the relevant sections visible (ie. only sections that are contained in the selected hall)
-            RouteSection section = _dbContext.RouteSections.Include(h => h.RouteHall).First(s => s.RouteSectionID == model.RouteSectionID);
 
+            // Create Route
             Route route = new Route
             {
                 Note = model.Note,
@@ -68,8 +67,15 @@ namespace electric_mouse.Controllers
                 Date = date
             };
 
+            _dbContext.Routes.Add(route);
+            _dbContext.SaveChanges();
 
-            section.Routes.Add(new RouteSectionRelation { RouteSection = section, Route = route });
+            // Create Section Relation
+            foreach (var sectionId in model.RouteSectionID)
+            {
+                RouteSection section = _dbContext.RouteSections.Include(h => h.RouteHall).First(s => s.RouteSectionID == sectionId);
+                section.Routes.Add(new RouteSectionRelation { RouteSection = section, Route = route });
+            }
 
 
             _dbContext.RouteUserRelations.Add(new RouteApplicationUserRelation{User = await _userManager.GetUserAsync(User), Route = route});

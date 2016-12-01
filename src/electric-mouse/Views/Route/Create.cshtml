@@ -34,7 +34,7 @@
 
   <div class="row">
     <div class="input-field col s12">
-      <select name="RouteSectionID" id="SectionSelect">
+      <select name="RouteSectionID" id="SectionSelect" multiple>
         <option value="" disabled selected>No Sections Found</option>
       </select>
       <label for="sections">Section</label>
@@ -84,11 +84,11 @@
     var sections = {
         @foreach (var hall in Model.Halls)
         {
-            @Html.Raw("'")@Html.Raw(hall.RouteHallID)@Html.Raw("': {")
-            foreach (var s in Model.Sections.Where(i => i.RouteHallID == hall.RouteHallID))
-            {
-                @Html.Raw("'")@s.RouteSectionID@Html.Raw("': '")@s.Name@Html.Raw("', ")
-            }
+            @Html.Raw("'")@hall.RouteHallID@Html.Raw("': {")
+             foreach (var s in Model.Sections.Where(i => i.RouteHallID == hall.RouteHallID))
+             {
+                 @Html.Raw("'")@s.RouteSectionID@Html.Raw("': '")@s.Name@Html.Raw("',")
+             }
             @Html.Raw("},\n")
         }
     };
