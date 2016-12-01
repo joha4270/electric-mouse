@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using electric_mouse.Data;
@@ -7,6 +8,7 @@ using electric_mouse.Models;
 using electric_mouse.Models.RouteItems;
 using electric_mouse.Models.RouteViewModels;
 using Microsoft.AspNetCore.Hosting.Internal;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -24,29 +26,71 @@ namespace electric_mouse.Controllers
         // RouteCreate name instead? - We'll have to implement hall etc create seperately
         public IActionResult Create()
         {
-            return View();
+            IQueryable<RouteHall> routeHalls = _dbContext.RouteHalls.Include(s => s.Sections);
+            IQueryable<RouteSection> routeSections = _dbContext.RouteSections;
+
+            RouteCreateViewModel model = new RouteCreateViewModel();
+            model.Halls = routeHalls.ToList();
+            model.Difficulties = _dbContext.RouteDifficulties.ToList();
+            model.Sections = routeSections.ToList();
+
+            return View(model);
         }
 
         [HttpPost]
         public async Task<IActionResult> Create(RouteCreateViewModel model)
         {
-            model.Hall = new RouteHall {Name = "hall1"};
-            _dbContext.RouteHalls.Add(model.Hall);
-            model.Difficulty = new RouteDifficulty { Name = "Pink" };
-            _dbContext.RouteDifficulties.Add(model.Difficulty);
-            
-            model.Section = new RouteSection {RouteHall = model.Hall, Name = "A"};
+            RouteDifficulty difficulty =
+                _dbContext.RouteDifficulties.First(d => d.RouteDifficultyID == model.RouteDifficultyID);
+            //TODO: Implement route type (Boulder/Sport)
+            DateTime date = DateTime.ParseExact(model.Date, "dd-MM-yyyy", CultureInfo.InvariantCulture);
+            //TODO: Implement image and video data
+            //TODO: Make it possible to add a route to more than one section
+            //TODO: Make only the relevant sections visible (ie. only sections that are contained in the selected hall)
 
-            model.Route = new Route {Note = "Plof", Difficulty = model.Difficulty, RouteID = 1, GripColour = "Black", Date = DateTime.Now};
+            // Create Route
+            Route route = new Route
+            {
+                Note = model.Note,
+                Difficulty = difficulty,
+                RouteID = model.RouteID,
+                GripColour = model.GripColor,
+                Date = date
+            };
 
-            model.Section.Routes.Add(new RouteSectionRelation { RouteSection = model.Section, Route = model.Route });
-            _dbContext.RouteSections.Add(model.Section);
+            _dbContext.Routes.Add(route);
+            _dbContext.SaveChanges();
+
+            // Create Section Relation
+            foreach (var sectionId in model.RouteSectionID)
+            {
+                RouteSection section = _dbContext.RouteSections.Include(h => h.RouteHall).First(s => s.RouteSectionID == sectionId);
+                section.Routes.Add(new RouteSectionRelation { RouteSection = section, Route = route });
+            }
 
             _dbContext.SaveChanges();
 
             return RedirectToAction(nameof(List), "Route");
+        }
 
-            //return "Sample Data Created";
+        [HttpPost]
+        public async Task<IActionResult> CreateSampleRoute(RouteCreateViewModel model)
+        {
+            var Hall = new RouteHall { Name = "hall1" };
+            _dbContext.RouteHalls.Add(Hall);
+            var Difficulty = new RouteDifficulty { Name = "Pink" };
+            _dbContext.RouteDifficulties.Add(Difficulty);
+
+            var Section = new RouteSection { RouteHall = Hall, Name = "A" };
+
+            var Route = new Route { Note = "Plof", Difficulty = Difficulty, RouteID = 1, GripColour = "Black", Date = DateTime.Now };
+
+            Section.Routes.Add(new RouteSectionRelation { RouteSection = Section, Route = Route });
+            _dbContext.RouteSections.Add(Section);
+
+            _dbContext.SaveChanges();
+
+            return RedirectToAction(nameof(List), "Route");
         }
 
         public IActionResult List()
@@ -68,48 +112,10 @@ namespace electric_mouse.Controllers
                 routeList.Add(r);
             }
 
-            RouteListViewModel model = new RouteListViewModel {Routes = routeList};
+            RouteListViewModel model = new RouteListViewModel { Routes = routeList };
             return View(model);
         }
 
-        public async Task<IActionResult> Details(int id)
-        {
-            List<CommentViewModel> root = new List<CommentViewModel> {
-                new CommentViewModel
-                {
-                    Content = "Min mor laver ikke burgere",
-                },
-                new CommentViewModel
-                {
-                    Content = "Pancakes",
-                    Children =
-                    {
-                        new CommentViewModel {Content = "Med is!" },
-                        new CommentViewModel {Content = "Med syltetøj" }
-                    }
-                }
-            };
 
-
-
-            var routes = _dbContext
-                .Routes
-                .Where(r => r.ID == id)
-                .Include(x => x.Difficulty).ToList().First();
-            RouteSection section = null;
-            RouteHall hall = null;
-
-
-            foreach (var s in _dbContext.RouteSectionRelations.Where(t => t.RouteID == routes.ID).ToList())
-            {
-                section = _dbContext.RouteSections.First(t => s.RouteSectionID == t.RouteSectionID);
-                hall = _dbContext.RouteHalls.First(p => p.RouteHallID == section.RouteHallID);
-                break;
-            }
-            
-            
-            return PartialView(new RouteDetailViewModel(routes, section, hall, root));
-
-        }
     }
 }
