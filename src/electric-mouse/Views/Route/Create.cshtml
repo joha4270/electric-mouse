@@ -9,7 +9,7 @@
   <div class="row">
     <div class="input-field col s2">
       <input type="number" min="1" name="RouteID" />
-      <label for="id">Route ID</label>
+      <label asp-for="RouteID">Route ID</label>
     </div>
     <div class="input-field col s10">
       <select name="hallSelect" id="hallSelect">
@@ -46,27 +46,28 @@
       <select name="RouteSectionID" id="SectionSelect" multiple>
         <option value="" disabled selected>No Sections Found</option>
       </select>
-      <label for="sections">Section</label>
+      <label asp-for="Sections">Section</label>
     </div>
   </div>
 
   <div class="row">
     <div class="input-field col s12">
-      <label for="date">Date</label>
+      <label asp-for="Date">Date</label>
       <input type="date" class="datepicker" name="Date">
     </div>
   </div>
 
   <div class="row">
     <div class="input-field col s12">
-      <input id="grip_color" type="text" name="GripColor">
-      <label for="grip_color">Grip Color</label>
+      <input id="GripColor" type="text" name="GripColor">
+      <label asp-for="GripColor">Grip Color</label>
     </div>
   </div>
 
   <div class="row">
-    <div class="col s12">
-      <p>Image & Video row</p>
+    <div class="input-field col s12">
+        <input type="text" name="VideoUrl" />
+        <label asp-for="VideoUrl">VideoUrl</label>
     </div>
   </div>
 

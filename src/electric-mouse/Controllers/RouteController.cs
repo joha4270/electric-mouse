@@ -68,6 +68,9 @@ namespace electric_mouse.Controllers
                 section.Routes.Add(new RouteSectionRelation { RouteSection = section, Route = route });
             }
 
+            RouteAttachment attachment = new RouteAttachment { VideoUrl = model.VideoUrl, Route = route, ID = route.ID };
+            _dbContext.RouteAttachments.Add(attachment);
+
             _dbContext.SaveChanges();
 
             return RedirectToAction(nameof(List), "Route");
