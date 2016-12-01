@@ -222,22 +222,9 @@ namespace electric_mouse.Controllers
                     DisplayName = info.Principal.FindFirstValue("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"),
                     UserName = info.ProviderKey,
                     AuthToken = tokenData["access_token"],
-                    AuthTokenExpiration = DateTime.Parse(tokenData["expires_at"])
+                    AuthTokenExpiration = DateTime.Parse(tokenData["expires_at"]),
+                    URLPath = await _fbapi.GetAvatarURL(info.ProviderKey)
                 };
-
-                try
-                {
-                    _logger.LogInformation("principial tokens starting enumeration");
-                    foreach (Claim VARIABLE in info.Principal.Claims)
-                    {
-
-                        _logger.LogCritical("princip = " + VARIABLE.Properties.ToJson() + ", " + VARIABLE.Value + ", " + VARIABLE.Type);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex.ToString());
-                }
 
                 IdentityResult identity = await _userManager.CreateAsync(user);
                 if(identity.Succeeded)
@@ -246,7 +233,7 @@ namespace electric_mouse.Controllers
                     if(identity.Succeeded)
                     {
                         identity = await _userManager.AddToRoleAsync(user, RoleSetup.Post);
-                        user.URLPath = await _fbapi.GetAvatarURL(user.FacebookID, user.AuthToken);
+                                                
                         if(identity.Succeeded)
                         {
                             await _signInManager.SignInAsync(user, isPersistent: false);

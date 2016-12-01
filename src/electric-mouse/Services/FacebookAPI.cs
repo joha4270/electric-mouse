@@ -36,15 +36,27 @@ namespace electric_mouse.Services
             return "Error fetching name from facebook";
         }
 
-        public async Task<string> GetAvatarURL(string userid, string notused)
+        public async Task<string> GetAvatarURL(string userid)
         {
-            HttpResponseMessage resp = await _client.GetAsync($"https://graph.facebook.com/v2.8/{userid}/picture");
-            if (resp.StatusCode == HttpStatusCode.Redirect )
-            {
-                return resp.Headers.Location.ToString();
-            }
+            HttpResponseMessage resp = await _client.GetAsync($"https://graph.facebook.com/v2.8/{userid}/picture?width=64&height=64&redirect=false");
 
-            _logger.LogError("Facebook avatar request returned bad status (not 302). Using error image. Responce = {resp}", resp);
+            if (resp.StatusCode == HttpStatusCode.OK)
+            {
+                string re = await resp.Content.ReadAsStringAsync();
+                dynamic d = Newtonsoft.Json.JsonConvert.DeserializeObject<dynamic>(re);
+                if (d.data != null)
+                {
+                    return d.data.url;
+                }
+                else
+                {
+                    _logger.LogError("Facebook avatar request returned error. Content = {resp}", re);
+                }
+            }
+            else
+            {
+                _logger.LogError("Facebook avatar request returned bad status (not 200). Using error image. Responce = {resp}", resp);
+            }
 
             return "/images/noavatar.jpg"; //TODO: load from config?
         }
@@ -54,7 +66,7 @@ namespace electric_mouse.Services
             if (user.AuthTokenExpiration > DateTime.Now)
             {
                 user.DisplayName = await GetDisplayName(user.FacebookID, user.AuthToken);
-                user.URLPath = await GetAvatarURL(user.FacebookID, user.AuthToken);
+                user.URLPath = await GetAvatarURL(user.FacebookID);
             }
         }
     }
