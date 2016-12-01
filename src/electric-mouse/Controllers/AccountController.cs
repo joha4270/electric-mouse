@@ -232,7 +232,7 @@ namespace electric_mouse.Controllers
                     identity = await _userManager.AddLoginAsync(user, info);
                     if(identity.Succeeded)
                     {
-                        identity = await _userManager.AddToRoleAsync(user, RoleSetup.Post);
+                        identity = await _userManager.AddToRoleAsync(user, RoleHandler.Post);
                                                 
                         if(identity.Succeeded)
                         {

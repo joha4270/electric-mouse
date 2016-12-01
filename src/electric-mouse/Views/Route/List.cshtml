@@ -1,6 +1,34 @@
+@model electric_mouse.Models.RouteViewModels.RouteListViewModel
+
+@* Difficulty Test, do not attempt to make it work yourself *@
+<div class="row" style="margin-top: 10px;">
+  <div class="col s8">
+    <a class="btn red" style="padding: 0 1rem;">
+      <input type="checkbox" class="filled-in" id="difficulty_red"/>
+      <label for="difficulty_red" style="color: #fff;">Red</label>
+    </a>
+    <a class="btn blue" style="padding: 0 1rem;">
+      <input type="checkbox" class="filled-in" id="difficulty_blue"/>
+      <label for="difficulty_blue" style="color: #fff;">Blue</label>
+    </a>
+  </div>
+
+  <div class="col s4">
+    <form class="nav-search">
+      <div class="input-field">
+        <i class="material-icons prefix" style="bottom: 8px;">search</i>
+        <input id="search" type="search" required>
+        <label for="search">Search</label>
+        <i class="material-icons">close</i>
+      </div>
+    </form>
+  </div>
+</div>
+
+@* Table *@
 <div class="row">
-<table class="table">
-  <thead>
+  <table class="table">
+    <thead>
     <tr>
       <th class="app_id">#</th>
       <th class="app_section">Section</th>
@@ -10,19 +38,63 @@
       <th class="app_date">Date</th>
       <th class="app_note">Note</th>
     </tr>
-  </thead>
-  <tbody>
+    </thead>
+    <tbody class="app_routetable">
+    @foreach (var item in Model.Routes)
+    {
+        int i = 0;
+        <tr data-id="@item.ID">
+          <td class="app_id">@item.RouteID</td>
+          <td class="app_section">
+            @foreach (var sec in item.Sections)
+            {
+                @* Lets make it pretty by doing comma seperation *@
+                i++;
+                if (i < item.Sections.Count)
+                {
+                    @:@sec.Name,
+                }
+                else
+                {
+                    @:@sec.Name
+                }
 
-  <tr style="cursor: pointer; cursor: hand;">
-    <td class="app_id">1</td>
-    <td class="app_section">A</td>
-    <td class="app_difficulty">Hvid</td>
-    <td class="app_color">Purple</td>
-    <td class="app_builder">Morten, Clare</td>
-    <td class="app_date">03-07-16</td>
-    <td class="app_note">Dummy text</td>
-  </tr>
+            }
+          </td>
+          <td class="app_difficulty">@item.Difficulty.Name</td>
+          <td class="app_color">@item.GripColour</td>
+          <td class="app_builder">Morten, Clare</td>
+          <td class="app_date">
+            @if (@item.Date != null)
+            {
+                @item.Date.Value.ToString("dd-MM-yy")
+            }
 
-  </tbody>
-</table>
+          </td>
+          <td class="app_note">@item.Note</td>
+        </tr>
+    }
+
+    </tbody>
+  </table>
 </div>
+
+<div class="fixed-action-btn">
+  <a class="btn-floating btn-large red" href="/route/create">
+    <i class="large material-icons">add</i>
+  </a>
+</div>
+@section scripts
+{
+    <script>
+        $('#search').keyup(function(){
+            table.search($(this).val()).draw();
+        });
+
+        $('tbody tr').click(function () {
+          var id = $(this).children('.app_id').text();
+          viewRoute(id);
+        });
+
+    </script>
+}

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using electric_mouse.Controllers;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
@@ -14,6 +15,7 @@ using electric_mouse.Data;
 using electric_mouse.Models;
 using electric_mouse.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.Options;
 
 namespace electric_mouse
@@ -43,8 +45,17 @@ namespace electric_mouse
         public void ConfigureServices(IServiceCollection services)
         {
             // Add framework services.
-            services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseSqlite(Configuration.GetConnectionString("DefaultConnection")));
+            //services.AddDbContext<ApplicationDbContext>(options =>
+            //    options.UseSqlite(Configuration.GetConnectionString("DefaultConnection")));
+
+            //services.AddDbContext<RouteContext>(options =>
+            //    options.UseSqlite(Configuration.GetConnectionString("DefaultConnection")));
+
+            services.AddEntityFramework()
+                .AddDbContext<ApplicationDbContext>(options =>
+                        options.UseSqlite(Configuration.GetConnectionString("DefaultConnection")));
+                /*.AddDbContext<RouteContext>(options =>
+                options.UseSqlite(Configuration.GetConnectionString("DefaultConnection")));*/
 
             services.AddIdentity<ApplicationUser, IdentityRole>()
                 .AddEntityFrameworkStores<ApplicationDbContext>()
@@ -79,7 +90,7 @@ namespace electric_mouse
             app.UseStaticFiles();
 
             app.UseIdentity();
-            RoleSetup.AddRoles(serviceProvider, RoleSetup.Admin, RoleSetup.Post);
+            RoleHandler.AddRoles(serviceProvider, RoleHandler.Admin, RoleHandler.Post);
 
             // Add external authentication middleware below. To configure them please see http://go.microsoft.com/fwlink/?LinkID=532715
             string[] conf = File.ReadAllLines("secrets.txt");
@@ -93,12 +104,14 @@ namespace electric_mouse
 
             app.UseMvc(routes =>
             {
+
                 routes.MapRoute(
-                    name: "default",
-                    template: "{controller=Home}/{action=Index}/{id?}");
-                routes.MapRoute(
-                    name: "route",
+                    name: "default", // route
                     template: "{controller=Route}/{action=List}/{id?}");
+                // Not sure if we'll need it though, nice as a test bench for now
+                routes.MapRoute(
+                    name: "home",
+                    template: "{controller=Home}/{action=Index}/{id?}");
             });
         }
     }

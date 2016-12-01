@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace electric_mouse.Services
 {
-    public static class RoleSetup
+    public static class RoleHandler
     {
         public const string Admin = "Administrator";
         public const string Post = "Posting";
