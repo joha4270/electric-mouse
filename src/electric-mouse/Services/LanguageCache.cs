@@ -77,7 +77,7 @@ namespace electric_mouse
             return result;
         }
 
-        public object GetContainer(string lang)
+        public object GetLocalizationData(string lang)
         {
             return new LocalizationDataModel(lang, AllLanguages, LoadLanguage(lang));
         }

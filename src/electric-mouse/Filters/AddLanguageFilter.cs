@@ -35,7 +35,7 @@ namespace electric_mouse.Filters
                     lang = _defaultLanguage;
                 }
 
-                controller.ViewBag.Language = _cache.GetContainer(lang);
+                controller.ViewBag.Language = _cache.GetLocalizationData(lang);
             }
         }
 
