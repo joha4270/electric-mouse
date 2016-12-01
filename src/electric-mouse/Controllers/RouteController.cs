@@ -12,6 +12,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Authorization;
+using electric_mouse.Services;
 
 namespace electric_mouse.Controllers
 {
@@ -219,6 +221,8 @@ namespace electric_mouse.Controllers
                     .Select(x => x.RouteSection.RouteHallID)
                     .First();
 
+                List<int> selectedSections = _dbContext.RouteSectionRelations.Where(x => x.RouteID == id).Select(x => x.RouteSectionID).ToList();
+
                 RouteCreateViewModel model = new RouteCreateViewModel
                 {
                     Halls = routeHalls.ToList(),
@@ -229,30 +233,62 @@ namespace electric_mouse.Controllers
                     Note = route.Note,
                     RouteDifficultyID = route.RouteDifficultyID,
                     RouteHallID = hall,
-                    RouteID = route.ID
+                    RouteID = route.RouteID,
+                    UpdateID = id,
+                    RouteSectionID = selectedSections
                 };
 
-
-                ViewBag.Update = true;
                 return View("Create", model);
             }
             HttpContext.Response.StatusCode = (int) HttpStatusCode.Forbidden;
             return Content("You don't have access to this action. 403 Forbidden");
         }
 
-        //TODO: UNCOMMENT [Authorize(Roles=RoleSetup.Post)]
+        //[Authorize(Roles = RoleHandler.Post)]
         [HttpPost]
         public async Task<IActionResult> Update(RouteCreateViewModel model)
         {
+            
             //Cannot be null as Role requires user being logged in
             ApplicationUser user = await _userManager.GetUserAsync(User);
             if (
-                //await _dbContext.RouteUserRelations.AnyAsync(x => x.RouteRefId == id && x.ApplicationUserRefId == user.Id) ||
-                await _userManager.IsInRoleAsync(user, "Administrator"))
+                ModelState.IsValid && (
+                await _dbContext.RouteUserRelations.AnyAsync(x => x.RouteRefId == model.UpdateID && x.ApplicationUserRefId == user.Id) ||
+                await _userManager.IsInRoleAsync(user, "Administrator")))
             {
-                //_logger.LogInformation("Updating route with id = {id}",id);
+                Route route = await _dbContext.Routes.FirstOrDefaultAsync(x => x.ID == model.UpdateID);
 
-                //todo: refresh route information with existing id
+                route.RouteID = model.RouteID;
+                route.Note = model.Note;
+                route.GripColour = model.GripColor;
+                route.RouteDifficultyID = model.RouteDifficultyID;
+                route.Date = DateTime.ParseExact(model.Date, "dd-MM-yyyy", CultureInfo.InvariantCulture);
+
+                {
+                    List<RouteSectionRelation> inDb = await _dbContext.RouteSectionRelations.Where(x => x.RouteID == model.UpdateID).ToListAsync();
+
+                    List<RouteSectionRelation> toRemove = inDb.Where(x => !model.RouteSectionID.Contains(x.RouteSectionID)).ToList();
+                    List<RouteSectionRelation> toKeep = inDb.Where(x => model.RouteSectionID.Contains(x.RouteSectionID)).ToList(); ;
+                    List<int> toAddInt = model.RouteSectionID.Where(x => !inDb.Any(y => y.RouteSectionID == x)).ToList();
+                    List<RouteSectionRelation> toAdd = toAddInt.Select(x => new RouteSectionRelation { Route = route, RouteSectionID = x }).ToList();
+
+
+                    _dbContext.RouteSectionRelations.RemoveRange(toRemove);
+                    _dbContext.RouteSectionRelations.AddRange(toAdd);
+                }
+                //{
+                //    //TODO: once we got users in model we need to fix this code. Read only code i'm afraid, shout at johannes
+                //    List<RouteApplicationUserRelation> inDb = _dbContext.RouteUserRelations.Where(x => x.RouteRefId == model.UpdateID).ToList();
+                //    List<RouteApplicationUserRelation> toRemove = inDb.Where(x => !route.Sections.Contains(x.RouteSection)).ToList();
+                //    List<RouteApplicationUserRelation> toKeep = inDb.Where(x => route.Sections.Contains(x.RouteSection)).ToList(); ;
+                //    List<RouteApplicationUserRelation> toAdd = model.Sections.Where(x => !inDb.Any(y => y.RouteSection == x)).Select(r => new RouteSectionRelation { Route = route, RouteSection = r }).ToList();
+
+                //    _dbContext.RouteUserRelations.RemoveRange(toRemove);
+                //    _dbContext.RouteUserRelations.AddRange(toAdd);
+                //}
+
+                await _dbContext.SaveChangesAsync();
+                return RedirectToAction("List");
             }
 
             HttpContext.Response.StatusCode = (int) HttpStatusCode.Forbidden;

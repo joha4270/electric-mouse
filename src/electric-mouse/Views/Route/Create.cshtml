@@ -1,6 +1,7 @@
 ﻿@model electric_mouse.Models.RouteViewModels.RouteCreateViewModel
 <h2>Stuff</h2>
-<form asp-controller="Route" asp-action="@(ViewBag.Update != null && ViewBag.Update == true ? "Update" : "Create")" method="post" class="col s12">
+<form asp-controller="Route" asp-action="@(Model.UpdateID < 0 ? "Create" : "Update")" method="post" class="col s12">
+    <input asp-for="UpdateID" value="@Model.UpdateID" type="hidden" />
   <div class="row">
     <div class="input-field col s2">
       <input type="number" min="1" name="RouteID" value="@Model.RouteID" />
@@ -8,7 +9,10 @@
     </div>
     <div class="input-field col s10">
       <select asp-for="RouteHallID" asp-items="@Model.Halls.Select(h => new SelectListItem {Text = h.Name, Value = h.RouteHallID.ToString() })" id="hallSelect">
+@if (Model.UpdateID < 0)
+{
         <option value="" disabled selected>Select a Hall</option>
+}
       </select>
       <label>Hal</label>
     </div>
@@ -16,12 +20,12 @@
 
   <div class="row">
     <div class="input-field col s6">
-      <select name="RouteDifficultyID">
-        @foreach (var difficulty in Model.Difficulties)
-        {
-            <option value="@difficulty.RouteDifficultyID">@difficulty.Name</option>
-        }
-      </select>
+        <select asp-for="RouteDifficultyID" asp-items="@Model.Difficulties.Select(d => new SelectListItem { Text = d.Name, Value = d.RouteDifficultyID.ToString() }) ">
+            @if (Model.UpdateID < 0)
+            {
+            <option value="" disabled selected>Select a Difficulity</option>
+            }
+        </select>
       <label>Difficulty</label>
     </div>
     <div class="input-field col s6">
@@ -34,7 +38,7 @@
 
   <div class="row">
     <div class="input-field col s12">
-      <select name="RouteSectionID" id="SectionSelect" multiple>
+      <select asp-for="RouteSectionID" asp-items="@(Model.UpdateID > 0 ? Model.Sections.Where(x => x.RouteHallID == Model.RouteHallID).Select(s => new SelectListItem { Text = s.Name, Value = s.RouteSectionID.ToString() }) : new SelectListItem[] { })" id="SectionSelect" multiple>
         <option value="" disabled selected>No Sections Found</option>
       </select>
       <label for="sections">Section</label>

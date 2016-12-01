@@ -20,6 +20,8 @@ namespace electric_mouse.Models.RouteViewModels
         /// </summary>
         public IList<RouteSection> Sections { get; set; }
 
+        public int UpdateID { get; set; } = -1;
+
 
         public int RouteID { get; set; }
         public int RouteHallID { get; set; }

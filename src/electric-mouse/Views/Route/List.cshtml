@@ -92,7 +92,7 @@
         });
 
         $('tbody tr').click(function () {
-          var id = $(this).children('.app_id').text();
+          var id = this.attributes['data-id'].value;
           viewRoute(id);
         });
 
