@@ -77,22 +77,31 @@ namespace electric_mouse.Controllers
             _dbContext.RouteAttachments.Add(attachment);
 
             // Add the image(s) attachment to the database
+            AddImageAttachmentsToDatabase(model.Images, attachment);
+
+            _dbContext.SaveChanges();
+
+            return RedirectToAction(nameof(List), "Route");
+        }
+
+        private async void AddImageAttachmentsToDatabase(ICollection<IFormFile> images, RouteAttachment attachment)
+        {
             // generate a random file name for all the images that are being uploaded
-            string[] imageFileNames = model.Images.Select(image => GetRandomFileNameWithOriginalExtension(image.FileName)).ToArray();
+            string[] imageFileNames = images.Select(image => GetRandomFileNameWithOriginalExtension(image.FileName)).ToArray();
             // get all the relative paths (uploads\<filename>)
             string[] relativeImagePaths = imageFileNames.Select(filename => $"uploads\\{filename}").ToArray();
             // get the full path (c:\...\wwwroot\uploads\<filename)
             string[] fullImagePaths = relativeImagePaths.Select(path => Path.Combine(_environment.WebRootPath, path)).ToArray();
             int i = 0;
 
-            foreach (IFormFile image in model.Images)
+            foreach (IFormFile image in images)
             {
                 if (image.Length < 0 && image.Length > ConvertMegabytesToBytes(5)) // image size should not exceed 5 megabytes
                     continue; // skip the iteration; dont upload the image
 
                 if (image.ContentType.Contains("image") == false)
                     continue; // if it isnt an image being uploaded; skip it!
-                
+
                 using (FileStream fileStream = new FileStream(fullImagePaths[i], FileMode.Create))
                 {
                     _dbContext.AttachmentPathRelations.Add(new AttachmentPathRelation
@@ -105,10 +114,6 @@ namespace electric_mouse.Controllers
                 }
                 i++;
             }
-
-            _dbContext.SaveChanges();
-
-            return RedirectToAction(nameof(List), "Route");
         }
 
         #region These should probably be moved (can be made extension methods)
