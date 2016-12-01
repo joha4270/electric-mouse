@@ -21,13 +21,21 @@ namespace electric_mouse.Data.Migrations
 
                     b.Property<int>("AccessFailedCount");
 
+                    b.Property<string>("AuthToken");
+
+                    b.Property<DateTime>("AuthTokenExpiration");
+
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken();
+
+                    b.Property<string>("DisplayName");
 
                     b.Property<string>("Email")
                         .HasAnnotation("MaxLength", 256);
 
                     b.Property<bool>("EmailConfirmed");
+
+                    b.Property<string>("FacebookID");
 
                     b.Property<bool>("LockoutEnabled");
 
@@ -48,6 +56,8 @@ namespace electric_mouse.Data.Migrations
                     b.Property<string>("SecurityStamp");
 
                     b.Property<bool>("TwoFactorEnabled");
+
+                    b.Property<string>("URLPath");
 
                     b.Property<string>("UserName")
                         .HasAnnotation("MaxLength", 256);
