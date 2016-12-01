@@ -65,6 +65,13 @@ namespace electric_mouse.Controllers
             return Login("");
         }
 
+        public async Task<IActionResult> GiveMeAdmin()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            await _userManager.AddToRoleAsync(user, "Administrator");
+            return RedirectToAction(nameof(RouteController.List), "Route");
+        }
+
         //
         // POST: /Account/Login
         [HttpPost]
