@@ -91,7 +91,6 @@ namespace electric_mouse.Controllers
             ApplicationUser admin = await _manager.GetUserAsync(User);
             if (await _manager.IsInRoleAsync(admin, Services.RoleHandler.Admin))
             {
-                
                 var user = _dbContext.Users.First(h => h.Id == model.ID);
                 await _manager.DeleteAsync(user);
                 _dbContext.SaveChanges();

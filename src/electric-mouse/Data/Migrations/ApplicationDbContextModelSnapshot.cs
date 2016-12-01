@@ -47,6 +47,8 @@ namespace electric_mouse.Data.Migrations
 
                     b.Property<string>("SecurityStamp");
 
+                    b.Property<int>("State");
+
                     b.Property<bool>("TwoFactorEnabled");
 
                     b.Property<string>("UserName")

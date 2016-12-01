@@ -15,6 +15,8 @@
   <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/materialize/0.97.7/css/materialize.min.css" />
   <link rel="stylesheet" type="text/css" href="//cdn.datatables.net/1.10.12/css/jquery.dataTables.min.css" />
   <link rel="stylesheet" type="text/css" href="/css/layout.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.theme.min.css" />
   <link rel="manifest" href="/manifest.json">
 </head>
 <body>
@@ -40,14 +42,16 @@
         <a href="javascript:void(0)" data-activates="mobile-nav" class="button-collapse"><i class="material-icons">menu</i></a>
 
           <ul class="right hide-on-med-and-down">
-
-              @if (true @*Add admin logic here*@)
+              @if (SignInManager.IsSignedIn(User))
               {
-                   <li><a href="/user/list"><i class="material-icons left">people</i>Users</a></li>
-                   <li><a href="/hall/create"><i class="material-icons left">room</i>Halls</a></li>
+                    ApplicationUser AppUser = await @UserManager.GetUserAsync(User);
+
+                    if (await UserManager.IsInRoleAsync(AppUser, electric_mouse.Services.RoleHandler.Admin))
+                    {
+                        <li><a href="/user/list"><i class="material-icons left">people</i>Users</a></li>
+                        <li><a href="/hall/create"><i class="material-icons left">room</i>Halls</a></li>
+                    }
               }
-
-
               
               <li><a href="/route"><img src="/images/climber.svg" class="left"/>@*<i class="material-icons left">place</i>*@Routes</a></li>
 
@@ -103,6 +107,7 @@
 <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/materialize/0.97.7/js/materialize.min.js"></script>
 
 <script type="text/javascript" src="//cdn.datatables.net/1.10.12/js/jquery.dataTables.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
 <script type="text/javascript" src="/js/code.js"></script>
 @RenderSection("scripts", required: false)
 </html>
