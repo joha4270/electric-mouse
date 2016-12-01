@@ -1,5 +1,5 @@
 ﻿@model electric_mouse.Models.UserViewModels.UserListViewModel
-s
+@inject UserManager<ApplicationUser> UserManager
 <h2>User View</h2>
 
 
@@ -11,73 +11,55 @@ s
                     <th class="app_Name">Name</th>
                     <th>User Status</th>
                     <th></th>
+                    <th></th>
                 </tr>
             </thead>
             <tbody>
                 @foreach (var item in Model.Users)
                 {
+
                     <tr>
-                        <td>Kurt@*@item.Name*@</td>
-                        @if (false@*item.State > 1*@)
+                        <td>@item.UserName</td> @*TODO: skal ændres til DisplayName*@
+                        @if (await UserManager.IsInRoleAsync(item, electric_mouse.Services.RoleHandler.Admin))
                         {
                             <td>Administrator</td>
                             <td>
-                                <button type="submit" class="btn waves-effect waves-light red right" disabled>Promote to Admin</button>
+                                
+                                <form asp-controller="User" asp-action="DemoteAdmin" method="post">
+                                    <button type="submit" class="btn waves-effect waves-light red right">Demote to Member</button>
+                                    <input type="hidden" name="ID" value="@item.Id" />
+                                </form>
+
                                 <button type="submit" class="btn waves-effect waves-light red right" disabled>Ban</button>
                             </td>
                         }
-                        else if (false@*item.State > 0*@)
+                        else if (await UserManager.IsInRoleAsync(item, electric_mouse.Services.RoleHandler.Post))
                         {
                             <td>Active</td>
                             <td>
-                                <form asp-controller="User" asp-action="Promote" method="post">
+                                <form asp-controller="User" asp-action="PromoteMember" method="post">
                                     <button type="submit" class="btn waves-effect waves-light red right">Promote to Admin</button>
-                                    @*<input type="hidden" name="ID" value="@item.ID"/>
-                                    <input type="hidden" name="State" value="@item.State"/>
-                                    Add admin ID as well
-                                    *@
+                                    <input type="hidden" name="ID" value="@item.Id"/>
+
                                 </form>
-                                <form asp-controller="User" asp-action="Demote" method="post">
+                                <form asp-controller="User" asp-action="Ban" method="post">
                                     <button type="submit" class="btn waves-effect waves-light red right">Ban</button>
-                                    @*<input type="hidden" name="ID" value="@item.ID"/>
-                                    <input type="hidden" name="State" value="@item.State"/>
-                                    Add admin ID as well
-                                    *@
+                                    <input type="hidden" name="ID" value="@item.Id" />
                                 </form>
                             </td>
                         }
-                        else
+                        else 
                         {
                             <td>Banned</td>
                             <td>
                                 <button type="submit" class="btn waves-effect waves-light red right" disabled>Promote to Admin</button>
-                                <form asp-controller="User" asp-action="Promote" method="post">
+                                <form asp-controller="User" asp-action="Unban" method="post">
                                     <button type="submit" class="btn waves-effect waves-light red right">Unban</button>
-                                    @*<input type="hidden" name="ID" value="@item.ID"/>
-                                    <input type="hidden" name="State" value="@item.State"/>
-                                    Add admin ID as well
-                                    *@
+                                    <input type="hidden" name="ID" value="@item.Id"/>
                                 </form>
                             </td>
                         }
 
-                        @*
-                            
-                            <td>
-                                <form asp-controller="Hall" asp-action="Delete" method="post">
-                                    @if (item.Sections.Count > 0)
-                                    {
-                                        <button type="submit" class="btn waves-effect waves-light red right" disabled>Delete</button>
-                                    }
-                                    else
-                                    {
-                                        <button type="submit" class="btn waves-effect waves-light red right">Delete</button>
-                                    }
-
-                                    <input type="hidden" name="ID" value="@item.RouteHallID"/>
-                                </form>
-                            </td>
-                            *@
                     </tr>
                 }
             </tbody>
