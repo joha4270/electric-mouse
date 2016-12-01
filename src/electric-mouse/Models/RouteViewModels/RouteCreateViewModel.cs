@@ -11,7 +11,7 @@ namespace electric_mouse.Models.RouteViewModels
 
         public int RouteID { get; set; }
         public int RouteHallID { get; set; }
-        public int RouteSectionID { get; set; }
+        public IList<int> RouteSectionID { get; set; }
         public int RouteDifficultyID { get; set; }
         public string Date { get; set; }
         public string GripColor { get; set; }
