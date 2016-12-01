@@ -1,0 +1,85 @@
+﻿@model electric_mouse.Models.UserViewModels.UserListViewModel
+@inject UserManager<ApplicationUser> UserManager
+<h2>User View</h2>
+
+
+<div class="col s12">
+    <div class="row">
+        <table class="table">
+            <thead>
+            <tr>
+                <th class="app_Name">Name</th>
+                <th>User Status</th>
+                <th></th>
+            </tr>
+            </thead>
+            <tbody>
+            @foreach (var item in Model.Users)
+            {
+
+                <tr>
+                    <td>@item.UserName</td> @*TODO: skal ændres til DisplayName*@
+                    @if (await UserManager.IsInRoleAsync(item, electric_mouse.Services.RoleHandler.Admin))
+                    {
+                        <td>Administrator</td>
+                        <td>
+
+                            <form asp-controller="User" asp-action="DemoteAdmin" method="post">
+                                <button type="submit" class="btn waves-effect waves-light red right">Demote to Member</button>
+                                <input type="hidden" name="ID" value="@item.Id"/>
+                            </form>
+
+                            <button type="submit" class="btn waves-effect waves-light red right" disabled>Ban</button>
+                        </td>
+                    }
+                    else if (await UserManager.IsInRoleAsync(item, electric_mouse.Services.RoleHandler.Post))
+                    {
+                        <td>Member</td>
+                        <td>
+                            <form asp-controller="User" asp-action="PromoteMember" method="post">
+                                <button type="submit" class="btn waves-effect waves-light red right">Promote to Admin</button>
+                                <input type="hidden" name="ID" value="@item.Id"/>
+
+                            </form>
+                            <form asp-controller="User" asp-action="Ban" method="post">
+                                <button type="submit" class="btn waves-effect waves-light red right">Ban</button>
+                                <input type="hidden" name="ID" value="@item.Id"/>
+                            </form>
+                            <button class="btn waves-effect waves-light red right" onclick="Alert('@item.Id')">Delete</button>
+                        </td>
+                    }
+                    else
+                    {
+                        <td>Banned</td>
+                        <td>
+                            <button type="submit" class="btn waves-effect waves-light red right" disabled>Promote to Admin</button>
+                            <form asp-controller="User" asp-action="Unban" method="post">
+                                <button type="submit" class="btn waves-effect waves-light red right">Unban</button>
+                                <input type="hidden" name="ID" value="@item.Id"/>
+                            </form>
+                            <button class="btn waves-effect waves-light red right" onclick="Alert('@item.Id')">Delete</button>
+                        </td>
+                    }
+
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div id="dialog" title="Delete member" style="display: none;">
+    <p>Are you sure you want to delete this member? The user will have to recreate his/her account.</p>
+    <form asp-controller="User" asp-action="Delete" method="post">
+        <button type="submit" class="btn waves-effect waves-light red right">Delete</button>
+        <input id="dialog_id" type="hidden" name="ID" value="1" />
+    </form>
+</div>
+
+<script>
+    function Alert (id)
+    {
+        $("#dialog_id").val(id);
+        $("#dialog").dialog();
+    }
+</script>

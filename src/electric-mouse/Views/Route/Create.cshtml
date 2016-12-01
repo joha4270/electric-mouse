@@ -1,0 +1,112 @@
+﻿@model electric_mouse.Models.RouteViewModels.RouteCreateViewModel
+<h2>Stuff</h2>
+<form asp-controller="Route" asp-action="@(Model.UpdateID < 0 ? "Create" : "Update")" method="post" class="col s12">
+    <input asp-for="UpdateID" value="@Model.UpdateID" type="hidden" />
+  <div class="row">
+    <div class="input-field col s2">
+      <input type="number" min="1" name="RouteID" value="@Model.RouteID" />
+      <label for="id">Route ID</label>
+    </div>
+    <div class="input-field col s10">
+      <select asp-for="RouteHallID" asp-items="@Model.Halls.Select(h => new SelectListItem {Text = h.Name, Value = h.RouteHallID.ToString() })" id="hallSelect">
+@if (Model.UpdateID < 0)
+{
+        <option value="" disabled selected>Select a Hall</option>
+}
+      </select>
+      <label>Hal</label>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="input-field col s6">
+        <select asp-for="RouteDifficultyID" asp-items="@Model.Difficulties.Select(d => new SelectListItem { Text = d.Name, Value = d.RouteDifficultyID.ToString() }) ">
+            @if (Model.UpdateID < 0)
+            {
+            <option value="" disabled selected>Select a Difficulity</option>
+            }
+        </select>
+      <label>Difficulty</label>
+    </div>
+    <div class="input-field col s6">
+      <select>
+        <option value="1">Boulder</option>
+      </select>
+      <label>Route Type</label>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="input-field col s12">
+      <select asp-for="RouteSectionID" asp-items="@(Model.UpdateID > 0 ? Model.Sections.Where(x => x.RouteHallID == Model.RouteHallID).Select(s => new SelectListItem { Text = s.Name, Value = s.RouteSectionID.ToString() }) : new SelectListItem[] { })" id="SectionSelect" multiple>
+        <option value="" disabled selected>No Sections Found</option>
+      </select>
+      <label for="sections">Section</label>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="input-field col s12">
+      <label for="date">Date</label>
+      <input type="date" class="datepicker" name="Date" value="@Model.Date">
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="input-field col s12">
+      <input id="grip_color" type="text" name="GripColor" value="@Model.GripColor">
+      <label for="grip_color">Grip Color</label>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col s12">
+      <p>Image & Video row</p>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="input-field col s12">
+      <textarea id="textarea1" class="materialize-textarea" name="Note">@Model.Note</textarea>
+      <label for="textarea1">Note</label>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col s12">
+      <button class="btn waves-effect waves-light red right" type="submit">
+        Create Route
+        <i class="material-icons right">send</i>
+      </button>
+    </div>
+  </div>
+</form>
+
+@section scripts {
+
+<script>
+    var sections = {
+        @foreach (var hall in Model.Halls)
+        {
+            @Html.Raw("'")@hall.RouteHallID@Html.Raw("': {")
+             foreach (var s in Model.Sections.Where(i => i.RouteHallID == hall.RouteHallID))
+             {
+                 @Html.Raw("'")@s.RouteSectionID@Html.Raw("': '")@s.Name@Html.Raw("',")
+             }
+            @Html.Raw("},\n")
+        }
+    };
+
+    $("#hallSelect").on('change', function() {
+        var data = "";
+        var parent = $(this).val();
+        $.each(sections[parent], function(key, val) {
+            data += '<option value="' + key + '">' + val + '</option>';
+        });
+        if(data == "") {data = '<option value="" disabled selected>No Sections Found</option>'}
+        $("#SectionSelect").material_select("destroy");
+        $("#SectionSelect").html(data);
+        $("#SectionSelect").material_select();
+    });
+</script>
+}

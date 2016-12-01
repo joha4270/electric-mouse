@@ -8,9 +8,10 @@ using electric_mouse.Data;
 namespace electric_mouse.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20161130132203_testMig")]
+    partial class testMig
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
             modelBuilder
                 .HasAnnotation("ProductVersion", "1.0.0-rtm-21431");
@@ -21,21 +22,13 @@ namespace electric_mouse.Data.Migrations
 
                     b.Property<int>("AccessFailedCount");
 
-                    b.Property<string>("AuthToken");
-
-                    b.Property<DateTime>("AuthTokenExpiration");
-
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken();
-
-                    b.Property<string>("DisplayName");
 
                     b.Property<string>("Email")
                         .HasAnnotation("MaxLength", 256);
 
                     b.Property<bool>("EmailConfirmed");
-
-                    b.Property<string>("FacebookID");
 
                     b.Property<bool>("LockoutEnabled");
 
@@ -55,9 +48,9 @@ namespace electric_mouse.Data.Migrations
 
                     b.Property<string>("SecurityStamp");
 
-                    b.Property<bool>("TwoFactorEnabled");
+                    b.Property<int>("State");
 
-                    b.Property<string>("URLPath");
+                    b.Property<bool>("TwoFactorEnabled");
 
                     b.Property<string>("UserName")
                         .HasAnnotation("MaxLength", 256);
@@ -79,9 +72,7 @@ namespace electric_mouse.Data.Migrations
                     b.Property<int>("ID")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<bool>("Archived");
-
-                    b.Property<DateTime>("Date");
+                    b.Property<DateTime?>("Date");
 
                     b.Property<string>("GripColour");
 
@@ -96,21 +87,6 @@ namespace electric_mouse.Data.Migrations
                     b.HasIndex("RouteDifficultyID");
 
                     b.ToTable("Routes");
-                });
-
-            modelBuilder.Entity("electric_mouse.Models.RouteApplicationUserRelation", b =>
-                {
-                    b.Property<string>("ApplicationUserRefId");
-
-                    b.Property<int>("RouteRefId");
-
-                    b.HasKey("ApplicationUserRefId", "RouteRefId");
-
-                    b.HasIndex("ApplicationUserRefId");
-
-                    b.HasIndex("RouteRefId");
-
-                    b.ToTable("RouteUserRelations");
                 });
 
             modelBuilder.Entity("electric_mouse.Models.RouteItems.RouteDifficulty", b =>
@@ -283,19 +259,6 @@ namespace electric_mouse.Data.Migrations
                     b.HasOne("electric_mouse.Models.RouteItems.RouteDifficulty", "Difficulty")
                         .WithMany()
                         .HasForeignKey("RouteDifficultyID")
-                        .OnDelete(DeleteBehavior.Cascade);
-                });
-
-            modelBuilder.Entity("electric_mouse.Models.RouteApplicationUserRelation", b =>
-                {
-                    b.HasOne("electric_mouse.Models.ApplicationUser", "User")
-                        .WithMany("RoutesCreated")
-                        .HasForeignKey("ApplicationUserRefId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
-                    b.HasOne("electric_mouse.Models.Route", "Route")
-                        .WithMany("Creators")
-                        .HasForeignKey("RouteRefId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
