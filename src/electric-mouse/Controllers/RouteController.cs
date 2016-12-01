@@ -206,17 +206,23 @@ namespace electric_mouse.Controllers
                 Route route = await _dbContext.Routes.FirstOrDefaultAsync(x => x.ID == id);
                 IQueryable<RouteHall> routeHalls = _dbContext.RouteHalls.Include(s => s.Sections);
                 IQueryable<RouteSection> routeSections = _dbContext.RouteSections;
+                int hall = _dbContext
+                    .RouteSectionRelations
+                    .Where(rel => rel.RouteID == route.ID)
+                    .Include(rel => rel.RouteSection)
+                    .Select(x => x.RouteSection.RouteHallID)
+                    .First();
 
                 RouteCreateViewModel model = new RouteCreateViewModel
                 {
                     Halls = routeHalls.ToList(),
                     Difficulties = _dbContext.RouteDifficulties.ToList(),
                     Sections = routeSections.ToList(),
-                    Date = route.Date.ToString("dd-MM-yy"),
+                    Date = route.Date.ToString("yyyy-MM-dd"),
                     GripColor = route.GripColour,
                     Note = route.Note,
                     RouteDifficultyID = route.RouteDifficultyID,
-                    //todo: hall RouteHallID =
+                    RouteHallID = hall,
                     RouteID = route.ID
                 };
 

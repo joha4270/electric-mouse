@@ -3,16 +3,12 @@
 <form asp-controller="Route" asp-action="@(ViewBag.Update != null && ViewBag.Update == true ? "Update" : "Create")" method="post" class="col s12">
   <div class="row">
     <div class="input-field col s2">
-      <input type="number" min="1" name="RouteID" />
+      <input type="number" min="1" name="RouteID" value="@Model.RouteID" />
       <label for="id">Route ID</label>
     </div>
     <div class="input-field col s10">
-      <select name="hallSelect" id="hallSelect">
+      <select asp-for="RouteHallID" asp-items="@Model.Halls.Select(h => new SelectListItem {Text = h.Name, Value = h.RouteHallID.ToString() })" id="hallSelect">
         <option value="" disabled selected>Select a Hall</option>
-        @foreach (var hall in Model.Halls)
-        {
-            <option value="@hall.RouteHallID">@hall.Name</option>
-        }
       </select>
       <label>Hal</label>
     </div>
@@ -48,13 +44,13 @@
   <div class="row">
     <div class="input-field col s12">
       <label for="date">Date</label>
-      <input type="date" class="datepicker" name="Date">
+      <input type="date" class="datepicker" name="Date" value="@Model.Date">
     </div>
   </div>
 
   <div class="row">
     <div class="input-field col s12">
-      <input id="grip_color" type="text" name="GripColor">
+      <input id="grip_color" type="text" name="GripColor" value="@Model.GripColor">
       <label for="grip_color">Grip Color</label>
     </div>
   </div>
@@ -67,7 +63,7 @@
 
   <div class="row">
     <div class="input-field col s12">
-      <textarea id="textarea1" class="materialize-textarea" name="Note"></textarea>
+      <textarea id="textarea1" class="materialize-textarea" name="Note">@Model.Note</textarea>
       <label for="textarea1">Note</label>
     </div>
   </div>
