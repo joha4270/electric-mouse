@@ -74,6 +74,103 @@ namespace electric_mouse.Data.Migrations
                     b.ToTable("AspNetUsers");
                 });
 
+            modelBuilder.Entity("electric_mouse.Models.Route", b =>
+                {
+                    b.Property<int>("ID")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<bool>("Archived");
+
+                    b.Property<DateTime>("Date");
+
+                    b.Property<string>("GripColour");
+
+                    b.Property<string>("Note");
+
+                    b.Property<int>("RouteDifficultyID");
+
+                    b.Property<int>("RouteID");
+
+                    b.HasKey("ID");
+
+                    b.HasIndex("RouteDifficultyID");
+
+                    b.ToTable("Routes");
+                });
+
+            modelBuilder.Entity("electric_mouse.Models.RouteApplicationUserRelation", b =>
+                {
+                    b.Property<string>("ApplicationUserRefId");
+
+                    b.Property<int>("RouteRefId");
+
+                    b.HasKey("ApplicationUserRefId", "RouteRefId");
+
+                    b.HasIndex("ApplicationUserRefId");
+
+                    b.HasIndex("RouteRefId");
+
+                    b.ToTable("RouteUserRelations");
+                });
+
+            modelBuilder.Entity("electric_mouse.Models.RouteItems.RouteDifficulty", b =>
+                {
+                    b.Property<int>("RouteDifficultyID")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<string>("Name");
+
+                    b.HasKey("RouteDifficultyID");
+
+                    b.ToTable("Difficulties");
+                });
+
+            modelBuilder.Entity("electric_mouse.Models.RouteItems.RouteHall", b =>
+                {
+                    b.Property<int>("RouteHallID")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<string>("Name");
+
+                    b.HasKey("RouteHallID");
+
+                    b.ToTable("Halls");
+                });
+
+            modelBuilder.Entity("electric_mouse.Models.RouteItems.RouteSection", b =>
+                {
+                    b.Property<int>("RouteSectionID")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<string>("Name");
+
+                    b.Property<int>("RouteHallID");
+
+                    b.HasKey("RouteSectionID");
+
+                    b.HasIndex("RouteHallID");
+
+                    b.ToTable("Sections");
+                });
+
+            modelBuilder.Entity("electric_mouse.Models.RouteSectionRelation", b =>
+                {
+                    b.Property<int>("RouteSectionRelationID")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<int>("RouteID");
+
+                    b.Property<int>("RouteSectionID");
+
+                    b.HasKey("RouteSectionRelationID");
+
+                    b.HasIndex("RouteID");
+
+                    b.HasIndex("RouteSectionID");
+
+                    b.ToTable("RouteSectionRelations");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityRole", b =>
                 {
                     b.Property<string>("Id");
@@ -179,6 +276,48 @@ namespace electric_mouse.Data.Migrations
                     b.HasKey("UserId", "LoginProvider", "Name");
 
                     b.ToTable("AspNetUserTokens");
+                });
+
+            modelBuilder.Entity("electric_mouse.Models.Route", b =>
+                {
+                    b.HasOne("electric_mouse.Models.RouteItems.RouteDifficulty", "Difficulty")
+                        .WithMany()
+                        .HasForeignKey("RouteDifficultyID")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("electric_mouse.Models.RouteApplicationUserRelation", b =>
+                {
+                    b.HasOne("electric_mouse.Models.ApplicationUser", "User")
+                        .WithMany("RoutesCreated")
+                        .HasForeignKey("ApplicationUserRefId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("electric_mouse.Models.Route", "Route")
+                        .WithMany("Creators")
+                        .HasForeignKey("RouteRefId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("electric_mouse.Models.RouteItems.RouteSection", b =>
+                {
+                    b.HasOne("electric_mouse.Models.RouteItems.RouteHall", "RouteHall")
+                        .WithMany("Sections")
+                        .HasForeignKey("RouteHallID")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("electric_mouse.Models.RouteSectionRelation", b =>
+                {
+                    b.HasOne("electric_mouse.Models.Route", "Route")
+                        .WithMany()
+                        .HasForeignKey("RouteID")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("electric_mouse.Models.RouteItems.RouteSection", "RouteSection")
+                        .WithMany("Routes")
+                        .HasForeignKey("RouteSectionID")
+                        .OnDelete(DeleteBehavior.Cascade);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityRoleClaim<string>", b =>
