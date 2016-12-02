@@ -5,6 +5,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Threading.Tasks;
 using electric_mouse.Models.RouteItems;
+using Models;
 
 namespace electric_mouse.Models
 {
@@ -87,5 +88,7 @@ namespace electric_mouse.Models
         //    Sections?.Add(section);
         //}
         public bool Archived { get; set; }
+
+        public RouteType Type { get; set; }
     }
 }

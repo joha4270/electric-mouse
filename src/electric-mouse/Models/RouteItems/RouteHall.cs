@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using System.ComponentModel.DataAnnotations.Schema;
+using Models;
 
 namespace electric_mouse.Models.RouteItems
 {/// <summary>
@@ -23,6 +24,8 @@ namespace electric_mouse.Models.RouteItems
         public int RouteHallID { get; set; }
 
         public string Name { get; set; }
+
+        public RouteType? ExpectedType { get; set; }
 
         public virtual ICollection<RouteSection> Sections { get; set; }
 
