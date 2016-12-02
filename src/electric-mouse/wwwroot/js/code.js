@@ -31,9 +31,13 @@ function viewRoute(route_id)
 {
   $('.modal-content h4').html('Loading');
   $.get("/Route/Details/" + route_id, function (data) {
-      $(".modal-content").html(data);
+    $(".modal-content").html(data);
+  }).done(function () {
+    history.pushState({ url: window.URL + "", modalclose:true }, "Details", "/Route/Details/" + route_id)
+    $('#modal1').openModal({
+      complete: function () { history.back(-1);}
+    });
   });
-  $('#modal1').openModal();
 }
 
 function togglemore()
@@ -45,7 +49,6 @@ function togglemore()
     } else {
         element.css('max-height', "300px")
     }
-
 }
 
 function langUpdate(id)
@@ -53,3 +56,5 @@ function langUpdate(id)
     $("#lang_id").val(id);
     $("#lang_id").closest('form').submit();
 }
+
+//TODO: detect back button and if open, close modal and intercept

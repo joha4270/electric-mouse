@@ -127,7 +127,9 @@
 <div id="modal1" class="modal modal-fixed-footer">
   <div class="modal-content">
     <h4>Modal Header</h4>
-    <div id="modal_content"></div>
+    <div id="modal_content">
+        @RenderSection("modal", required: false);
+    </div>
   </div>
   <div class="modal-footer">
     <a href="#!" class=" modal-action modal-close waves-effect waves-green btn-flat">Close</a>
@@ -141,4 +143,13 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
 <script type="text/javascript" src="/js/code.js"></script>
 @RenderSection("scripts", required: false)
+@if(this.SectionWriters.Keys.Concat(PreviousSectionWriters.Keys).Any(x => x == "modal"))
+{
+    <script>
+        $(document).ready(function () {
+            $('#modal1').openModal({ in_duration: 0,
+                complete: function () { history.replaceState("", "", "/Route/List")}
+            })});
+    </script>
+}
 </html>

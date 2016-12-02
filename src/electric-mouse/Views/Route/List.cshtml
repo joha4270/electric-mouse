@@ -98,3 +98,10 @@
 
     </script>
 }
+@if(Model.ModalContent != null)
+{
+    @section modal
+    { 
+        @Html.Partial(Model.ModalContent.ViewName, Model.ModalContent.Model);
+    }
+}

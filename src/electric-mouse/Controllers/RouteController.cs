@@ -94,6 +94,27 @@ namespace electric_mouse.Controllers
 
         public IActionResult List(string archived = "false", string creator = null)
         {
+            RouteListViewModel model = GetListViewModel(archived, creator);
+            return View(model);
+        }
+
+        public async Task<IActionResult> Details(int id)
+        {
+            RouteDetailViewModel model = await GetDetailViewModel(id);
+            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+            {
+                return PartialView(model);
+            }
+            else
+            {
+                RouteListViewModel listModel = GetListViewModel("false", null);
+                listModel.ModalContent = new ModalContentViewModel("Details",model);
+                return View("List", listModel);
+            }
+        }
+
+        private RouteListViewModel GetListViewModel(string archived, string creator)
+        {
             IQueryable<Route> routes = _dbContext.Routes;
 
             //Build search query
@@ -110,11 +131,14 @@ namespace electric_mouse.Controllers
 
             if (!string.IsNullOrEmpty(creator))
             {
-                routes = routes.Include(x => x.Creators)
-                    .Where(x => x.Creators.Any(c => c.ApplicationUserRefId == creator));
+                routes = routes
+                    .Include(x => x.Creators)
+                    .Where(x => x.Creators
+                        .Any(c => c.ApplicationUserRefId == creator)
+                    );
             }
 
-            routes = routes .Include(c => c.Difficulty).Include(r => r.Creators).ThenInclude(l => l.User);
+            routes = routes.Include(c => c.Difficulty).Include(r => r.Creators).ThenInclude(l => l.User);
             IList<Route> routeList = new List<Route>();
 
             foreach (var r in routes.ToList())
@@ -130,29 +154,12 @@ namespace electric_mouse.Controllers
                 routeList.Add(r);
             }
 
-            RouteListViewModel model = new RouteListViewModel { Routes = routeList };
-            return View(model);
+            return new RouteListViewModel { Routes = routeList };
         }
 
-        public async Task<IActionResult> Details(int id)
+        private async Task<RouteDetailViewModel> GetDetailViewModel(int id)
         {
-            List<CommentViewModel> root = new List<CommentViewModel> {
-                new CommentViewModel
-                {
-                    Content = "Min mor laver ikke burgere",
-                },
-                new CommentViewModel
-                {
-                    Content = "Pancakes",
-                    Children =
-                    {
-                        new CommentViewModel {Content = "Med is!" },
-                        new CommentViewModel {Content = "Med syltetøj" }
-                    }
-                }
-            };
-
-
+            List<CommentViewModel> root = new List<CommentViewModel>();
 
             var routes = _dbContext
                 .Routes
@@ -175,11 +182,10 @@ namespace electric_mouse.Controllers
             if (_signInManager.IsSignedIn(User))
             {
                 ApplicationUser user = await _userManager.GetUserAsync(User);
-                creatorOrAdmin = creators.Contains(user) || (await _userManager.IsInRoleAsync(user, "Administrator")); //TODO const when merging
+                creatorOrAdmin = creators.Contains(user) || (await _userManager.IsInRoleAsync(user, RoleHandler.Admin)); //TODO const when merging
             }
-
-            return PartialView(new RouteDetailViewModel(routes, section, hall, root, creators, creatorOrAdmin));
-
+            RouteDetailViewModel model = new RouteDetailViewModel(routes, section, hall, root, creators, creatorOrAdmin);
+            return model;
         }
 
 
