@@ -1,45 +1,78 @@
 ﻿@model electric_mouse.Models.DifficultyViewModels.DifficultyCreateViewModel
 
+
 <div class="col s12">
-    <div class="row">
+    <div class="row" style="margin-bottom: 0;">
         <form asp-controller="Difficulty" asp-action="Create" method="post">
             <div class="input-field col">
-                <button type="submit" class="btn-large waves-effect waves-light red" style="padding: 0 15px;">
+                <button type="submit" class="btn waves-effect waves-light red" style="padding: 0 15px;">
                     <i class="material-icons left">add</i>
                     New Difficulty
                 </button>
+                <input type="hidden" name="color" id="hiddenValue" value="#ff0000"/>
             </div>
             <div class="input-field col s4">
-                <input type="text" name="Name" />
+                <input type="text" name="Name"/>
                 <label for="Name">Difficulty Name</label>
             </div>
         </form>
+        <div class="input-field col 2">
+            <input type="text" id="picker"/>
+        </div>
     </div>
 </div>
 
 <div class="col s12">
-    <div class="row">
-        <table class="table">
-            <thead>
-                <tr>
-                    <th class="app_Name">Name</th>
-                    <th></th>
-                </tr>
-            </thead>                
-            <tbody>
-                @foreach (var item in Model.Difficulties)
-                {
-                    <tr>
-                        <td>@item.Name</td>
-                        <td>
-                            <form asp-controller="Difficulty" asp-action="Delete" method="post">
-                                    <button type="submit" class="btn waves-effect waves-light red right">Delete</button>
-                                   <input type="hidden" name="ID" value="@item.RouteDifficultyID" />
-                            </form>
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-    </div>
+	<table class="table">
+	  <thead>
+	  <tr>
+		<th class="app_Name">Name</th>
+		<th></th>
+	  </tr>
+	  </thead>
+	  <tbody>
+	  @foreach (var item in Model.Difficulties)
+	  {
+		  <tr>
+			<td><div class="circle" style="background-color: @item.ColorHex"></div>@item.Name</td>
+			<td>
+			  <button class="btn waves-effect waves-light red right" onclick="Dialog('@item.RouteDifficultyID')">Delete</button>
+			</td>
+		  </tr>
+	  }
+	  </tbody>
+	</table>
 </div>
+
+<div id="dialog" title="Delete difficulty" style="display: none;">
+  <p>Are you sure you want to delete this difficulty? All routes in the system (including those in the archive) will be DELETED.</p>
+  <form asp-controller="Difficulty" asp-action="Delete" method="post">
+    <button type="submit" class="btn waves-effect waves-light red right">Delete</button>
+    <input id="dialog_id" type="hidden" name="ID" value="1"/>
+  </form>
+</div>
+
+@section scripts {
+<script>
+	  $(document).ready(function() {
+			initDefaultTable();
+
+			$("#picker").spectrum({
+				color: "#ff0000",
+				change: function (color) {
+					$("#hiddenValue").val(color.toHexString());
+				}
+			});
+	  });
+
+function Dialog(id)
+{
+    $("#dialog_id").val(id);
+    $("#dialog").dialog({
+	    draggable: false,
+	    modal: true,
+	    width: 400
+    });
+}
+</script>
+}

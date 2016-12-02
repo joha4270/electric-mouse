@@ -1,18 +1,5 @@
 $(".button-collapse").sideNav();
 $(document).ready(function(){
-    table = $('.table').DataTable({
-      info: false,
-      searching: true,
-      lengthChange: false,
-      pageLength: 50,
-      paging: false,
-      responsive: true,
-      columnDefs: [
-        { "searchable": false, "targets": 2},
-        { "searchable": false, "targets": 3}
-      ]
-    });
-
     $('select').material_select();
 
     $('.datepicker').pickadate({
@@ -57,4 +44,31 @@ function langUpdate(id)
     $("#lang_id").closest('form').submit();
 }
 
-//TODO: detect back button and if open, close modal and intercept
+function initRouteTable()
+{
+    table = $('.table').DataTable({
+        info: false,
+        searching: true,
+        lengthChange: false,
+        pageLength: 50,
+        paging: false,
+        responsive: true,
+        columnDefs: [
+            { "searchable": false, "targets": 2},
+            { "searchable": false, "targets": 3}
+        ]
+    });
+}
+
+function initDefaultTable()
+{
+	table = $('.table').DataTable({
+		info: false,
+		searching: false,
+		lengthChange: false,
+		pageLength: 50,
+		paging: false,
+		responsive: true,
+		ordering: false
+	});
+}

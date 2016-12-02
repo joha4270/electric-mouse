@@ -48,6 +48,7 @@ html {
 
 .table td, .table th {border-radius: 0;}
 .table {min-width: 100%;}
+td form .right {margin-left: 10px;}
 
 .dataTables_filter {display: none;}
 .nav-search input {width: 100%;}
@@ -105,4 +106,38 @@ nav ul img {
     width: 100%;
     margin: 0;
     height: inherit;
+}
+
+.circle
+{
+	display: inline;
+	float: left;
+    border: 2px solid black;
+    padding: 8px 8px;
+    background: white;
+    width: 2px;
+    height: 2px;
+    border-radius: 100%;
+    margin-right: 10px;
+}
+
+/* Loading */
+#loading {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	z-index: 1000;
+	display: none;
+}
+#loading-inner {
+	display: block;
+	position: relative;
+	left: 50%;
+	top: 50%;
+	width: 64px;
+	height: 64px;
+	margin: -32px 0 0 -32px;
+	z-index: 1500;
 }

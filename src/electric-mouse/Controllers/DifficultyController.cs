@@ -4,18 +4,22 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using electric_mouse.Data;
+using electric_mouse.Models;
 using electric_mouse.Models.RouteItems;
 using electric_mouse.Models.DifficultyViewModels;
+using Microsoft.AspNetCore.Identity;
 
 namespace electric_mouse.Controllers
 {
     public class DifficultyController : Controller
     {
         private ApplicationDbContext _dbContext;
+        private UserManager<ApplicationUser> _manager;
 
-        public DifficultyController(ApplicationDbContext dbContext)
+        public DifficultyController(ApplicationDbContext dbContext, UserManager<ApplicationUser> manager)
         {
             _dbContext = dbContext;
+            _manager = manager;
         }
 
 
@@ -30,23 +34,32 @@ namespace electric_mouse.Controllers
         [HttpPost]
         public async Task<IActionResult> Create(DifficultyCreateViewModel model)
         {
-            if (!string.IsNullOrEmpty(model.Name))
+            ApplicationUser admin = await _manager.GetUserAsync(User);
+            if (await _manager.IsInRoleAsync(admin, Services.RoleHandler.Admin))
             {
-                _dbContext.RouteDifficulties.Add(new RouteDifficulty { Name = model.Name });
-                _dbContext.SaveChanges();
+                if (!string.IsNullOrEmpty(model.Name))
+                {
+                    _dbContext.RouteDifficulties.Add(new RouteDifficulty { Name = model.Name, ColorHex = model.Color});
+                    _dbContext.SaveChanges();
+                }
             }
-
+            
             return RedirectToAction(nameof(Create), "Difficulty");
         }
 
         [HttpPost]
         public async Task<IActionResult> Delete(DifficultyCreateViewModel model)
         {
-            RouteDifficulty diff = _dbContext.RouteDifficulties.Where(d => d.RouteDifficultyID == model.ID).First();
+            ApplicationUser admin = await _manager.GetUserAsync(User);
+            if (await _manager.IsInRoleAsync(admin, Services.RoleHandler.Admin))
+            {
+                RouteDifficulty diff = _dbContext.RouteDifficulties.First(d => d.RouteDifficultyID == model.ID);
 
-            _dbContext.RouteDifficulties.Remove(diff);
-            _dbContext.SaveChanges();
+                _dbContext.RouteDifficulties.Remove(diff);
+                _dbContext.SaveChanges();
 
+            }
+            
             return RedirectToAction(nameof(Create), "Difficulty");
         }
     }

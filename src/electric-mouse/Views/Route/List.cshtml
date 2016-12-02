@@ -2,16 +2,16 @@
 
 @* Difficulty Test, do not attempt to make it work yourself *@
 <div class="row" style="margin-top: 10px;">
-  <div class="col s8">
-    <a class="btn red" style="padding: 0 1rem;">
-      <input type="checkbox" class="filled-in" id="difficulty_red"/>
-      <label for="difficulty_red" style="color: #fff;">Red</label>
-    </a>
-    <a class="btn blue" style="padding: 0 1rem;">
-      <input type="checkbox" class="filled-in" id="difficulty_blue"/>
-      <label for="difficulty_blue" style="color: #fff;">Blue</label>
-    </a>
-  </div>
+    <div class="col s8">
+        <a class="btn red" style="padding: 0 1rem;">
+            <input type="checkbox" class="filled-in" id="difficulty_red"/>
+            <label for="difficulty_red" style="color: #fff;">Red</label>
+        </a>
+        <a class="btn blue" style="padding: 0 1rem;">
+            <input type="checkbox" class="filled-in" id="difficulty_blue"/>
+            <label for="difficulty_blue" style="color: #fff;">Blue</label>
+        </a>
+    </div>
 
   <div class="col s4">
     <form class="nav-search">
@@ -61,7 +61,7 @@
 
             }
           </td>
-          <td class="app_difficulty">@item.Difficulty.Name</td>
+          <td><div class="circle" style="background-color: @item.Difficulty.ColorHex"></div>@item.Difficulty.Name</td>
           <td class="app_color">@item.GripColour</td>
           <td class="app_builder">@string.Join(", ", item.Creators.Select(x => x.User.DisplayName))</td>
           <td class="app_date">
@@ -86,17 +86,21 @@
 </div>
 @section scripts
 {
-    <script>
-        $('#search').keyup(function(){
-            table.search($(this).val()).draw();
-        });
+  <script>
+  $(document).ready(function() {
+	  $('#search').keyup(function(){
+		  table.search($(this).val()).draw();
+	  });
 
-        $('tbody tr').click(function () {
-          var id = $(this).attr('data-id');
-          viewRoute(id);
-        });
+	  $('tbody tr').click(function () {
+		  var id = $(this).attr('data-id');
+		  viewRoute(id);
+	  });
 
-    </script>
+	  initRouteTable();
+  });
+
+  </script>
 }
 @if(Model.ModalContent != null)
 {
