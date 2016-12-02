@@ -86,15 +86,19 @@
 </div>
 @section scripts
 {
-    <script>
-        $('#search').keyup(function(){
-            table.search($(this).val()).draw();
-        });
+  <script>
+  $(document).ready(function() {
+	  $('#search').keyup(function(){
+		  table.search($(this).val()).draw();
+	  });
 
-        $('tbody tr').click(function () {
-          var id = $(this).attr('data-id');
-          viewRoute(id);
-        });
+	  $('tbody tr').click(function () {
+		  var id = $(this).attr('data-id');
+		  viewRoute(id);
+	  });
 
-    </script>
+	  initRouteTable();
+  });
+
+  </script>
 }

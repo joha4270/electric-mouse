@@ -1,12 +1,10 @@
 ﻿@model electric_mouse.Models.HallViewModels.HallCreateViewModel
 
-<h2>Hall View</h2>
-
 <div class="col s12">
-    <div class="row">
+    <div class="row" style="margin-bottom: 0;">
       <form asp-controller="Hall" asp-action="Create" method="post">
             <div class="input-field col">
-              <button type="submit" class="btn-large waves-effect waves-light red" style="padding: 0 15px;"><i class="material-icons left">add</i>
+              <button type="submit" class="btn waves-effect waves-light red" style="padding: 0 15px;"><i class="material-icons left">add</i>
                 New Hall
               </button>
             </div>
@@ -26,38 +24,46 @@
 </div>
 
 <div class="col s12">
-    <div class="row">
-        <table class="table">
-            <thead>
-                <tr>
-                    <th class="app_Name">Name</th>
-                    <th>Number of sections</th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var item in Model.Halls)
-                {
-                    <tr>
-                        <td>@item.Name</td>
-                        <td>@item.Sections.Count</td>
-                        <td>
-                            <form asp-controller="Hall" asp-action="Delete" method="post">
-                                @if (item.Sections.Count > 0)
-                                {
-                                    <button type="submit" class="btn waves-effect waves-light red right" disabled>Delete</button>
-                                }
-                                else
-                                {
-                                    <button type="submit" class="btn waves-effect waves-light red right">Delete</button>
-                                }
+  <div class="row">
+    <table class="table">
+      <thead>
+      <tr>
+        <th class="app_Name">Name</th>
+        <th>Number of sections</th>
+        <th></th>
+      </tr>
+      </thead>
+      <tbody>
+      @foreach (var item in Model.Halls)
+      {
+	      <tr>
+	        <td>@item.Name</td>
+	        <td>@item.Sections.Count</td>
+	        <td>
+	          <form asp-controller="Hall" asp-action="Delete" method="post">
+	            @if (item.Sections.Count > 0)
+	            {
+		            <button type="submit" class="btn waves-effect waves-light red right" disabled>Delete</button>
+	            }
+	            else
+	            {
+		            <button type="submit" class="btn waves-effect waves-light red right">Delete</button>
+	            }
 
-                                <input type="hidden" name="ID" value="@item.RouteHallID"/>
-                            </form>
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-    </div>
+	            <input type="hidden" name="ID" value="@item.RouteHallID"/>
+	          </form>
+	        </td>
+	      </tr>
+      }
+      </tbody>
+    </table>
+  </div>
 </div>
+
+@section scripts {
+  <script>
+	$(document).ready(function () {
+		initDefaultTable();
+	});
+  </script>
+}

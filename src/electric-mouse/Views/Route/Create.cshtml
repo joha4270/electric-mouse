@@ -106,6 +106,7 @@
     $("#hallSelect").on('change', function() {
         var data = "";
         var parent = $(this).val();
+        data += '<option value="" disabled selected>Select a Section</option>';
         $.each(sections[parent], function(key, val) {
             data += '<option value="' + key + '">' + val + '</option>';
         });

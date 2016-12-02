@@ -8,8 +8,8 @@ using electric_mouse.Data;
 namespace electric_mouse.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20161202111725_waht")]
-    partial class waht
+    [Migration("20161202095058_type")]
+    partial class type
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {

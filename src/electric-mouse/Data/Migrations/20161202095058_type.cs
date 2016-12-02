@@ -4,10 +4,15 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace electric_mouse.Data.Migrations
 {
-    public partial class waht : Migration
+    public partial class type : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.AddColumn<int>(
+                name: "Type",
+                table: "Routes",
+                nullable: false,
+                defaultValue: 0);
             migrationBuilder.AddColumn<int>(
                 name: "ExpectedType",
                 table: "Halls",
@@ -16,6 +21,9 @@ namespace electric_mouse.Data.Migrations
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropColumn(
+                name: "Type",
+                table: "Routes");
             migrationBuilder.DropColumn(
                 name: "ExpectedType",
                 table: "Halls");
