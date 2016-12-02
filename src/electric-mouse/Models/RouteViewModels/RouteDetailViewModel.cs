@@ -14,8 +14,9 @@ namespace electric_mouse.Models.RouteViewModels
         public RouteHall Hall { get; }
         public Route Routes { get; }
         public RouteSection Section { get; }
+        public string[] Images { get; }
 
-        public RouteDetailViewModel(Route routes, RouteSection section, RouteHall hall, List<CommentViewModel> root, List<ApplicationUser> creators, bool editRights)
+        public RouteDetailViewModel(Route routes, RouteSection section, RouteHall hall, List<CommentViewModel> root, List<ApplicationUser> creators, bool editRights, string[] images)
         {
             Comments =root;
             Creators = creators;
@@ -23,6 +24,7 @@ namespace electric_mouse.Models.RouteViewModels
             Routes = routes;
             Section = section;
             Hall = hall;
+            Images = images;
         }
     }
 }

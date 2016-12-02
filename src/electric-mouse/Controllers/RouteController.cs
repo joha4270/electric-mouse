@@ -12,10 +12,9 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Microsoft.AspNetCore.Authorization;
-using electric_mouse.Services;
 using Microsoft.AspNetCore.Hosting;
 using System.IO;
+using Microsoft.AspNetCore.Http;
 
 namespace electric_mouse.Controllers
 {
@@ -27,12 +26,13 @@ namespace electric_mouse.Controllers
         private readonly ILogger _logger;
         private IHostingEnvironment _environment;
 
-        public RouteController(ApplicationDbContext dbContext, UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, ILoggerFactory logger)
+        public RouteController(ApplicationDbContext dbContext, UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, ILoggerFactory logger, IHostingEnvironment environment)
         {
             _dbContext = dbContext;
             _userManager = userManager;
             _signInManager = signInManager;
             _logger = logger.CreateLogger<RouteController>();
+            _environment = environment;
         }
 
         // RouteCreate name instead? - We'll have to implement hall etc create seperately
@@ -92,8 +92,9 @@ namespace electric_mouse.Controllers
             RouteAttachment attachment = new RouteAttachment { VideoUrl = model.VideoUrl, Route = route, RouteID = route.ID };
             _dbContext.RouteAttachments.Add(attachment);
 
+            IFormFileCollection imgs = Request.Form.Files;
             // Add the image(s) attachment to the database
-            AddImageAttachmentsToDatabase(model.Images, attachment);
+            AddImageAttachmentsToDatabase(imgs, attachment);
 
             _dbContext.RouteUserRelations.Add(new RouteApplicationUserRelation{User = await _userManager.GetUserAsync(User), Route = route});
 
@@ -102,15 +103,26 @@ namespace electric_mouse.Controllers
             return RedirectToAction(nameof(List), "Route");
         }
 
-        private async void AddImageAttachmentsToDatabase(ICollection<IFormFile> images, RouteAttachment attachment)
+        private async void AddImageAttachmentsToDatabase(IFormFileCollection images, RouteAttachment attachment)
         {
+            if (images == null) // bail if there are no images being uploaded
+                return;
+
+            // the name of the folder to upload all the images
+            string uploadFolderName = "uploads";
             // generate a random file name for all the images that are being uploaded
             string[] imageFileNames = images.Select(image => GetRandomFileNameWithOriginalExtension(image.FileName)).ToArray();
             // get all the relative paths (uploads\<filename>)
-            string[] relativeImagePaths = imageFileNames.Select(filename => $"uploads\\{filename}").ToArray();
-            // get the full path (c:\...\wwwroot\uploads\<filename)
-            string[] fullImagePaths = relativeImagePaths.Select(path => Path.Combine(_environment.WebRootPath, path)).ToArray();
+            string[] relativeImagePaths = imageFileNames.Select(filename => Path.Combine(uploadFolderName, filename)).ToArray();
+            // get the path to the uploads folder on the server
+            string uploadFolderPath = Path.Combine(_environment.WebRootPath, uploadFolderName);
+            // get the full path (c:\...\wwwroot\uploads\<filename>)
+            string[] fullImagePaths = imageFileNames.Select(filename => Path.Combine(uploadFolderPath, filename)).ToArray();
             int i = 0;
+
+            // create uploads folder if it doesnt exist
+            if(Directory.Exists(uploadFolderPath) == false)
+                Directory.CreateDirectory(uploadFolderPath);
 
             foreach (IFormFile image in images)
             {
@@ -119,6 +131,9 @@ namespace electric_mouse.Controllers
 
                 if (image.ContentType.Contains("image") == false)
                     continue; // if it isnt an image being uploaded; skip it!
+
+                if (HasExtension(image.FileName, ".png", ".jpg", ".jpeg") == false)
+                    continue; // if it doesnt have an image extension; skip it!
 
                 using (FileStream fileStream = new FileStream(fullImagePaths[i], FileMode.Create))
                 {
@@ -134,6 +149,16 @@ namespace electric_mouse.Controllers
             }
         }
 
+        /// <summary>
+        /// Checks if the filename has one of the extensions provided.
+        /// </summary>
+        private bool HasExtension(string fileName, params string[] extensions)
+        {
+            string fileExtension = Path.GetExtension(fileName);
+
+            return extensions.Any(extension => extension.Equals(fileExtension));
+        }
+
         #region These should probably be moved (can be made extension methods)
 
         public long ConvertMegabytesToBytes(long megabytes) => megabytes * 1000L * 1000L;
@@ -142,8 +167,6 @@ namespace electric_mouse.Controllers
 
         #endregion
 
-        [HttpPost]
-        public async Task<IActionResult> CreateSampleRoute(RouteCreateViewModel model)
         public IActionResult List(string archived = "false", string creator = null)
         {
             IQueryable<Route> routes = _dbContext.Routes;
@@ -230,10 +253,15 @@ namespace electric_mouse.Controllers
                 creatorOrAdmin = creators.Contains(user) || (await _userManager.IsInRoleAsync(user, "Administrator")); //TODO const when merging
             }
 
-            return PartialView(new RouteDetailViewModel(routes, section, hall, root, creators, creatorOrAdmin));
+            // Get all the images related to the route
+            AttachmentPathRelation[] attachments = _dbContext.AttachmentPathRelations.Include(relation => relation.RouteAttachment).ToArray();
+            string[] imagePaths = attachments?.Where(attachment => attachment.RouteAttachment.RouteID == id)
+                                             ?.Select(attachment => attachment.ImagePath)
+                                             .ToArray();
+
+            return PartialView(new RouteDetailViewModel(routes, section, hall, root, creators, creatorOrAdmin, imagePaths));
 
         }
-
 
         //TODO: UNCOMMENT [Authorize(Roles=RoleSetup.Post)]
         [HttpPost]

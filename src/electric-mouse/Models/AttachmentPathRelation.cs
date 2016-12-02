@@ -22,21 +22,4 @@ namespace electric_mouse.Models
 
         public virtual RouteAttachment RouteAttachment { get; set; }
     }
-
-
-    //public class RouteSectionRelation
-    //{
-    //    [Key]
-    //    public int RouteSectionRelationID { get; set; }
-
-    //    [ForeignKey("RouteSectionID")]
-    //    public int RouteSectionID { get; set; }
-
-    //    [ForeignKey("ID")]
-    //    public int RouteID { get; set; }
-
-    //    public virtual Route Route { get; set; }
-
-    //    public virtual RouteSection RouteSection { get; set; }
-    //}
 }
