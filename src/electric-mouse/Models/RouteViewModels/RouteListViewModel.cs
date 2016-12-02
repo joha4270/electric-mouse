@@ -6,9 +6,8 @@ using electric_mouse.Models.RouteItems;
 
 namespace electric_mouse.Models.RouteViewModels
 {
-    public class RouteListViewModel
+    public class RouteListViewModel : BaseViewModel
     {
         public IList<Route> Routes { get; set; }
-
     }
 }

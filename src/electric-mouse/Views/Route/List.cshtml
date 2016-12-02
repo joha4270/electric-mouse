@@ -61,7 +61,7 @@
 
             }
           </td>
-          <td><div class="circle" style="background-color: @item.Difficulty.ColorHex"></div>@item.Difficulty.Name</td>
+          <td><div class="color-circle" style="background-color: @item.Difficulty.ColorHex"></div>@item.Difficulty.Name</td>
           <td class="app_color">@item.GripColour</td>
           <td class="app_builder">@string.Join(", ", item.Creators.Select(x => x.User.DisplayName))</td>
           <td class="app_date">
@@ -84,6 +84,7 @@
     <i class="large material-icons">add</i>
   </a>
 </div>
+@{ Html.RenderPartial("_Loading"); }
 @section scripts
 {
   <script>
@@ -101,4 +102,11 @@
   });
 
   </script>
+}
+@if(Model.ModalContent != null)
+{
+    @section modal
+    { 
+        @Html.Partial(Model.ModalContent.ViewName, Model.ModalContent.Model)
+    }
 }

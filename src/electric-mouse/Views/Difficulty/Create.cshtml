@@ -34,7 +34,7 @@
 	  @foreach (var item in Model.Difficulties)
 	  {
 		  <tr>
-			<td><div class="circle" style="background-color: @item.ColorHex"></div>@item.Name</td>
+			<td><div class="color-circle" style="background-color: @item.ColorHex"></div>@item.Name</td>
 			<td>
 			  <button class="btn waves-effect waves-light red right" onclick="Dialog('@item.RouteDifficultyID')">Delete</button>
 			</td>
