@@ -2,16 +2,16 @@
 
 @* Difficulty Test, do not attempt to make it work yourself *@
 <div class="row" style="margin-top: 10px;">
-  <div class="col s8">
-    <a class="btn red" style="padding: 0 1rem;">
-      <input type="checkbox" class="filled-in" id="difficulty_red"/>
-      <label for="difficulty_red" style="color: #fff;">Red</label>
-    </a>
-    <a class="btn blue" style="padding: 0 1rem;">
-      <input type="checkbox" class="filled-in" id="difficulty_blue"/>
-      <label for="difficulty_blue" style="color: #fff;">Blue</label>
-    </a>
-  </div>
+    <div class="col s8">
+        <a class="btn red" style="padding: 0 1rem;">
+            <input type="checkbox" class="filled-in" id="difficulty_red"/>
+            <label for="difficulty_red" style="color: #fff;">Red</label>
+        </a>
+        <a class="btn blue" style="padding: 0 1rem;">
+            <input type="checkbox" class="filled-in" id="difficulty_blue"/>
+            <label for="difficulty_blue" style="color: #fff;">Blue</label>
+        </a>
+    </div>
 
   <div class="col s4">
     <form class="nav-search">
@@ -61,7 +61,7 @@
 
             }
           </td>
-          <td class="app_difficulty">@item.Difficulty.Name</td>
+          <td style="background-color: @item.Difficulty.ColorHex" class="app_difficulty">@item.Difficulty.Name</td>
           <td class="app_color">@item.GripColour</td>
           <td class="app_builder">Morten, Clare</td>
           <td class="app_date">
