@@ -63,7 +63,7 @@
           </td>
           <td class="app_difficulty">@item.Difficulty.Name</td>
           <td class="app_color">@item.GripColour</td>
-          <td class="app_builder">Morten, Clare</td>
+          <td class="app_builder">@string.Join(", ", item.Creators.Select(x => x.User.DisplayName))</td>
           <td class="app_date">
             @if (@item.Date != null)
             {
