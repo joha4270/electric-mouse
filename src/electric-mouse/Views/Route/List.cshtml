@@ -61,9 +61,9 @@
 
             }
           </td>
-          <td style="background-color: @item.Difficulty.ColorHex" class="app_difficulty">@item.Difficulty.Name</td>
+          <td><div class="circle" style="background-color: @item.Difficulty.ColorHex"></div>@item.Difficulty.Name</td>
           <td class="app_color">@item.GripColour</td>
-          <td class="app_builder">Morten, Clare</td>
+          <td class="app_builder">@string.Join(", ", item.Creators.Select(x => x.User.DisplayName))</td>
           <td class="app_date">
             @if (@item.Date != null)
             {
@@ -86,15 +86,19 @@
 </div>
 @section scripts
 {
-    <script>
-        $('#search').keyup(function(){
-            table.search($(this).val()).draw();
-        });
+  <script>
+  $(document).ready(function() {
+	  $('#search').keyup(function(){
+		  table.search($(this).val()).draw();
+	  });
 
-        $('tbody tr').click(function () {
-          var id = $(this).attr('data-id');
-          viewRoute(id);
-        });
+	  $('tbody tr').click(function () {
+		  var id = $(this).attr('data-id');
+		  viewRoute(id);
+	  });
 
-    </script>
+	  initRouteTable();
+  });
+
+  </script>
 }

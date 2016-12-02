@@ -1,7 +1,5 @@
 ﻿@model electric_mouse.Models.UserViewModels.UserListViewModel
 @inject UserManager<ApplicationUser> UserManager
-<h2>User View</h2>
-
 
 <div class="col s12">
     <div class="row">
@@ -18,7 +16,7 @@
             {
 
                 <tr>
-                    <td>@item.UserName</td> @*TODO: skal ændres til DisplayName*@
+                    <td>@item.DisplayName</td>
                     @if (await UserManager.IsInRoleAsync(item, electric_mouse.Services.RoleHandler.Admin))
                     {
                         <td>Administrator</td>

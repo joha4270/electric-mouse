@@ -8,9 +8,10 @@ using electric_mouse.Data;
 namespace electric_mouse.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20161202095058_type")]
+    partial class type
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
             modelBuilder
                 .HasAnnotation("ProductVersion", "1.0.0-rtm-21431");
@@ -119,8 +120,6 @@ namespace electric_mouse.Data.Migrations
                 {
                     b.Property<int>("RouteDifficultyID")
                         .ValueGeneratedOnAdd();
-
-                    b.Property<string>("ColorHex");
 
                     b.Property<string>("Name");
 

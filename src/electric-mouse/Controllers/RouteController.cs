@@ -53,12 +53,9 @@ namespace electric_mouse.Controllers
         {
             RouteDifficulty difficulty =
                 _dbContext.RouteDifficulties.First(d => d.RouteDifficultyID == model.RouteDifficultyID);
-            //TODO: Implement route type (Boulder/Sport)
             DateTime date = DateTime.ParseExact(model.Date, "dd-MM-yyyy", CultureInfo.InvariantCulture);
             //TODO: Implement image and video data
-            //TODO: Make it possible to add a route to more than one section
-            //TODO: Make only the relevant sections visible (ie. only sections that are contained in the selected hall)
-
+            
             // Create Route
             Route route = new Route
             {
@@ -66,7 +63,8 @@ namespace electric_mouse.Controllers
                 Difficulty = difficulty,
                 RouteID = model.RouteID,
                 GripColour = model.GripColor,
-                Date = date
+                Date = date,
+                Type = model.Type
             };
 
             _dbContext.Routes.Add(route);
@@ -114,7 +112,7 @@ namespace electric_mouse.Controllers
                     .Where(x => x.Creators.Any(c => c.ApplicationUserRefId == creator));
             }
 
-            routes = routes .Include(c => c.Difficulty);
+            routes = routes .Include(c => c.Difficulty).Include(r => r.Creators).ThenInclude(l => l.User);
             IList<Route> routeList = new List<Route>();
 
             foreach (var r in routes.ToList())
