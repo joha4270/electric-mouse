@@ -47,3 +47,9 @@ function togglemore()
     }
 
 }
+
+function langUpdate(id)
+{
+    $("#lang_id").val(id);
+    $("#lang_id").closest('form').submit();
+}

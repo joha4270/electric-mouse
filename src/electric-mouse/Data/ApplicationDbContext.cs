@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using electric_mouse.Models;
@@ -21,6 +19,7 @@ namespace electric_mouse.Data
         public DbSet<RouteSection> RouteSections { get; set; }
         public DbSet<RouteDifficulty> RouteDifficulties { get; set; }
         public DbSet<RouteSectionRelation> RouteSectionRelations { get; set; }
+        public DbSet<RouteApplicationUserRelation> RouteUserRelations { get; set; }
         public DbSet<RouteAttachment> RouteAttachments { get; set; }
         public DbSet<AttachmentPathRelation> AttachmentPathRelations { get; set; }
 
@@ -30,6 +29,19 @@ namespace electric_mouse.Data
             // Customize the ASP.NET Identity model and override the defaults if needed.
             // For example, you can rename the ASP.NET Identity table names and more.
             // Add your customizations after calling base.OnModelCreating(builder);
+
+            builder.Entity<RouteApplicationUserRelation>()
+                .HasKey(x => new {x.ApplicationUserRefId, x.RouteRefId});
+
+            builder.Entity<RouteApplicationUserRelation>()
+                .HasOne(rel => rel.User)
+                .WithMany(u => u.RoutesCreated)
+                .HasForeignKey(rel => rel.ApplicationUserRefId);
+
+            builder.Entity<RouteApplicationUserRelation>()
+                .HasOne(rel => rel.Route)
+                .WithMany(u => u.Creators)
+                .HasForeignKey(rel => rel.RouteRefId);
         }
     }
 }

@@ -1,24 +1,18 @@
 ﻿@model electric_mouse.Models.RouteViewModels.RouteCreateViewModel
-<h2>DEMO CONTENT</h2>
-<form asp-controller="Route" asp-action="CreateSampleRoute" method="post">
-    <button type="submit" class="btn btn-default">Create Route (With test junk)</button>
-</form>
-
 <h2>Stuff</h2>
-@* enctype="multipart/form-data" is for getting all the image files *@
-<form asp-controller="Route" asp-action="Create" method="post" enctype="multipart/form-data" class="col s12">
+<form asp-controller="Route" asp-action="@(Model.UpdateID < 0 ? "Create" : "Update")" method="post" class="col s12">
+    <input asp-for="UpdateID" value="@Model.UpdateID" type="hidden" />
   <div class="row">
     <div class="input-field col s2">
-      <input type="number" min="1" name="RouteID" />
-      <label asp-for="RouteID">Route ID</label>
+      <input type="number" min="1" name="RouteID" value="@Model.RouteID" />
+      <label for="id">Route ID</label>
     </div>
     <div class="input-field col s10">
-      <select name="hallSelect" id="hallSelect">
+      <select asp-for="RouteHallID" asp-items="@Model.Halls.Select(h => new SelectListItem {Text = h.Name, Value = h.RouteHallID.ToString() })" id="hallSelect">
+@if (Model.UpdateID < 0)
+{
         <option value="" disabled selected>Select a Hall</option>
-        @foreach (var hall in Model.Halls)
-        {
-            <option value="@hall.RouteHallID">@hall.Name</option>
-        }
+}
       </select>
       <label>Hal</label>
     </div>
@@ -26,12 +20,12 @@
 
   <div class="row">
     <div class="input-field col s6">
-      <select name="RouteDifficultyID">
-        @foreach (var difficulty in Model.Difficulties)
-        {
-            <option value="@difficulty.RouteDifficultyID">@difficulty.Name</option>
-        }
-      </select>
+        <select asp-for="RouteDifficultyID" asp-items="@Model.Difficulties.Select(d => new SelectListItem { Text = d.Name, Value = d.RouteDifficultyID.ToString() }) ">
+            @if (Model.UpdateID < 0)
+            {
+            <option value="" disabled selected>Select a Difficulity</option>
+            }
+        </select>
       <label>Difficulty</label>
     </div>
     <div class="input-field col s6">
@@ -44,7 +38,7 @@
 
   <div class="row">
     <div class="input-field col s12">
-      <select name="RouteSectionID" id="SectionSelect" multiple>
+      <select asp-for="RouteSectionID" asp-items="@(Model.UpdateID > 0 ? Model.Sections.Where(x => x.RouteHallID == Model.RouteHallID).Select(s => new SelectListItem { Text = s.Name, Value = s.RouteSectionID.ToString() }) : new SelectListItem[] { })" id="SectionSelect" multiple>
         <option value="" disabled selected>No Sections Found</option>
       </select>
       <label asp-for="Sections">Section</label>
@@ -80,7 +74,7 @@
 
   <div class="row">
     <div class="input-field col s12">
-      <textarea id="textarea1" class="materialize-textarea" name="Note"></textarea>
+      <textarea id="textarea1" class="materialize-textarea" name="Note">@Model.Note</textarea>
       <label for="textarea1">Note</label>
     </div>
   </div>
@@ -99,14 +93,14 @@
 
 <script>
     var sections = {
-        @foreach (var h in Model.Halls)
+        @foreach (var hall in Model.Halls)
         {
-            @Html.Raw("'")@h.RouteHallID@Html.Raw("': {")
-             foreach (var s in Model.Sections.Where(i => i.RouteHallID == h.RouteHallID))
+            @Html.Raw("'")@hall.RouteHallID@Html.Raw("': {")
+             foreach (var s in Model.Sections.Where(i => i.RouteHallID == hall.RouteHallID))
              {
                  @Html.Raw("'")@s.RouteSectionID@Html.Raw("': '")@s.Name@Html.Raw("',")
              }
-            @Html.Raw("},")
+            @Html.Raw("},\n")
         }
     };
 

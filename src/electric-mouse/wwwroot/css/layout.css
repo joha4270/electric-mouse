@@ -93,3 +93,16 @@ nav ul img {
 .small_margin {
     margin-bottom: 0;
 }
+
+.nav-flag {
+    padding-right: 5px;
+    height: 32px;
+    margin-top: 16px;
+}
+
+.nav-flag-dropdown {
+    padding: 0;
+    width: 100%;
+    margin: 0;
+    height: inherit;
+}
