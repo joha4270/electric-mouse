@@ -149,6 +149,7 @@ namespace electric_mouse.Controllers
             {
                 r.Sections = new List<RouteSection>();
                 List<RouteSectionRelation> relations = _dbContext.RouteSectionRelations.Where(t => t.RouteID == r.ID).ToList();
+
                 foreach (var s in relations)
                 {
                     RouteSection section = _dbContext.RouteSections.First(t => s.RouteSectionID == t.RouteSectionID);
@@ -165,22 +166,16 @@ namespace electric_mouse.Controllers
         {
             List<CommentViewModel> comments = new List<CommentViewModel>();
 
-            var routes = _dbContext
+            Route route = _dbContext
                 .Routes
-                .Where(r => r.ID == id)
-                .Include(x => x.Difficulty).ToList().First();
-            RouteSection section = null;
-            RouteHall hall = null;
+                .Include(x => x.Difficulty)
+	            .First(r => r.ID == id);
 
+	        RouteSectionRelation rs = _dbContext.RouteSectionRelations.First(t => t.RouteID == route.ID);
+	        RouteSection section = _dbContext.RouteSections.First(t => rs.RouteSectionID == t.RouteSectionID);
+	        RouteHall hall = _dbContext.RouteHalls.First(p => p.RouteHallID == section.RouteHallID);
 
-            foreach (var s in _dbContext.RouteSectionRelations.Where(t => t.RouteID == routes.ID).ToList())
-            {
-                section = _dbContext.RouteSections.First(t => s.RouteSectionID == t.RouteSectionID);
-                hall = _dbContext.RouteHalls.First(p => p.RouteHallID == section.RouteHallID);
-                break;
-            }
-
-            List<ApplicationUser> creators = _dbContext.RouteUserRelations.Where(r => r.Route == routes).Select(r => r.User).ToList();
+            List<ApplicationUser> creators = _dbContext.RouteUserRelations.Where(r => r.Route == route).Select(r => r.User).ToList();
             bool creatorOrAdmin = false;
 
             if (_signInManager.IsSignedIn(User))
@@ -190,7 +185,7 @@ namespace electric_mouse.Controllers
             }
 	        RouteDetailViewModel model = new RouteDetailViewModel
 	        {
-		        Routes = routes,
+		        Route = route,
 		        Section = section,
 		        Hall = hall,
 		        Creators = creators,

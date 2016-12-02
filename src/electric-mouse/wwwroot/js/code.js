@@ -16,14 +16,21 @@ $(document).ready(function(){
 
 function viewRoute(route_id)
 {
-  $('.modal-content h4').html('Loading');
-  $.get("/Route/Details/" + route_id, function (data) {
-    $(".modal-content").html(data);
-  }).done(function () {
-    history.pushState({ url: window.URL + "", modalclose:true }, "Details", "/Route/Details/" + route_id)
-    $('#modal1').openModal({
-      complete: function () { history.back(-1);}
-    });
+	$("#loading").show();
+
+	$.get("/Route/Details/" + route_id, function (data) {
+    	$(".modal-content").html(data);
+		$("#loading").hide();
+	}).done(function () {
+
+		history.pushState({
+			 url: window.URL + "",
+			 modalclose:true
+		}, "Details", "/Route/Details/" + route_id);
+
+		$('#modal1').openModal({
+			complete: function () { history.back(-1); }
+		});
   });
 }
 
