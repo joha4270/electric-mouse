@@ -1,7 +1,6 @@
 ﻿@using Microsoft.AspNetCore.Identity
 @using electric_mouse.Models
 @using Microsoft.AspNetCore.Authentication.Cookies
-
 @inject SignInManager<ApplicationUser> SignInManager
 @inject UserManager<ApplicationUser> UserManager
 
@@ -33,12 +32,24 @@
       </li>
     </ul>
 }
-    <ul id="admin_dropdown" class="dropdown-content">
-      <li>
-        <a href="/hall/create">Create Hall</a>
-        <a href="/difficulty/create">Difficulties</a>
-      </li>
-    </ul>
+<ul id="admin_dropdown" class="dropdown-content">
+  <li>
+    <a href="/hall/create">Create Hall</a>
+    <a href="/difficulty/create">Difficulties</a>
+  </li>
+</ul>
+
+<ul id="language_dropdown" class="dropdown-content">
+  <form asp-controller="Language" asp-action="Change" asp-route-returnurl="/" method="post">
+    <li>
+      @foreach (var c in ViewBag.Language.Countries)
+      {
+          <a href="javascript:void(0)" onclick="langUpdate('@(c.Value)');"><img src="/images/@(c.Value).svg" class="nav-flag-dropdown"/></a>
+      }
+      <input type="hidden" name="newLocale" id="lang_id" value="" />
+    </li>
+  </form>
+</ul>
 
 <div class="navbar-fixed">
   <nav>
@@ -48,7 +59,23 @@
 
         <a href="javascript:void(0)" data-activates="mobile-nav" class="button-collapse"><i class="material-icons">menu</i></a>
         <ul class="right hide-on-med-and-down">
-            <li><a href="/section/"><img src="/images/climber.svg" class="left" />Sections</a></li>
+          @*<li>
+            <form asp-controller="Language" asp-action="Change" asp-route-returnurl="/" method="post">
+              @{
+                  IReadOnlyList<SelectListItem> countries = ViewBag.Language.Countries;
+                  string newLocale = ViewBag.Language.Country;
+              }
+              <select asp-for="@newLocale" asp-items="countries" style="display:block;"></select>
+              <input type="submit" />
+            </form>
+
+          </li>*@
+          <li>
+              <a class="dropdown-button" href="javascript:void(0)" data-activates="language_dropdown" data-beloworigin="true" style="max-height: 64px;">
+                <img src="/images/@(ViewBag.Language.Country).svg" class="nav-flag"/><i class="material-icons right" style="margin-left: 0;">arrow_drop_down</i>
+              </a>
+          </li>
+          <li><a href="/section/"><img src="/images/climber.svg" class="left" />Sections</a></li>
             <li><a href="/route"><img src="/images/climber.svg" class="left" />Routes</a></li>
             @if (SignInManager.IsSignedIn(User))
             {
@@ -85,6 +112,7 @@
           {
               <li><a href="/Account/Login"><i class="material-icons">person</i>Login</a></li>
           }
+            
         </ul>
       </div>
 

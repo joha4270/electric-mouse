@@ -84,7 +84,8 @@
       "**/*.cshtml",
       "appsettings.json",
       "web.config",
-      "testCert.pfx"
+      "testCert.pfx",
+      "Lang"
     ]
   },
 
