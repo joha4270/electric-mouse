@@ -1,7 +1,7 @@
 ﻿@model electric_mouse.Models.HallViewModels.HallCreateViewModel
 
 <div class="col s12">
-    <div class="row">
+    <div class="row" style="margin-bottom: 0;">
       <form asp-controller="Hall" asp-action="Create" method="post">
             <div class="input-field col">
               <button type="submit" class="btn waves-effect waves-light red" style="padding: 0 15px;"><i class="material-icons left">add</i>
@@ -12,6 +12,13 @@
               <input type="text" name="Name"/>
               <label for="Name">Hall Name</label>
             </div>
+          <div class="input-field col s3">
+              <select Name="Type">
+                  <option value="" selected">None</option>
+                  <option value="1">Boulder</option>
+                  <option value="2">Sport</option>
+              </select>
+          </div>
       </form>
     </div>
 </div>

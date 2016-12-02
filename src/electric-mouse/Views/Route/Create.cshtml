@@ -1,4 +1,5 @@
 ﻿@model electric_mouse.Models.RouteViewModels.RouteCreateViewModel
+@using electric_mouse.Models.RouteItems;
 <h2>Stuff</h2>
 <form asp-controller="Route" asp-action="@(Model.UpdateID < 0 ? "Create" : "Update")" method="post" class="col s12">
     <input asp-for="UpdateID" value="@Model.UpdateID" type="hidden" />
@@ -8,10 +9,14 @@
       <label for="id">Route ID</label>
     </div>
     <div class="input-field col s10">
-      <select asp-for="RouteHallID" asp-items="@Model.Halls.Select(h => new SelectListItem {Text = h.Name, Value = h.RouteHallID.ToString() })" id="hallSelect">
+      <select asp-for="RouteHallID"  id="hallSelect">
 @if (Model.UpdateID < 0)
 {
         <option value="" disabled selected>Select a Hall</option>
+}
+@foreach (RouteHall hall in Model.Halls)
+{
+    <option value ="@hall.RouteHallID" data-guess="@(hall.ExpectedType.HasValue ? (int)hall.ExpectedType.Value : -1)">@hall.Name</option>
 }
       </select>
       <label>Hal</label>
@@ -29,8 +34,9 @@
       <label>Difficulty</label>
     </div>
     <div class="input-field col s6">
-      <select>
-        <option value="1">Boulder</option>
+      <select asp-for="Type" id="TypeSelect">
+        <option value="0">Boulder</option>
+        <option value="1">Sport</option>
       </select>
       <label>Route Type</label>
     </div>
@@ -108,6 +114,15 @@
         $("#SectionSelect").material_select("destroy");
         $("#SectionSelect").html(data);
         $("#SectionSelect").material_select();
+        var guess = $(this).find("option:selected").attr('data-guess')
+        if(guess >= 0)
+        {
+            $("#TypeSelect").val(guess);
+            $("#TypeSelect").material_select();
+        }
+
     });
+
+
 </script>
 }

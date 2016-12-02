@@ -29,9 +29,20 @@ namespace electric_mouse.Controllers
         [HttpPost]
         public async Task<IActionResult> Create(HallCreateViewModel model)
         {
-            if(!string.IsNullOrEmpty(model.Name))
+            if (!string.IsNullOrEmpty(model.Name))
             {
-                _dbContext.RouteHalls.Add(new RouteHall { Name = model.Name, Sections = new List<RouteSection>() });
+                model.Type--;
+                RouteHall hall = new RouteHall
+                {
+                    Name = model.Name,
+                    Sections = new List<RouteSection>()
+                };
+
+                if (model.Type <= 0)
+                {
+                    hall.ExpectedType = model.Type;
+                }
+                _dbContext.RouteHalls.Add(hall);
                 _dbContext.SaveChanges();
             }
 
