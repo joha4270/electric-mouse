@@ -114,7 +114,7 @@ namespace electric_mouse.Controllers
                     .Where(x => x.Creators.Any(c => c.ApplicationUserRefId == creator));
             }
 
-            routes = routes .Include(c => c.Difficulty);
+            routes = routes .Include(c => c.Difficulty).Include(r => r.Creators).ThenInclude(l => l.User);
             IList<Route> routeList = new List<Route>();
 
             foreach (var r in routes.ToList())

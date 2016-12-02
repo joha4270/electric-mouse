@@ -18,7 +18,7 @@
             {
 
                 <tr>
-                    <td>@item.UserName</td> @*TODO: skal ændres til DisplayName*@
+                    <td>@item.DisplayName</td>
                     @if (await UserManager.IsInRoleAsync(item, electric_mouse.Services.RoleHandler.Admin))
                     {
                         <td>Administrator</td>
