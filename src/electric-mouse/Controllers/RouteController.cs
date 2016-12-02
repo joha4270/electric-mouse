@@ -14,6 +14,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Authorization;
 using electric_mouse.Services;
+using Microsoft.AspNetCore.Hosting;
+using System.IO;
 
 namespace electric_mouse.Controllers
 {
@@ -23,6 +25,7 @@ namespace electric_mouse.Controllers
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly ILogger _logger;
+        private IHostingEnvironment _environment;
 
         public RouteController(ApplicationDbContext dbContext, UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, ILoggerFactory logger)
         {
@@ -85,6 +88,13 @@ namespace electric_mouse.Controllers
             }
 
 
+            // Add the video attachment to the database
+            RouteAttachment attachment = new RouteAttachment { VideoUrl = model.VideoUrl, Route = route, RouteID = route.ID };
+            _dbContext.RouteAttachments.Add(attachment);
+
+            // Add the image(s) attachment to the database
+            AddImageAttachmentsToDatabase(model.Images, attachment);
+
             _dbContext.RouteUserRelations.Add(new RouteApplicationUserRelation{User = await _userManager.GetUserAsync(User), Route = route});
 
             _dbContext.SaveChanges();
@@ -92,6 +102,48 @@ namespace electric_mouse.Controllers
             return RedirectToAction(nameof(List), "Route");
         }
 
+        private async void AddImageAttachmentsToDatabase(ICollection<IFormFile> images, RouteAttachment attachment)
+        {
+            // generate a random file name for all the images that are being uploaded
+            string[] imageFileNames = images.Select(image => GetRandomFileNameWithOriginalExtension(image.FileName)).ToArray();
+            // get all the relative paths (uploads\<filename>)
+            string[] relativeImagePaths = imageFileNames.Select(filename => $"uploads\\{filename}").ToArray();
+            // get the full path (c:\...\wwwroot\uploads\<filename)
+            string[] fullImagePaths = relativeImagePaths.Select(path => Path.Combine(_environment.WebRootPath, path)).ToArray();
+            int i = 0;
+
+            foreach (IFormFile image in images)
+            {
+                if (image.Length < 0 && image.Length > ConvertMegabytesToBytes(5)) // image size should not exceed 5 megabytes
+                    continue; // skip the iteration; dont upload the image
+
+                if (image.ContentType.Contains("image") == false)
+                    continue; // if it isnt an image being uploaded; skip it!
+
+                using (FileStream fileStream = new FileStream(fullImagePaths[i], FileMode.Create))
+                {
+                    _dbContext.AttachmentPathRelations.Add(new AttachmentPathRelation
+                    {
+                        ImagePath = relativeImagePaths[i],
+                        RouteAttachment = attachment
+                    });
+
+                    await image.CopyToAsync(fileStream);
+                }
+                i++;
+            }
+        }
+
+        #region These should probably be moved (can be made extension methods)
+
+        public long ConvertMegabytesToBytes(long megabytes) => megabytes * 1000L * 1000L;
+
+        public string GetRandomFileNameWithOriginalExtension(string fileName) => $"{Path.GetFileNameWithoutExtension(Path.GetRandomFileName())}{Path.GetExtension(fileName)}";
+
+        #endregion
+
+        [HttpPost]
+        public async Task<IActionResult> CreateSampleRoute(RouteCreateViewModel model)
         public IActionResult List(string archived = "false", string creator = null)
         {
             IQueryable<Route> routes = _dbContext.Routes;

@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using electric_mouse.Models.RouteItems;
+using Microsoft.AspNetCore.Http;
 
 namespace electric_mouse.Models.RouteViewModels
 {
@@ -30,5 +31,8 @@ namespace electric_mouse.Models.RouteViewModels
         public string Date { get; set; }
         public string GripColor { get; set; }
         public string Note { get; set; }
+
+        public string VideoUrl { get; set; }
+        public ICollection<IFormFile> Images { get; set; }
     }
 }

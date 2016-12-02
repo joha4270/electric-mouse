@@ -41,29 +41,36 @@
       <select asp-for="RouteSectionID" asp-items="@(Model.UpdateID > 0 ? Model.Sections.Where(x => x.RouteHallID == Model.RouteHallID).Select(s => new SelectListItem { Text = s.Name, Value = s.RouteSectionID.ToString() }) : new SelectListItem[] { })" id="SectionSelect" multiple>
         <option value="" disabled selected>No Sections Found</option>
       </select>
-      <label for="sections">Section</label>
+      <label asp-for="Sections">Section</label>
     </div>
   </div>
 
   <div class="row">
     <div class="input-field col s12">
-      <label for="date">Date</label>
-      <input type="date" class="datepicker" name="Date" value="@Model.Date">
+      <label asp-for="Date">Date</label>
+      <input type="date" class="datepicker" name="Date">
     </div>
   </div>
 
   <div class="row">
     <div class="input-field col s12">
-      <input id="grip_color" type="text" name="GripColor" value="@Model.GripColor">
-      <label for="grip_color">Grip Color</label>
+      <input id="GripColor" type="text" name="GripColor">
+      <label asp-for="GripColor">Grip Color</label>
     </div>
   </div>
 
   <div class="row">
-    <div class="col s12">
-      <p>Image & Video row</p>
+    <div class="input-field col s12">
+        <input type="text" name="VideoUrl" />
+        <label asp-for="VideoUrl">VideoUrl</label>
     </div>
   </div>
+
+    @* IMAGE UPLOAD *@
+    <div class="row">
+        <input type="file" asp-for="Images" class="hidden"/>
+    </div>
+
 
   <div class="row">
     <div class="input-field col s12">
