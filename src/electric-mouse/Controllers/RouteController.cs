@@ -108,7 +108,13 @@ namespace electric_mouse.Controllers
             else
             {
                 RouteListViewModel listModel = GetListViewModel("false", null);
-                listModel.ModalContent = new ModalContentViewModel("Details",model);
+
+                listModel.ModalContent = new ModalContentViewModel
+                {
+	                ViewName = "Details",
+	                Model = model
+                };
+
                 return View("List", listModel);
             }
         }
@@ -159,7 +165,7 @@ namespace electric_mouse.Controllers
 
         private async Task<RouteDetailViewModel> GetDetailViewModel(int id)
         {
-            List<CommentViewModel> root = new List<CommentViewModel>();
+            List<CommentViewModel> comments = new List<CommentViewModel>();
 
             var routes = _dbContext
                 .Routes
@@ -184,8 +190,17 @@ namespace electric_mouse.Controllers
                 ApplicationUser user = await _userManager.GetUserAsync(User);
                 creatorOrAdmin = creators.Contains(user) || (await _userManager.IsInRoleAsync(user, RoleHandler.Admin)); //TODO const when merging
             }
-            RouteDetailViewModel model = new RouteDetailViewModel(routes, section, hall, root, creators, creatorOrAdmin);
-            return model;
+	        RouteDetailViewModel model = new RouteDetailViewModel
+	        {
+		        Routes = routes,
+		        Section = section,
+		        Hall = hall,
+		        Creators = creators,
+		        EditRights = creatorOrAdmin,
+		        Comments = comments
+	        };
+
+	        return model;
         }
 
 
@@ -209,6 +224,7 @@ namespace electric_mouse.Controllers
 
 
             HttpContext.Response.StatusCode = (int) HttpStatusCode.Forbidden;
+
             return Content("You don't have access to this action. 403 Forbidden");
         }
 
@@ -252,6 +268,7 @@ namespace electric_mouse.Controllers
                 return View("Create", model);
             }
             HttpContext.Response.StatusCode = (int) HttpStatusCode.Forbidden;
+
             return Content("You don't have access to this action. 403 Forbidden");
         }
 
@@ -303,6 +320,7 @@ namespace electric_mouse.Controllers
             }
 
             HttpContext.Response.StatusCode = (int) HttpStatusCode.Forbidden;
+
             return Content("You don't have access to this action. 403 Forbidden");
         }
     }

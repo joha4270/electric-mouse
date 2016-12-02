@@ -2,13 +2,7 @@
 {
     public class ModalContentViewModel
     {
-        public string ViewName { get;}
-        public object Model { get; }
-
-        public ModalContentViewModel(string viewName, object model)
-        {
-            ViewName = viewName;
-            Model = model;
-        }
+        public string ViewName { get; set;  }
+        public object Model { get; set; }
     }
 }

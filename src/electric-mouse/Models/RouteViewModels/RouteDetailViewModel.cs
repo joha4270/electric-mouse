@@ -8,21 +8,13 @@ namespace electric_mouse.Models.RouteViewModels
 {
     public class RouteDetailViewModel
     {
-        public List<ApplicationUser> Creators { get; }
-        public bool EditRights { get; }
-        public List<CommentViewModel> Comments { get; }
-        public RouteHall Hall { get; }
-        public Route Routes { get; }
-        public RouteSection Section { get; }
+	    public RouteHall Hall { get; set;  }
+	    public RouteSection Section { get; set; }
+	    public Route Routes { get; set;  }
 
-        public RouteDetailViewModel(Route routes, RouteSection section, RouteHall hall, List<CommentViewModel> root, List<ApplicationUser> creators, bool editRights)
-        {
-            Comments =root;
-            Creators = creators;
-            EditRights = editRights;
-            Routes = routes;
-            Section = section;
-            Hall = hall;
-        }
+	    public List<ApplicationUser> Creators { get; set;  }
+
+        public List<CommentViewModel> Comments { get; set; }
+	    public bool EditRights { get; set; }
     }
 }
