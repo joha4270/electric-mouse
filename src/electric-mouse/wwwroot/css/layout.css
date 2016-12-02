@@ -108,6 +108,19 @@ nav ul img {
     height: inherit;
 }
 
+.circle
+{
+	display: inline;
+	float: left;
+    border: 2px solid black;
+    padding: 8px 8px;
+    background: white;
+    width: 2px;
+    height: 2px;
+    border-radius: 100%;
+    margin-right: 10px;
+}
+
 /* Loading */
 #loading {
 	position: fixed;

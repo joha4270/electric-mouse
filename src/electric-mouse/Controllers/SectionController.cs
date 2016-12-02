@@ -25,7 +25,11 @@ namespace electric_mouse.Controllers
         {
             if (!string.IsNullOrEmpty(model.SectionName) && model.HallID != null)
             {
-                RouteSection section = new RouteSection { Name = model.SectionName, RouteHall = _dbContext.RouteHalls.First() };
+                RouteSection section = new RouteSection
+                {
+	                Name = model.SectionName,
+	                RouteHall = _dbContext.RouteHalls.First(h => h.RouteHallID == model.HallID)
+                };
                 _dbContext.RouteSections.Add(section);
                 _dbContext.SaveChanges();
             }

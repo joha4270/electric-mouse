@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace electric_mouse.Models.RouteItems
@@ -12,5 +10,6 @@ namespace electric_mouse.Models.RouteItems
         [Required]
         public int RouteDifficultyID { get; set; }
         public string Name { get; set; }
+        public string ColorHex { get; set; }
     }
 }
