@@ -8,9 +8,12 @@ using electric_mouse.Models.RouteItems;
 using electric_mouse.Models.RouteViewModels;
 using Microsoft.EntityFrameworkCore;
 using electric_mouse.Models;
+using electric_mouse.Services;
+using Microsoft.AspNetCore.Authorization;
 
 namespace electric_mouse.Controllers
 {
+    [Authorize(Roles= RoleHandler.Admin)]
     public class SectionController : Controller
     {
         private ApplicationDbContext _dbContext;

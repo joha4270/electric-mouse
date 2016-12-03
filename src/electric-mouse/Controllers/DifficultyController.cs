@@ -7,10 +7,13 @@ using electric_mouse.Data;
 using electric_mouse.Models;
 using electric_mouse.Models.RouteItems;
 using electric_mouse.Models.DifficultyViewModels;
+using electric_mouse.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 
 namespace electric_mouse.Controllers
 {
+    [Authorize(Roles= RoleHandler.Admin)]
     public class DifficultyController : Controller
     {
         private ApplicationDbContext _dbContext;
@@ -32,6 +35,7 @@ namespace electric_mouse.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(DifficultyCreateViewModel model)
         {
             ApplicationUser admin = await _manager.GetUserAsync(User);
@@ -48,6 +52,7 @@ namespace electric_mouse.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(DifficultyCreateViewModel model)
         {
             ApplicationUser admin = await _manager.GetUserAsync(User);
