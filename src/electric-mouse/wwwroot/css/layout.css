@@ -132,5 +132,15 @@ nav ul img {
 .selected-user-display {
     display: inline-block;
     background-color: #ee6e73;
-    padding: 10px;
+    margin: 10px 0 10px 10px;
+    padding: 0 10px;
+}
+
+.user-display {
+    margin-top: 0px;
+    margin-bottom: 0px;
+}
+
+.user-display p {
+    margin-top: 0px;
 }

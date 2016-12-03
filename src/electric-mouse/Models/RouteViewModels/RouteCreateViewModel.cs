@@ -33,5 +33,8 @@ namespace electric_mouse.Models.RouteViewModels
         public string Note { get; set; }
 
         public RouteType Type { get; set; }
+
+        public List<string> Builders { get; set; }
+        public List<string> BuilderNames { get; set; }
     }
 }
