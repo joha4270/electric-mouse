@@ -128,3 +128,9 @@ nav ul img {
 	margin: -32px 0 0 -32px;
 	z-index: 1500;
 }
+
+.selected-user-display {
+    display: inline-block;
+    background-color: #ee6e73;
+    padding: 10px;
+}
