@@ -28,9 +28,9 @@ namespace electric_mouse.Controllers
                 .Take(10)
                 .ToList();
 
-            List<UserSearchUserResultModel> censoredUSer = rawUser.Select(UserSearchUserResultModel.FromApplicationUser).ToList();
+            List<UserSearchUserResultModel> censoredUser = rawUser.Select(UserSearchUserResultModel.FromApplicationUser).ToList();
 
-            return Json(censoredUSer);
+            return Json(censoredUser);
         }
     }
 }

@@ -6,6 +6,7 @@ using System.Net;
 using System.Threading.Tasks;
 using electric_mouse.Data;
 using electric_mouse.Models;
+using electric_mouse.Models.Api;
 using electric_mouse.Models.RouteItems;
 using electric_mouse.Models.RouteViewModels;
 using Microsoft.AspNetCore.Identity;
@@ -46,9 +47,10 @@ namespace electric_mouse.Controllers
 
             ApplicationUser user = await _userManager.GetUserAsync(User);
             model.Builders = new List<string>(){user.Id};
-            model.BuilderNames = new List<string> {user.DisplayName};
+            model.BuilderList = new List<ApplicationUser>();
+	        model.BuilderList.Add(user);
 
-            return View(model);
+	        return View(model);
 
         }
 
@@ -250,7 +252,6 @@ namespace electric_mouse.Controllers
                     .Select(x => x.User)
                     .ToListAsync();
 
-                List<string> builderNames = Builders.Select(x => x.DisplayName).ToList();
                 List<string> builderIDs = Builders.Select(x => x.Id).ToList();
 
                 RouteCreateViewModel model = new RouteCreateViewModel
@@ -266,7 +267,7 @@ namespace electric_mouse.Controllers
                     RouteID = route.RouteID,
                     UpdateID = id,
                     RouteSectionID = selectedSections,
-                    BuilderNames = builderNames,
+                    BuilderList = Builders,
                     Builders = builderIDs
                 };
 

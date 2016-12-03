@@ -1,8 +1,8 @@
 ﻿@model electric_mouse.Models.RouteViewModels.RouteCreateViewModel
 @using electric_mouse.Models.RouteItems;
 <h2>Stuff</h2>
-<form asp-controller="Route" asp-action="@(Model.UpdateID < 0 ? "Create" : "Update")" method="post" class="col s12">
-    <input asp-for="UpdateID" value="@Model.UpdateID" type="hidden" />
+<form asp-controller="Route" asp-action="@(Model.UpdateID < 0 ? "Create" : "Update")" method="post" class="col s12" id="route_form">
+  <input asp-for="UpdateID" value="@Model.UpdateID" type="hidden" />
   <div class="row">
     <div class="input-field col s2">
       <input type="number" min="1" name="RouteID" value="@Model.RouteID" />
@@ -10,14 +10,14 @@
     </div>
     <div class="input-field col s10">
       <select asp-for="RouteHallID"  id="hallSelect">
-@if (Model.UpdateID < 0)
-{
-        <option value="" disabled selected>Select a Hall</option>
-}
-@foreach (RouteHall hall in Model.Halls)
-{
-    <option value ="@hall.RouteHallID" data-guess="@(hall.ExpectedType.HasValue ? (int)hall.ExpectedType.Value : -1)">@hall.Name</option>
-}
+        @if (Model.UpdateID < 0)
+        {
+	        <option value="" disabled selected>Select a Hall</option>
+        }
+        @foreach (RouteHall hall in Model.Halls)
+        {
+	        <option value ="@hall.RouteHallID" data-guess="@(hall.ExpectedType.HasValue ? (int)hall.ExpectedType.Value : -1)">@hall.Name</option>
+        }
       </select>
       <label>Hal</label>
     </div>
@@ -25,12 +25,12 @@
 
   <div class="row">
     <div class="input-field col s6">
-        <select asp-for="RouteDifficultyID" asp-items="@Model.Difficulties.Select(d => new SelectListItem { Text = d.Name, Value = d.RouteDifficultyID.ToString() }) ">
-            @if (Model.UpdateID < 0)
-            {
-            <option value="" disabled selected>Select a Difficulity</option>
-            }
-        </select>
+      <select asp-for="RouteDifficultyID" asp-items="@Model.Difficulties.Select(d => new SelectListItem { Text = d.Name, Value = d.RouteDifficultyID.ToString() }) ">
+        @if (Model.UpdateID < 0)
+        {
+	        <option value="" disabled selected>Select a Difficulity</option>
+        }
+      </select>
       <label>Difficulty</label>
     </div>
     <div class="input-field col s6">
@@ -67,8 +67,8 @@
 
 
   <div class=row>
-
-@for (int i = 0; i < Model.Builders.Count; i++)
+    @*
+    @for (int i = 0; i < Model.Builders.Count; i++)
 {
     <div data-userid="@Model.Builders[i]"class="valign-wrapper selected-user-display">
       <p class="valign">@Model.BuilderNames[i]<a class="waves-effect waves-light" onclick="removeBuilder('@Model.Builders[i]')">
@@ -76,6 +76,7 @@
       </p>
       <input type="hidden" name="Builders[@i]" value="@Model.Builders[i]" /></div>
 }
+
     <div id="builderscontainer" style="display: table;">
       <button type="button" id="btnaddbuilder" class="btn waves-effect waves-light red" style="display: table-row; height: 36px; ">
         Tilføj bygger
@@ -87,6 +88,13 @@
           <label for="buildersearch" data-error="wrong" >Search</label>
         </div>
         <div id="searchcontainer" style="border: 2px solid black; background-color: white; position: absolute; left: inherit; width: 100%; z-index: 2000"></div>
+      </div>
+    </div>*@
+    <div class="col s12">
+      <div class="input-field">
+        <label for="search_input">Builders</label>
+        <input type="text" id="search_input" />
+        <div id="builder_container"></div>
       </div>
     </div>
   </div>
@@ -115,7 +123,8 @@
 </form>
 
 @section scripts {
-
+  <script src="//cdnjs.cloudflare.com/ajax/libs/typeahead.js/0.11.1/typeahead.bundle.min.js"></script>
+  <script src="/js/materialize-tags.js"></script>
   <script>
       var sections = {
           @foreach (var hall in Model.Halls)
@@ -130,116 +139,92 @@
       };
 
       $("#hallSelect")
-          .on('change',
-              function() {
-                  var data = "";
-                  var parent = $(this).val();
-                  data += '<option value="" disabled selected>Select a Section</option>';
-                  $.each(sections[parent],
-                      function(key, val) {
-                          data += '<option value="' + key + '">' + val + '</option>';
-                      });
-                  if (data == "") {
-                      data = '<option value="" disabled selected>No Sections Found</option>'
-                  }
-                  $("#SectionSelect").material_select("destroy");
-                  $("#SectionSelect").html(data);
-                  $("#SectionSelect").material_select();
-                  var guess = $(this).find("option:selected").attr('data-guess');
-                  if (guess >= 0) {
-                      $("#TypeSelect").val(guess);
-                      $("#TypeSelect").material_select();
-                  }
+	      .on('change',
+		      function() {
+			      var data = "";
+			      var parent = $(this).val();
+			      data += '<option value="" disabled selected>Select a Section</option>';
+			      $.each(sections[parent],
+				      function(key, val) {
+					      data += '<option value="' + key + '">' + val + '</option>';
+				      });
+			      if (data == "") {
+				      data = '<option value="" disabled selected>No Sections Found</option>'
+			      }
+			      $("#SectionSelect").material_select("destroy");
+			      $("#SectionSelect").html(data);
+			      $("#SectionSelect").material_select();
+			      var guess = $(this).find("option:selected").attr('data-guess');
+			      if (guess >= 0) {
+				      $("#TypeSelect").val(guess);
+				      $("#TypeSelect").material_select();
+			      }
 
-              });
+		      });
 
-      $("#btnaddbuilder")
-          .click(function() {
-              $(this).hide();
-              $("#buildersearchwrapper").show();
-              $("#buildersearch").focus();
-              $("#buildersearch").val("");
-          });
-      $("#buildersearch")
-          .on('focusout',
-              function() {
-                  setTimeout(function() {
-                          $("#buildersearchwrapper").hide();
-                          $("#btnaddbuilder").show();
-                      },
-                      500);
+      var users = new Bloodhound({
+	      datumTokenizer: function(datum) {
+		      return Bloodhound.tokenizers.whitespace(datum.value);
+	      },
+	      queryTokenizer: Bloodhound.tokenizers.whitespace,
+	      remote: {
+		      wildcard: '%QUERY',
+		      url: '/api/queryusers?query=%QUERY',
+		      transform: function(response) {
+			      return $.map(response,
+				      function(result) {
+					      return {
+						      value: result.name,
+						      image: result.imageUrl,
+						      userid: result.userId
+					      };
+				      });
+		      }
+	      }
+      });
 
-              });
+      $("#search_input")
+	      .materialtags({
+			      itemValue: 'value',
+			      itemText: 'value',
+			      itemImage: 'image',
+			      itemUserId: 'userId',
+			      typeaheadjs: {
+				      displayKey: 'value',
+				      source: users,
+				      templates: {
+					      suggestion: function(item) {
+						      return '<div class="tt-suggestion tt-selectable"><img src="' + item.image +'" class="left circle" /><span>' + item.value + '</span></div>';
+					      }
+				      }
+			      }
+		      }
+	      );
 
-//Stolen from http://stackoverflow.com/a/32407093
-// func       callback function
-// wait       throttle time in ms
-// immediate  bool, should callback be called on first event
-      function debounce(func, wait, immediate) {
-          var timeout;
-          return function() {
-              var context = this, args = arguments;
-              var later = function() {
-                  timeout = null;
-                  if (!immediate) func.apply(context, args);
-              };
-              var callNow = immediate && !timeout;
-              clearTimeout(timeout);
-              timeout = setTimeout(later, wait);
-              if (callNow) func.apply(context, args);
-          };
-      };
+      $("#route_form").submit(function(e) {
+	      var self = this;
+	      e.preventDefault();
+	      var items = $("#search_input").materialtags('items');
+	      var content = "";
 
-      var removeBuilder = function(guid) {
-          $("[data-userid='" + guid + "']").remove();
+	      $(items).each(function() {
+		      content += '<input type="hidden" name="Builders[]" value="' + this.userid + '" />';
+		      console.log(this.userid);
+	      });
+	      $("#builder_container").html(content);
 
+	      self.submit();
+	      return false; // fallback
+      });
+
+      @foreach (ApplicationUser builder in Model.BuilderList)
+      {
+	      @Html.Raw("$(\"#search_input\").materialtags(\"add\",")
+	      @Html.Raw("{")
+	      @Html.Raw("image: \"")@builder.URLPath@Html.Raw("\",")
+	      @Html.Raw("userid: \"")@builder.Id@Html.Raw("\",")
+	      @Html.Raw("value: \"")@Html.Raw(@builder.DisplayName)@Html.Raw("\"")
+	      @Html.Raw("});");
       }
-
-      var addBuilder = function(guid, name) {
-          var sib = $("#builderscontainer").siblings().length;
-          $(`<div data-userid="${guid}"class="valign-wrapper selected-user-display">
-<p class="valign">${name}<a class="waves-effect waves-light">
-  <i class="material-icons right">clear</i></a>
-</p>
-<input type="hidden" name="Builders[${sib}]" value="${guid}" /></div>`).insertBefore("#builderscontainer");
-      };
-
-      var querySearch = function(context) {
-          var search = this.value;
-          if ($.trim(search) != '') {
-              $.ajax({
-                  url: "/api/queryusers",
-                  dataType: "json",
-                  data: { query: search },
-                  success: function(result) {
-                      if (result.length > 0) {
-                          var data = result.map(function(element) {
-                                  return `<div class="user-display" data-userid="${element.userId}"><p><img src="${
-                                      element.imageUrl}" height="32" width="32"></ img>${element.name}</ p></div>`;
-                              })
-                              .join("");
-                          $("#searchcontainer").html(data);
-                          var sel = $(".user-display");
-                          $(sel[0]).addClass("blue");
-                          sel.mouseenter(function() {
-                              $(".user-display.blue").removeClass("blue");
-                              $(this).addClass("blue");
-                          });
-                          sel.click(function() {
-                              addBuilder($(this).attr("data-userid"), $(this).text());
-                          });
-                      } else {
-                          $("#searchcontainer").html('<p>No results</ p>');
-                      }
-                  }
-              });
-          } else {
-              $("#searchcontainer").html("");
-          }
-      }
-
-      $("#buildersearch").keyup(debounce(querySearch, 200));
-
-
   </script>
 }
