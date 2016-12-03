@@ -31,7 +31,10 @@ function viewRoute(route_id)
 		$('#modal1').openModal({
 			complete: function () { history.back(-1); }
 		});
-  });
+  }).fail(function() {
+		$("#loading").hide();
+		Materialize.toast('Loading error!', 4500);
+	});
 }
 
 function togglemore()
