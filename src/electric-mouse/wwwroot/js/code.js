@@ -14,6 +14,15 @@ $(document).ready(function(){
     });
 });
 
+
+function difficultySearchFilter(settings, data, dataIndex, obj) {
+
+    if(difffield.length === 0) return true;
+    var difficulty_id = obj[2]["@data-filter"];
+    var res = difffield.includes(difficulty_id);
+    return res;
+};
+
 function viewRoute(route_id)
 {
 	$("#loading").show();
