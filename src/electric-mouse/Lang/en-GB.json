@@ -1,14 +1,14 @@
 ﻿{
   "TEST_STRING": "Your mother smells of elderberries",
   "ANOTHER_STRING": "But your mother smells worse",
-  "Front_Section": "Section",
-  "Front_Difficulty": "Difficulty",
-  "Front_Grip_Color": "Grip Color",
-  "Front_Builders": "Builders",
-  "Front_Date": "Date",
-  "Front_Note": "Note",
+  "Route_Section": "Section",
+  "Route_Difficulty": "Difficulty",
+  "Route_Grip_Color": "Grip Color",
+  "Route_Builders": "Builders",
+  "Route_Date": "Date",
+  "Route_Note": "Note",
 
-  "Create_Route_creation": "Route Creation",
+  "Create_Route_Creation": "Route Creation",
   "Create_Route_ID": "Route ID",
   "Create_Route_Hall": "Hall",
   "Create_Route_Difficulty": "Difficulty",
@@ -39,7 +39,7 @@
   "Warning_Delete_Section": "Are you sure you want to delete this section?",
   "Warning_Clear_Section": "Are you sure you want to clear this section?",
 
-  "Show_More": "Show more",
+  "Show_More": "Show More",
 
   "Difficulty_Creation": "Difficulty Creation",
   "Create_Difficulty": "Create Difficulty",

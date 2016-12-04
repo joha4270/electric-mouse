@@ -1,15 +1,15 @@
 ﻿{
   "TEST_STRING": "Din mor lugter af hyldebær",
   "ANOTHER_STRING": "Din mor lugter værre",
-  "Front_Section": "Sektion",
-  "Front_Difficulty": "Sværhedsgrad",
-  "Front_Grip_Color": "Grebsfarve",
-  "Front_Builders": "Byggere",
-  "Front_Date": "Dato",
-  "Front_Note": "Note",
+  "Route_Section": "Sektion",
+  "Route_Difficulty": "Sværhedsgrad",
+  "Route_Grip_Color": "Grebsfarve",
+  "Route_Builders": "Byggere",
+  "Route_Date": "Dato",
+  "Route_Note": "Note",
 
 
-  "Create_Route_creation": "Rute Oprettelse",
+  "Create_Route_Creation": "Rute Oprettelse",
   "Create_Route_ID": "Rute ID",
   "Create_Route_Hall": "Hal",
   "Create_Route_Difficulty": "Sværhedsgrad",
@@ -39,7 +39,7 @@
   "Warning_Delete_Section": "Er du sikker på at du vil slette denne sektion?",
   "Warning_Clear_Section": "Er du sikker på at du vil tømme denne sektion?",
 
-  "Show_More": "Vis mere",
+  "Show_More": "Vis Mere",
 
   "Difficulty_Creation": "Sværhedsgradsoprettelse",
   "Create_Difficulty": "Opret Sværhedsgrad",
