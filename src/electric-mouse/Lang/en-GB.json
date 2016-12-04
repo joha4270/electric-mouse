@@ -1,4 +1,51 @@
 ﻿{
   "TEST_STRING": "Your mother smells of elderberries",
-  "ANOTHER_STRING": "But your mother smells worse"
+  "ANOTHER_STRING": "But your mother smells worse",
+  "Route_Section": "Section",
+  "Route_Difficulty": "Difficulty",
+  "Route_Grip_Color": "Grip Color",
+  "Route_Builders": "Builders",
+  "Route_Date": "Date",
+  "Route_Note": "Note",
+
+  "Create_Route_Creation": "Route Creation",
+  "Create_Route_ID": "Route ID",
+  "Create_Route_Hall": "Hall",
+  "Create_Route_Difficulty": "Difficulty",
+  "Create_Route_Section": "Section",
+  "Create_Route_Date": "Date",
+  "Create_Route_Grip_Color": "Grip Color",
+  "Create_Route_Type": "Route Type",
+  "Create_Route_Image": "Image",
+  "Create_Route_Video": "Video",
+  "Create_Route_Note": "Note",
+  "Create_Route_Button": "Create Route",
+
+
+  "Difficulty_Red": "Red",
+  "Difficulty_Blue": "Blue",
+  "Difficulty_Green": "Green",
+  "Difficulty_White": "White",
+  "Difficulty_Black": "Black",
+
+
+  "Ban_Member": "Ban Member",
+  "Unban_Member": "Unban Member",
+  "Demote_Admin": "Demote Admin",
+  "Promote_To_Admin": "Promote To Admin",
+  "Warning_Delete_Member": "Are you sure you want to delete this member? The user will have to recreate his/her account.",
+  "Warning_Delete_Hall": "Are you sure you want to delete this hall?",
+  "Warning_Delete_Difficulty": "Are you sure you want to delete this difficulty?",
+  "Warning_Delete_Section": "Are you sure you want to delete this section?",
+  "Warning_Clear_Section": "Are you sure you want to clear this section?",
+
+  "Show_More": "Show More",
+
+  "Difficulty_Creation": "Difficulty Creation",
+  "Create_Difficulty": "Create Difficulty",
+  "Create_Difficulty_Name": "Difficulty Name",
+
+  "Create_Section_Name": "Section Name",
+  "Create_Section_Type": "Section Type"
+
 }
