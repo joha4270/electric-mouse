@@ -9,5 +9,6 @@ namespace electric_mouse.Models.RouteViewModels
     public class RouteListViewModel : BaseViewModel
     {
         public IList<Route> Routes { get; set; }
+        public IList<RouteDifficulty> Difficulities { get; set; }
     }
 }

@@ -113,34 +113,34 @@ namespace electric_mouse.Controllers
             return RedirectToAction(nameof(List), "Route");
         }
 
-        public IActionResult List(string archived = "false", string creator = null)
+        public async Task<IActionResult> List(string archived = "false", string creator = null)
         {
-            RouteListViewModel model = GetListViewModel(archived, creator);
+            RouteListViewModel model = await GetListViewModel(archived, creator);
             return View(model);
         }
 
         public async Task<IActionResult> Details(int id)
         {
-            RouteDetailViewModel model = await GetDetailViewModel(id);
+            Task<RouteDetailViewModel> model =  GetDetailViewModel(id);
             if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
             {
-                return PartialView(model);
+                return PartialView(await model);
             }
             else
             {
-                RouteListViewModel listModel = GetListViewModel("false", null);
+                RouteListViewModel listModel = await GetListViewModel("false", null);
 
                 listModel.ModalContent = new ModalContentViewModel
                 {
 	                ViewName = "Details",
-	                Model = model
+	                Model = await model
                 };
 
                 return View("List", listModel);
             }
         }
 
-        private RouteListViewModel GetListViewModel(string archived, string creator)
+        private async Task<RouteListViewModel> GetListViewModel(string archived, string creator)
         {
             IQueryable<Route> routes = _dbContext.Routes;
 
@@ -167,7 +167,7 @@ namespace electric_mouse.Controllers
 
             routes = routes.Include(c => c.Difficulty).Include(r => r.Creators).ThenInclude(l => l.User);
             IList<Route> routeList = new List<Route>();
-
+            var difficulityList = _dbContext.RouteDifficulties.ToListAsync();
             foreach (var r in routes.ToList())
             {
                 r.Sections = new List<RouteSection>();
@@ -182,7 +182,7 @@ namespace electric_mouse.Controllers
                 routeList.Add(r);
             }
 
-            return new RouteListViewModel { Routes = routeList };
+            return new RouteListViewModel { Routes = routeList, Difficulities = await difficulityList};
         }
 
         private async Task<RouteDetailViewModel> GetDetailViewModel(int id)
