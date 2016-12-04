@@ -112,6 +112,33 @@ namespace electric_mouse.Controllers
 
         public IActionResult List(string archived = "false", string creator = null)
         {
+            RouteListViewModel model = GetListViewModel(archived, creator);
+            return View(model);
+        }
+
+        public async Task<IActionResult> Details(int id)
+        {
+            RouteDetailViewModel model = await GetDetailViewModel(id);
+            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+            {
+                return PartialView(model);
+            }
+            else
+            {
+                RouteListViewModel listModel = GetListViewModel("false", null);
+
+                listModel.ModalContent = new ModalContentViewModel
+                {
+	                ViewName = "Details",
+	                Model = model
+                };
+
+                return View("List", listModel);
+            }
+        }
+
+        private RouteListViewModel GetListViewModel(string archived, string creator)
+        {
             IQueryable<Route> routes = _dbContext.Routes;
 
             //Build search query
@@ -128,17 +155,21 @@ namespace electric_mouse.Controllers
 
             if (!string.IsNullOrEmpty(creator))
             {
-                routes = routes.Include(x => x.Creators)
-                    .Where(x => x.Creators.Any(c => c.ApplicationUserRefId == creator));
+                routes = routes
+                    .Include(x => x.Creators)
+                    .Where(x => x.Creators
+                        .Any(c => c.ApplicationUserRefId == creator)
+                    );
             }
 
-            routes = routes .Include(c => c.Difficulty).Include(r => r.Creators).ThenInclude(l => l.User);
+            routes = routes.Include(c => c.Difficulty).Include(r => r.Creators).ThenInclude(l => l.User);
             IList<Route> routeList = new List<Route>();
 
             foreach (var r in routes.ToList())
             {
                 r.Sections = new List<RouteSection>();
                 List<RouteSectionRelation> relations = _dbContext.RouteSectionRelations.Where(t => t.RouteID == r.ID).ToList();
+
                 foreach (var s in relations)
                 {
                     RouteSection section = _dbContext.RouteSections.First(t => s.RouteSectionID == t.RouteSectionID);
@@ -148,56 +179,41 @@ namespace electric_mouse.Controllers
                 routeList.Add(r);
             }
 
-            RouteListViewModel model = new RouteListViewModel { Routes = routeList };
-            return View(model);
+            return new RouteListViewModel { Routes = routeList };
         }
 
-        public async Task<IActionResult> Details(int id)
+        private async Task<RouteDetailViewModel> GetDetailViewModel(int id)
         {
-            List<CommentViewModel> root = new List<CommentViewModel> {
-                new CommentViewModel
-                {
-                    Content = "Min mor laver ikke burgere",
-                },
-                new CommentViewModel
-                {
-                    Content = "Pancakes",
-                    Children =
-                    {
-                        new CommentViewModel {Content = "Med is!" },
-                        new CommentViewModel {Content = "Med syltetøj" }
-                    }
-                }
-            };
+            List<CommentViewModel> comments = new List<CommentViewModel>();
 
-
-
-            var routes = _dbContext
+            Route route = _dbContext
                 .Routes
-                .Where(r => r.ID == id)
-                .Include(x => x.Difficulty).ToList().First();
-            RouteSection section = null;
-            RouteHall hall = null;
+                .Include(x => x.Difficulty)
+	            .First(r => r.ID == id);
 
+	        RouteSectionRelation rs = _dbContext.RouteSectionRelations.First(t => t.RouteID == route.ID);
+	        RouteSection section = _dbContext.RouteSections.First(t => rs.RouteSectionID == t.RouteSectionID);
+	        RouteHall hall = _dbContext.RouteHalls.First(p => p.RouteHallID == section.RouteHallID);
 
-            foreach (var s in _dbContext.RouteSectionRelations.Where(t => t.RouteID == routes.ID).ToList())
-            {
-                section = _dbContext.RouteSections.First(t => s.RouteSectionID == t.RouteSectionID);
-                hall = _dbContext.RouteHalls.First(p => p.RouteHallID == section.RouteHallID);
-                break;
-            }
-
-            List<ApplicationUser> creators = _dbContext.RouteUserRelations.Where(r => r.Route == routes).Select(r => r.User).ToList();
+            List<ApplicationUser> creators = _dbContext.RouteUserRelations.Where(r => r.Route == route).Select(r => r.User).ToList();
             bool creatorOrAdmin = false;
 
             if (_signInManager.IsSignedIn(User))
             {
                 ApplicationUser user = await _userManager.GetUserAsync(User);
-                creatorOrAdmin = creators.Contains(user) || (await _userManager.IsInRoleAsync(user, "Administrator")); //TODO const when merging
+                creatorOrAdmin = creators.Contains(user) || (await _userManager.IsInRoleAsync(user, RoleHandler.Admin)); //TODO const when merging
             }
+	        RouteDetailViewModel model = new RouteDetailViewModel
+	        {
+		        Route = route,
+		        Section = section,
+		        Hall = hall,
+		        Creators = creators,
+		        EditRights = creatorOrAdmin,
+		        Comments = comments
+	        };
 
-            return PartialView(new RouteDetailViewModel(routes, section, hall, root, creators, creatorOrAdmin));
-
+	        return model;
         }
 
 
@@ -221,6 +237,7 @@ namespace electric_mouse.Controllers
 
 
             HttpContext.Response.StatusCode = (int) HttpStatusCode.Forbidden;
+
             return Content("You don't have access to this action. 403 Forbidden");
         }
 
@@ -274,6 +291,7 @@ namespace electric_mouse.Controllers
                 return View("Create", model);
             }
             HttpContext.Response.StatusCode = (int) HttpStatusCode.Forbidden;
+
             return Content("You don't have access to this action. 403 Forbidden");
         }
 
@@ -324,6 +342,7 @@ namespace electric_mouse.Controllers
             }
 
             HttpContext.Response.StatusCode = (int) HttpStatusCode.Forbidden;
+
             return Content("You don't have access to this action. 403 Forbidden");
         }
     }

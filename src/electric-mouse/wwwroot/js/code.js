@@ -16,11 +16,25 @@ $(document).ready(function(){
 
 function viewRoute(route_id)
 {
-  $('.modal-content h4').html('Loading');
-  $.get("/Route/Details/" + route_id, function (data) {
-      $(".modal-content").html(data);
-  });
-  $('#modal1').openModal();
+	$("#loading").show();
+
+	$.get("/Route/Details/" + route_id, function (data) {
+    	$(".modal-content").html(data);
+		$("#loading").hide();
+	}).done(function () {
+
+		history.pushState({
+			 url: window.URL + "",
+			 modalclose:true
+		}, "Details", "/Route/Details/" + route_id);
+
+		$('#modal1').openModal({
+			complete: function () { history.back(-1); }
+		});
+  }).fail(function() {
+		$("#loading").hide();
+		Materialize.toast('Loading error!', 4500);
+	});
 }
 
 function togglemore()
@@ -32,7 +46,6 @@ function togglemore()
     } else {
         element.css('max-height', "300px")
     }
-
 }
 
 function langUpdate(id)

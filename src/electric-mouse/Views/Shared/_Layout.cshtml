@@ -16,9 +16,12 @@
   <link rel="stylesheet" type="text/css" href="//cdn.datatables.net/1.10.12/css/jquery.dataTables.min.css" />
   <link rel="stylesheet" type="text/css" href="/css/layout.css" />
   <link rel="stylesheet" type="text/css" href="/css/bootstrap-social.css" />
+  <link rel="stylesheet" href="/css/materialize-tags.css" />
+  <link rel='stylesheet' href='/css/spectrum.css' />
   <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.css" />
   <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.theme.min.css" />
-  <link rel="stylesheet" href="/css/materialize-tags.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.theme.min.css" />
   <link rel="manifest" href="/manifest.json">
 </head>
 <body>
@@ -135,10 +138,12 @@
 <div id="modal1" class="modal modal-fixed-footer">
   <div class="modal-content">
     <h4>Modal Header</h4>
-    <div id="modal_content"></div>
+    <div id="modal_content">
+        @RenderSection("modal", required: false)
+    </div>
   </div>
   <div class="modal-footer">
-    <a href="#!" class=" modal-action modal-close waves-effect waves-green btn-flat">Close</a>
+    <a href="javascript:void(0)" class=" modal-action modal-close waves-effect waves-green btn-flat">Close</a>
   </div>
 </div>
 </body>
@@ -148,5 +153,15 @@
 <script type="text/javascript" src="//cdn.datatables.net/1.10.12/js/jquery.dataTables.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
 <script type="text/javascript" src="/js/code.js"></script>
+<script src='/js/spectrum.js'></script>
 @RenderSection("scripts", required: false)
+@if(this.SectionWriters.Keys.Concat(PreviousSectionWriters.Keys).Any(x => x == "modal"))
+{
+    <script>
+        $(document).ready(function () {
+            $('#modal1').openModal({ in_duration: 0,
+                complete: function () { history.replaceState("", "", "/Route/List")}
+            })});
+    </script>
+}
 </html>
