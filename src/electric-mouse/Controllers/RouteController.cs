@@ -33,6 +33,7 @@ namespace electric_mouse.Controllers
             _logger = logger.CreateLogger<RouteController>();
         }
 
+        [Authorize(Roles= RoleHandler.Post)]
         // RouteCreate name instead? - We'll have to implement hall etc create seperately
         public async Task<IActionResult> Create()
         {
@@ -55,6 +56,8 @@ namespace electric_mouse.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles= RoleHandler.Post)]
         public async Task<IActionResult> Create(RouteCreateViewModel model)
         {
             _logger.LogInformation("Recived following users [{users}]", string.Join(", ", model.Builders));
@@ -217,8 +220,10 @@ namespace electric_mouse.Controllers
         }
 
 
-        //TODO: UNCOMMENT [Authorize(Roles=RoleSetup.Post)]
+
         [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles= RoleHandler.Post)]
         public async Task<IActionResult> Archive(int id)
         {
             //Cannot be null as Role requires user being logged in
@@ -241,7 +246,8 @@ namespace electric_mouse.Controllers
             return Content("You don't have access to this action. 403 Forbidden");
         }
 
-        //TODO: UNCOMMENT [Authorize(Roles=RoleSetup.Post)]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles= RoleHandler.Post)]
         public async Task<IActionResult> Update(int id)
         {
             ApplicationUser user = await _userManager.GetUserAsync(User);
@@ -295,8 +301,9 @@ namespace electric_mouse.Controllers
             return Content("You don't have access to this action. 403 Forbidden");
         }
 
-        //[Authorize(Roles = RoleHandler.Post)]
         [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles= RoleHandler.Post)]
         public async Task<IActionResult> Update(RouteCreateViewModel model)
         {
             

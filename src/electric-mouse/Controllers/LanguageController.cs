@@ -9,6 +9,7 @@ namespace electric_mouse.Controllers
     public class LanguageController : Controller
     {
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public IActionResult Change(string newLocale)
         {
             if(ModelState.IsValid)

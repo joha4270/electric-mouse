@@ -3,12 +3,13 @@ using System.Threading.Tasks;
 using electric_mouse.Data;
 using electric_mouse.Models;
 using electric_mouse.Models.UserViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Identity;
 
 namespace electric_mouse.Controllers
 {
-    //[Authorize(Roles = Services.RoleHandler.Admin)]
+    [Authorize(Roles = Services.RoleHandler.Admin)]
     public class UserController: Controller
     {
         private ApplicationDbContext _dbContext;
@@ -31,6 +32,7 @@ namespace electric_mouse.Controllers
             return RedirectToAction(nameof(List), "Route");
         }
 
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> PromoteMember(UserListViewModel model)
         {
             ApplicationUser admin = await _manager.GetUserAsync(User);
@@ -44,6 +46,7 @@ namespace electric_mouse.Controllers
             return RedirectToAction(nameof(List), "User");
         }
 
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> DemoteAdmin(UserListViewModel model)
         {
             ApplicationUser admin = await _manager.GetUserAsync(User);
@@ -60,6 +63,7 @@ namespace electric_mouse.Controllers
             return RedirectToAction(nameof(List), "User");
         }
 
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Unban(UserListViewModel model)
         {
             ApplicationUser admin = await _manager.GetUserAsync(User);
@@ -73,6 +77,7 @@ namespace electric_mouse.Controllers
             return RedirectToAction(nameof(List), "User");
         }
 
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Ban(UserListViewModel model)
         {
             ApplicationUser admin = await _manager.GetUserAsync(User);
@@ -86,6 +91,7 @@ namespace electric_mouse.Controllers
             return RedirectToAction(nameof(List), "User");
         }
 
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(UserListViewModel model)
         {
             ApplicationUser admin = await _manager.GetUserAsync(User);

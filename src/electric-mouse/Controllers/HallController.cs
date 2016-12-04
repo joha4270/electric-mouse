@@ -5,11 +5,14 @@ using System.Threading.Tasks;
 using electric_mouse.Data;
 using electric_mouse.Models.HallViewModels;
 using electric_mouse.Models.RouteItems;
+using electric_mouse.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace electric_mouse.Controllers
 {
+    [Authorize(Roles= RoleHandler.Admin)]
     public class HallController : Controller
     {
         private ApplicationDbContext _dbContext;
