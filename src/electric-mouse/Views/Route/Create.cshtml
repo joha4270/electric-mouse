@@ -1,7 +1,9 @@
 ﻿@model electric_mouse.Models.RouteViewModels.RouteCreateViewModel
 @using electric_mouse.Models.RouteItems;
 <h2>Stuff</h2>
-<form asp-controller="Route" asp-action="@(Model.UpdateID < 0 ? "Create" : "Update")" method="post" class="col s12" id="route_form">
+@* enctype="multipart/form-data" is for getting all the image files *@
+<form asp-controller="Route" asp-action="@(Model.UpdateID < 0 ? "Create" : "Update")" method="post" class="col s12" id="route_form" 
+      enctype="multipart/form-data">
   <input asp-for="UpdateID" value="@Model.UpdateID" type="hidden" />
   <div class="row">
     <div class="input-field col s2">
@@ -80,13 +82,39 @@
     <div class="col s12">
         <p>Image & Video row</p>
         <div class="input-field col s12">
-            <input type="text" name="VideoUrl" />
+            <input type="text" name="VideoUrl"  value="@Model?.Attachment?.VideoUrl"/>
             <label asp-for="VideoUrl">VideoUrl</label>
+            <input asp-for="AttachmentID" value="@Model?.Attachment?.RouteAttachmentID" type="hidden" />
         </div>
     </div>
 </div>
 
-  <div class="row">
+    @* Only display the image edit if in route edit *@
+    @if (@Model.UpdateID > 0)
+    {
+        <div>Tilføjede billeder (klik på billederne for at fjerne):</div>
+        <div class="row">
+            @foreach (Tuple<string, int> image in Model.Images)
+            {
+                <div class="col s6">
+                    <img src="~/@image.Item1" id="@image.Item2" onclick="imageClicked('@image.Item2')" />
+                </div>
+            }
+            @* This select is to send the images that the user wants to delete back to the server *@
+        </div>
+        <div id="hideSelect">
+            <select asp-for="ImagePathRelationID" multiple id="imageSelect"></select>
+        </div>
+    }
+
+    @* IMAGE UPLOAD *@
+    <div class="row">
+        Upload billede
+        
+        <input type="file" name="Images" id="filer_input" multiple/>
+    </div>
+
+    <div class="row">
     <div class="input-field col s12">
       <textarea id="textarea1" class="materialize-textarea" name="Note">@Model.Note</textarea>
       <label for="textarea1">Note</label>
@@ -104,6 +132,7 @@
 </form>
 
 @section scripts {
+    <script src="/js/filer.js"></script>
   <script src="//cdnjs.cloudflare.com/ajax/libs/typeahead.js/0.11.1/typeahead.bundle.min.js"></script>
   <script src="/js/materialize-tags.js"></script>
   <script>
@@ -215,6 +244,22 @@
 	      @Html.Raw("});");
       }
 
+      $(document).ready(function () {
+          var select = document.getElementById('hideSelect');
+          if (select != null)
+              select.style.visibility = 'hidden';
+      });
 
+      function imageClicked(id) {
+          var img = document.getElementById(id);
+          img.style.visibility = 'hidden';
+
+          var select = document.getElementById('imageSelect');
+          var option = document.createElement("option");
+          option.value = id;
+          option.selected = "selected";
+          select.add(option);
+          console.log(image);
+      }
   </script>
 }

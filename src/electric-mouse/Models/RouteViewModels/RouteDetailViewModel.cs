@@ -16,5 +16,6 @@ namespace electric_mouse.Models.RouteViewModels
 
         public List<CommentViewModel> Comments { get; set; }
 	    public bool EditRights { get; set; }
+        public string[] Images { get; set; }
     }
 }

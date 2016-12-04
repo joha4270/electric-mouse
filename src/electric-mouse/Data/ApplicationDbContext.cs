@@ -21,6 +21,7 @@ namespace electric_mouse.Data
         public DbSet<RouteSectionRelation> RouteSectionRelations { get; set; }
         public DbSet<RouteApplicationUserRelation> RouteUserRelations { get; set; }
         public DbSet<RouteAttachment> RouteAttachments { get; set; }
+        public DbSet<AttachmentPathRelation> AttachmentPathRelations { get; set; } 
 
         protected override void OnModelCreating(ModelBuilder builder)
         {

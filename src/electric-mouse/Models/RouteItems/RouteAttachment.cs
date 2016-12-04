@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 
 namespace electric_mouse.Models.RouteItems
 {
+    [Table("RouteAttachments")]
     public class RouteAttachment
     {
         [Key]
@@ -14,7 +15,7 @@ namespace electric_mouse.Models.RouteItems
         public int RouteAttachmentID { get; set; }
 
         // this is the route id
-        public int ID { get; set; }
+        public int RouteID { get; set; }
 
         [ForeignKey("ID")]
         public Route Route { get; set; }
