@@ -44,6 +44,14 @@ namespace electric_mouse.Controllers
             model.Difficulties = _dbContext.RouteDifficulties.ToList();
             model.Sections = routeSections.ToList();
 
+            int idWithoutHigherImediateHigher = _dbContext.Routes
+                .Where(route => route.Archived == false)
+                .Where(route => !_dbContext.Routes.Any(r2 => r2.RouteID == route.RouteID + 1) && route.RouteID > 1)
+                .OrderBy(r => r.RouteID)
+                .Select(r => r.RouteID)
+                .FirstOrDefault();
+
+            model.RouteID = idWithoutHigherImediateHigher + 1;
             return View(model);
 
         }
