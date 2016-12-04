@@ -74,6 +74,34 @@ namespace electric_mouse.Data.Migrations
                     b.ToTable("AspNetUsers");
                 });
 
+            modelBuilder.Entity("electric_mouse.Models.Comment", b =>
+                {
+                    b.Property<int>("CommentID")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<string>("ApplicationUserRefId");
+
+                    b.Property<string>("Content");
+
+                    b.Property<DateTime>("Date");
+
+                    b.Property<bool>("Deleted");
+
+                    b.Property<DateTime>("DeletionDate");
+
+                    b.Property<int>("OriginalPostID");
+
+                    b.Property<int>("RouteID");
+
+                    b.HasKey("CommentID");
+
+                    b.HasIndex("ApplicationUserRefId");
+
+                    b.HasIndex("RouteID");
+
+                    b.ToTable("Comments");
+                });
+
             modelBuilder.Entity("electric_mouse.Models.Route", b =>
                 {
                     b.Property<int>("ID")
@@ -276,6 +304,18 @@ namespace electric_mouse.Data.Migrations
                     b.HasKey("UserId", "LoginProvider", "Name");
 
                     b.ToTable("AspNetUserTokens");
+                });
+
+            modelBuilder.Entity("electric_mouse.Models.Comment", b =>
+                {
+                    b.HasOne("electric_mouse.Models.ApplicationUser", "User")
+                        .WithMany("CommentsMade")
+                        .HasForeignKey("ApplicationUserRefId");
+
+                    b.HasOne("electric_mouse.Models.Route", "Route")
+                        .WithMany()
+                        .HasForeignKey("RouteID")
+                        .OnDelete(DeleteBehavior.Cascade);
                 });
 
             modelBuilder.Entity("electric_mouse.Models.Route", b =>

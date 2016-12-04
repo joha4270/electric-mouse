@@ -15,6 +15,7 @@ namespace electric_mouse.Data
         }
 
         public DbSet<Route> Routes { get; set; }
+        public DbSet<Comment> Comments { get; set; }
         public DbSet<RouteHall> RouteHalls { get; set; }
         public DbSet<RouteSection> RouteSections { get; set; }
         public DbSet<RouteDifficulty> RouteDifficulties { get; set; }
@@ -40,6 +41,11 @@ namespace electric_mouse.Data
                 .HasOne(rel => rel.Route)
                 .WithMany(u => u.Creators)
                 .HasForeignKey(rel => rel.RouteRefId);
+
+            builder.Entity<Comment>()
+                .HasOne(rel => rel.User)
+                .WithMany(u => u.CommentsMade)
+                .HasForeignKey(rel => rel.ApplicationUserRefId);
         }
     }
 }

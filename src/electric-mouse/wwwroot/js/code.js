@@ -32,8 +32,18 @@ function viewRoute(route_id)
   $('.modal-content h4').html('Loading');
   $.get("/Route/Details/" + route_id, function (data) {
       $(".modal-content").html(data);
+      $(".comment button").click(function () {  //This function is added to all comment-buttons.
+          //Make sure all show_reply_field buttons are displayed
+          $(".show_reply_field").css("display", "block");
+          //Hide all reply_fields.
+          $(".reply_field").css("display", "none");
+          //Show the relevant reply_field.
+          $(this).parent().parent().children(".reply_field").css("display", "block");
+          //Hide the button that was clicked.
+          $(this).parent().css("display", "none");
+      });
   });
-  $('#modal1').openModal();
+      $('#modal1').openModal();
 }
 
 function togglemore()
