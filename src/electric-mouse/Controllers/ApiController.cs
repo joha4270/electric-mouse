@@ -21,12 +21,12 @@ namespace electric_mouse.Controllers
 
         public async Task<IActionResult> QueryUsers(string query)
         {
-            List<ApplicationUser> rawUser =
+            List<ApplicationUser> rawUser = await
                 _dbContext.Users
                 .Where(u => u.DisplayName.Contains(query))
                 .OrderBy(u => u.DisplayName)
                 .Take(10)
-                .ToList();
+                .ToListAsync();
 
             List<UserSearchUserResultModel> censoredUser = rawUser.Select(UserSearchUserResultModel.FromApplicationUser).ToList();
 
