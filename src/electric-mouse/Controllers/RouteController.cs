@@ -39,7 +39,7 @@ namespace electric_mouse.Controllers
             _environment = environment;
         }
 
-        [Authorize(Roles= RoleHandler.Post)]
+        [Authorize(Roles = RoleHandler.Post)]
         // RouteCreate name instead? - We'll have to implement hall etc create seperately
         public async Task<IActionResult> Create()
         {
@@ -63,7 +63,7 @@ namespace electric_mouse.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles= RoleHandler.Post)]
+        [Authorize(Roles = RoleHandler.Post)]
         public async Task<IActionResult> Create(RouteCreateViewModel model)
         {
             _logger.LogInformation("Recived following users [{users}]", string.Join(", ", model.Builders));
@@ -309,7 +309,7 @@ namespace electric_mouse.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles= RoleHandler.Post)]
+        [Authorize(Roles = RoleHandler.Post)]
         public async Task<IActionResult> Archive(int id)
         {
             //Cannot be null as Role requires user being logged in
@@ -332,8 +332,7 @@ namespace electric_mouse.Controllers
             return Content("You don't have access to this action. 403 Forbidden");
         }
 
-        [ValidateAntiForgeryToken]
-        [Authorize(Roles= RoleHandler.Post)]
+        [Authorize(Roles = RoleHandler.Post)]
         public async Task<IActionResult> Update(int id)
         {
             ApplicationUser user = await _userManager.GetUserAsync(User);
@@ -364,9 +363,12 @@ namespace electric_mouse.Controllers
                 List<string> builderIDs = Builders.Select(x => x.Id).ToList();
 
                 // Get all the images related to the route
-                AttachmentPathRelation[] relations = _dbContext.AttachmentPathRelations.Include(relation => relation.RouteAttachment).ToArray();
-                Tuple<string, int>[] imagePaths = relations?.Where(attachment => attachment.RouteAttachment.RouteID == id)
-                                                 ?.Select(attachment => new Tuple<string, int>(attachment.ImagePath, attachment.AttachmentPathRelationID))
+                IList<AttachmentPathRelation> relations = _dbContext.AttachmentPathRelations
+	                .Include(relation => relation.RouteAttachment)
+	                .Where(x => x.RouteAttachment.RouteID == id)
+	                .ToList();
+
+                Tuple<string, int>[] imagePaths = relations?.Select(attachment => new Tuple<string, int>(attachment.ImagePath, attachment.AttachmentPathRelationID))
                                                  .ToArray();
 
                 RouteCreateViewModel model = new RouteCreateViewModel
@@ -397,7 +399,7 @@ namespace electric_mouse.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles= RoleHandler.Post)]
+        [Authorize(Roles = RoleHandler.Post)]
         public async Task<IActionResult> Update(RouteCreateViewModel model)
         {
             
