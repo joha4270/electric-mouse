@@ -1,4 +1,50 @@
 ﻿{
   "TEST_STRING": "Din mor lugter af hyldebær",
-  "ANOTHER_STRING": "Din mor lugter værre"
+  "ANOTHER_STRING": "Din mor lugter værre",
+  "Route_Section": "Sektion",
+  "Route_Difficulty": "Sværhedsgrad",
+  "Route_Grip_Color": "Grebsfarve",
+  "Route_Builders": "Byggere",
+  "Route_Date": "Dato",
+  "Route_Note": "Note",
+
+
+  "Create_Route_Creation": "Rute Oprettelse",
+  "Create_Route_ID": "Rute ID",
+  "Create_Route_Hall": "Hal",
+  "Create_Route_Difficulty": "Sværhedsgrad",
+  "Create_Route_Section": "Sektion",
+  "Create_Route_Date": "Dato",
+  "Create_Route_Grip_Color": "Grebsfarve",
+  "Create_Route_Type": "Rute Type",
+  "Create_Route_Image": "Billede",
+  "Create_Route_Video": "Video",
+  "Create_Route_Note": "Note",
+  "Create_Route_Button": "Opret Rute",
+
+
+  "Difficulty_Red": "Rød",
+  "Difficulty_Blue": "Blå",
+  "Difficulty_Green": "Grøn",
+  "Difficulty_White": "Hvid",
+  "Difficulty_Black": "Sort",
+
+  "Ban_Member": "Ban Medlem",
+  "Unban_Member": "Unban Medlem",
+  "Demote_Admin": "Degraderer Admin",
+  "Promote_To_Admin": "Forfrem Medlem",
+  "Warning_Delete_Member": "Er du sikker på at du vil slette dette medlem? Brugeren vil bliver nødt til at genskabe den.",
+  "Warning_Delete_Hall": "Er du sikker på at du vil slette hal?",
+  "Warning_Delete_Difficulty": "Er du sikker på at du vil slette denne sværhedsgrad?",
+  "Warning_Delete_Section": "Er du sikker på at du vil slette denne sektion?",
+  "Warning_Clear_Section": "Er du sikker på at du vil tømme denne sektion?",
+
+  "Show_More": "Vis Mere",
+
+  "Difficulty_Creation": "Sværhedsgradsoprettelse",
+  "Create_Difficulty": "Opret Sværhedsgrad",
+  "Create_Difficulty_Name": "Sværhedsgradsnavn",
+
+  "Create_Section_Name": "Sektionsnavn",
+  "Create_Section_Type": "Sektiontype"
 }
