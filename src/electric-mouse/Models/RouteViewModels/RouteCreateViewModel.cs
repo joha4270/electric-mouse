@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using electric_mouse.Models.Api;
 using electric_mouse.Models.RouteItems;
 using Models;
 
@@ -33,5 +34,8 @@ namespace electric_mouse.Models.RouteViewModels
         public string Note { get; set; }
 
         public RouteType Type { get; set; }
+
+        public List<string> Builders { get; set; }
+	    public List<ApplicationUser> BuilderList { get; set; }
     }
 }

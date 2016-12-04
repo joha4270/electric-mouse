@@ -1,8 +1,8 @@
 ﻿@model electric_mouse.Models.RouteViewModels.RouteCreateViewModel
 @using electric_mouse.Models.RouteItems;
 <h2>Stuff</h2>
-<form asp-controller="Route" asp-action="@(Model.UpdateID < 0 ? "Create" : "Update")" method="post" class="col s12">
-    <input asp-for="UpdateID" value="@Model.UpdateID" type="hidden" />
+<form asp-controller="Route" asp-action="@(Model.UpdateID < 0 ? "Create" : "Update")" method="post" class="col s12" id="route_form">
+  <input asp-for="UpdateID" value="@Model.UpdateID" type="hidden" />
   <div class="row">
     <div class="input-field col s2">
       <input type="number" min="1" name="RouteID" value="@Model.RouteID" />
@@ -10,14 +10,14 @@
     </div>
     <div class="input-field col s10">
       <select asp-for="RouteHallID"  id="hallSelect">
-@if (Model.UpdateID < 0)
-{
-        <option value="" disabled selected>Select a Hall</option>
-}
-@foreach (RouteHall hall in Model.Halls)
-{
-    <option value ="@hall.RouteHallID" data-guess="@(hall.ExpectedType.HasValue ? (int)hall.ExpectedType.Value : -1)">@hall.Name</option>
-}
+        @if (Model.UpdateID < 0)
+        {
+	        <option value="" disabled selected>Select a Hall</option>
+        }
+        @foreach (RouteHall hall in Model.Halls)
+        {
+	        <option value ="@hall.RouteHallID" data-guess="@(hall.ExpectedType.HasValue ? (int)hall.ExpectedType.Value : -1)">@hall.Name</option>
+        }
       </select>
       <label>Hal</label>
     </div>
@@ -25,12 +25,12 @@
 
   <div class="row">
     <div class="input-field col s6">
-        <select asp-for="RouteDifficultyID" asp-items="@Model.Difficulties.Select(d => new SelectListItem { Text = d.Name, Value = d.RouteDifficultyID.ToString() }) ">
-            @if (Model.UpdateID < 0)
-            {
-            <option value="" disabled selected>Select a Difficulity</option>
-            }
-        </select>
+      <select asp-for="RouteDifficultyID" asp-items="@Model.Difficulties.Select(d => new SelectListItem { Text = d.Name, Value = d.RouteDifficultyID.ToString() }) ">
+        @if (Model.UpdateID < 0)
+        {
+	        <option value="" disabled selected>Select a Difficulity</option>
+        }
+      </select>
       <label>Difficulty</label>
     </div>
     <div class="input-field col s6">
@@ -65,6 +65,16 @@
     </div>
   </div>
 
+  <div class=row>
+    <div class="col s12">
+      <div class="input-field">
+        <label for="search_input">Builders</label>
+        <input type="text" id="search_input" />
+        <div id="builder_container"></div>
+      </div>
+    </div>
+  </div>
+
   <div class="row">
     <div class="col s12">
       <p>Image & Video row</p>
@@ -89,40 +99,117 @@
 </form>
 
 @section scripts {
+  <script src="//cdnjs.cloudflare.com/ajax/libs/typeahead.js/0.11.1/typeahead.bundle.min.js"></script>
+  <script src="/js/materialize-tags.js"></script>
+  <script>
+      var sections = {
+          @foreach (var hall in Model.Halls)
+          {
+              @Html.Raw("'")@hall.RouteHallID@Html.Raw("': {")
+              foreach (var s in Model.Sections.Where(i => i.RouteHallID == hall.RouteHallID))
+              {
+                  @Html.Raw("'")@s.RouteSectionID@Html.Raw("': '")@s.Name@Html.Raw("',")
+              }
+              @Html.Raw("},\n")
+          }
+      };
 
-<script>
-    var sections = {
-        @foreach (var hall in Model.Halls)
-        {
-            @Html.Raw("'")@hall.RouteHallID@Html.Raw("': {")
-             foreach (var s in Model.Sections.Where(i => i.RouteHallID == hall.RouteHallID))
-             {
-                 @Html.Raw("'")@s.RouteSectionID@Html.Raw("': '")@s.Name@Html.Raw("',")
-             }
-            @Html.Raw("},\n")
-        }
-    };
+      $("#hallSelect")
+	      .on('change',
+		      function() {
+			      var data = "";
+			      var parent = $(this).val();
+			      data += '<option value="" disabled selected>Select a Section</option>';
+			      $.each(sections[parent],
+				      function(key, val) {
+					      data += '<option value="' + key + '">' + val + '</option>';
+				      });
+			      if (data == "") {
+				      data = '<option value="" disabled selected>No Sections Found</option>'
+			      }
+			      $("#SectionSelect").material_select("destroy");
+			      $("#SectionSelect").html(data);
+			      $("#SectionSelect").material_select();
+			      var guess = $(this).find("option:selected").attr('data-guess');
+			      if (guess >= 0) {
+				      $("#TypeSelect").val(guess);
+				      $("#TypeSelect").material_select();
+			      }
 
-    $("#hallSelect").on('change', function() {
-        var data = "";
-        var parent = $(this).val();
-        data += '<option value="" disabled selected>Select a Section</option>';
-        $.each(sections[parent], function(key, val) {
-            data += '<option value="' + key + '">' + val + '</option>';
-        });
-        if(data == "") {data = '<option value="" disabled selected>No Sections Found</option>'}
-        $("#SectionSelect").material_select("destroy");
-        $("#SectionSelect").html(data);
-        $("#SectionSelect").material_select();
-        var guess = $(this).find("option:selected").attr('data-guess')
-        if(guess >= 0)
-        {
-            $("#TypeSelect").val(guess);
-            $("#TypeSelect").material_select();
-        }
+		      });
 
-    });
+      var users = new Bloodhound({
+	      datumTokenizer: function(datum) {
+		      return Bloodhound.tokenizers.whitespace(datum.value);
+	      },
+	      queryTokenizer: Bloodhound.tokenizers.whitespace,
+	      remote: {
+		      wildcard: '%QUERY',
+		      url: '/api/queryusers?query=%QUERY',
+		      transform: function(response) {
+			      return $.map(response,
+				      function(result) {
+					      return {
+						      value: result.name,
+						      image: result.imageUrl,
+						      userid: result.userId
+					      };
+				      });
+		      }
+	      }
+      });
+
+      $("#search_input")
+	      .materialtags({
+			      itemValue: 'value',
+			      itemText: 'value',
+			      itemImage: 'image',
+			      itemUserId: 'userId',
+			      typeaheadjs: {
+				      displayKey: 'value',
+				      source: users,
+				      templates: {
+					      suggestion: function(item) {
+						      return '<div class="tt-suggestion tt-selectable"><img src="' + item.image +'" class="left circle" /><span>' + item.value + '</span></div>';
+					      }
+				      }
+			      }
+		      }
+	      );
+      $("#search_input").on('itemRemoved', function(event) {
+	      $(".tt-input").focus().select();
+      });
+
+      $("#route_form").submit(function(e) {
+	      var self = this;
+	      e.preventDefault();
+	      var items = $("#search_input").materialtags('items');
+	      var content = "";
+
+	      $(items).each(function() {
+		      content += '<input type="hidden" name="Builders[]" value="' + this.userid + '" />';
+		      console.log(this.userid);
+	      });
+	      $("#builder_container").html(content);
+
+	      self.submit();
+	      return false; // fallback
+      });
+
+	  $("#route_form").bind('keypress keydown keyup', function(e){
+	     if(e.keyCode == 13) { e.preventDefault(); }
+	  });
+
+      @foreach (ApplicationUser builder in Model.BuilderList)
+      {
+	      @Html.Raw("$(\"#search_input\").materialtags(\"add\",")
+	      @Html.Raw("{")
+	      @Html.Raw("image: \"")@builder.URLPath@Html.Raw("\",")
+	      @Html.Raw("userid: \"")@builder.Id@Html.Raw("\",")
+	      @Html.Raw("value: \"")@Html.Raw(@builder.DisplayName)@Html.Raw("\"")
+	      @Html.Raw("});");
+      }
 
 
-</script>
+  </script>
 }

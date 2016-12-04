@@ -6,6 +6,7 @@ using System.Net;
 using System.Threading.Tasks;
 using electric_mouse.Data;
 using electric_mouse.Models;
+using electric_mouse.Models.Api;
 using electric_mouse.Models.RouteItems;
 using electric_mouse.Models.RouteViewModels;
 using Microsoft.AspNetCore.Identity;
@@ -33,7 +34,7 @@ namespace electric_mouse.Controllers
         }
 
         // RouteCreate name instead? - We'll have to implement hall etc create seperately
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
 
             IQueryable<RouteHall> routeHalls = _dbContext.RouteHalls.Include(s => s.Sections);
@@ -44,13 +45,20 @@ namespace electric_mouse.Controllers
             model.Difficulties = _dbContext.RouteDifficulties.ToList();
             model.Sections = routeSections.ToList();
 
-            return View(model);
+            ApplicationUser user = await _userManager.GetUserAsync(User);
+            model.Builders = new List<string>(){user.Id};
+            model.BuilderList = new List<ApplicationUser>();
+	        model.BuilderList.Add(user);
+
+	        return View(model);
 
         }
 
         [HttpPost]
         public async Task<IActionResult> Create(RouteCreateViewModel model)
         {
+            _logger.LogInformation("Recived following users [{users}]", string.Join(", ", model.Builders));
+
             RouteDifficulty difficulty =
                 _dbContext.RouteDifficulties.First(d => d.RouteDifficultyID == model.RouteDifficultyID);
             DateTime date = DateTime.ParseExact(model.Date, "dd-MM-yyyy", CultureInfo.InvariantCulture);
@@ -82,8 +90,20 @@ namespace electric_mouse.Controllers
                 _dbContext.SaveChanges();
             }
 
+            //Find all the users by id in model.Builders, in parallel, then discard missing results
+            foreach (
+                ApplicationUser builder in
+                (await Task.WhenAll(
+                    model.Builders
+                        .Distinct()
+                        .Select(x => _userManager.FindByIdAsync(x)))
+                ).Where(x => x != null))
+            {
+                _dbContext.RouteUserRelations.Add(new RouteApplicationUserRelation{User = builder, Route = route});
+            }
 
-            _dbContext.RouteUserRelations.Add(new RouteApplicationUserRelation{User = await _userManager.GetUserAsync(User), Route = route});
+
+
 
             _dbContext.SaveChanges();
 
@@ -242,6 +262,14 @@ namespace electric_mouse.Controllers
                     .First();
 
                 List<int> selectedSections = _dbContext.RouteSectionRelations.Where(x => x.RouteID == id).Select(x => x.RouteSectionID).ToList();
+                List<ApplicationUser> Builders = await _dbContext
+                    .RouteUserRelations
+                    .Where(x => x.Route == route)
+                    .Include(x => x.User)
+                    .Select(x => x.User)
+                    .ToListAsync();
+
+                List<string> builderIDs = Builders.Select(x => x.Id).ToList();
 
                 RouteCreateViewModel model = new RouteCreateViewModel
                 {
@@ -255,7 +283,9 @@ namespace electric_mouse.Controllers
                     RouteHallID = hall,
                     RouteID = route.RouteID,
                     UpdateID = id,
-                    RouteSectionID = selectedSections
+                    RouteSectionID = selectedSections,
+                    BuilderList = Builders,
+                    Builders = builderIDs
                 };
 
                 return View("Create", model);
@@ -289,7 +319,6 @@ namespace electric_mouse.Controllers
                     List<RouteSectionRelation> inDb = await _dbContext.RouteSectionRelations.Where(x => x.RouteID == model.UpdateID).ToListAsync();
 
                     List<RouteSectionRelation> toRemove = inDb.Where(x => !model.RouteSectionID.Contains(x.RouteSectionID)).ToList();
-                    List<RouteSectionRelation> toKeep = inDb.Where(x => model.RouteSectionID.Contains(x.RouteSectionID)).ToList(); ;
                     List<int> toAddInt = model.RouteSectionID.Where(x => !inDb.Any(y => y.RouteSectionID == x)).ToList();
                     List<RouteSectionRelation> toAdd = toAddInt.Select(x => new RouteSectionRelation { Route = route, RouteSectionID = x }).ToList();
 
@@ -297,16 +326,16 @@ namespace electric_mouse.Controllers
                     _dbContext.RouteSectionRelations.RemoveRange(toRemove);
                     _dbContext.RouteSectionRelations.AddRange(toAdd);
                 }
-                //{
-                //    //TODO: once we got users in model we need to fix this code. Read only code i'm afraid, shout at johannes
-                //    List<RouteApplicationUserRelation> inDb = _dbContext.RouteUserRelations.Where(x => x.RouteRefId == model.UpdateID).ToList();
-                //    List<RouteApplicationUserRelation> toRemove = inDb.Where(x => !route.Sections.Contains(x.RouteSection)).ToList();
-                //    List<RouteApplicationUserRelation> toKeep = inDb.Where(x => route.Sections.Contains(x.RouteSection)).ToList(); ;
-                //    List<RouteApplicationUserRelation> toAdd = model.Sections.Where(x => !inDb.Any(y => y.RouteSection == x)).Select(r => new RouteSectionRelation { Route = route, RouteSection = r }).ToList();
+                {
+                    List<RouteApplicationUserRelation> inDb = await _dbContext.RouteUserRelations.Where(x => x.RouteRefId == model.UpdateID).ToListAsync();
 
-                //    _dbContext.RouteUserRelations.RemoveRange(toRemove);
-                //    _dbContext.RouteUserRelations.AddRange(toAdd);
-                //}
+                    List<RouteApplicationUserRelation> toRemove = inDb.Where(x => !model.Builders.Contains(x.ApplicationUserRefId)).ToList();
+                    List<string> toAddId = model.Builders.Where(x => !inDb.Any(y => y.ApplicationUserRefId == x)).ToList();
+                    List<RouteApplicationUserRelation> toAdd = toAddId.Select(x => new RouteApplicationUserRelation { Route = route, ApplicationUserRefId = x }).ToList();
+
+                    _dbContext.RouteUserRelations.RemoveRange(toRemove);
+                    _dbContext.RouteUserRelations.AddRange(toAdd);
+                }
 
                 await _dbContext.SaveChangesAsync();
                 return RedirectToAction("List");
