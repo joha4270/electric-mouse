@@ -15,6 +15,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Authorization;
 using electric_mouse.Services;
+using Microsoft.AspNetCore.Hosting;
+using System.IO;
+using Microsoft.AspNetCore.Http;
 
 namespace electric_mouse.Controllers
 {
@@ -24,13 +27,16 @@ namespace electric_mouse.Controllers
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly ILogger _logger;
+        private readonly IHostingEnvironment _environment;
 
-        public RouteController(ApplicationDbContext dbContext, UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, ILoggerFactory logger)
+        public RouteController(ApplicationDbContext dbContext, UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, ILoggerFactory logger
+            ,IHostingEnvironment environment)
         {
             _dbContext = dbContext;
             _userManager = userManager;
             _signInManager = signInManager;
             _logger = logger.CreateLogger<RouteController>();
+            _environment = environment;
         }
 
         [Authorize(Roles= RoleHandler.Post)]
@@ -106,13 +112,84 @@ namespace electric_mouse.Controllers
             }
 
 
-            RouteAttachment attachment = new RouteAttachment { VideoUrl = model.VideoUrl, Route = route, ID = route.ID };
+            // Add the video attachment to the database
+            RouteAttachment attachment = new RouteAttachment { VideoUrl = model.VideoUrl, Route = route, RouteID = route.ID };
             _dbContext.RouteAttachments.Add(attachment);
+
+            // Add the image(s) attachment to the database
+            // Get all the image names that should be excluded from the upload
+            string[] exclude = Request.Form["jfiler-items-exclude-Images-0"].ToString().Trim('[', ']').Replace("\"", "").Split(',');
+            // Filter out the images that the user removed during the upload
+            IEnumerable<IFormFile> imagesToUpload = Request.Form.Files.Where(image => image.Name.Contains("Images") && exclude.Contains(image.FileName) == false);
+            await AddImageAttachmentsToDatabase(imagesToUpload.ToList(), attachment);
 
             _dbContext.SaveChanges();
 
             return RedirectToAction(nameof(List), "Route");
         }
+
+        private async Task AddImageAttachmentsToDatabase(IList<IFormFile> images, RouteAttachment attachment)
+        {
+            if (images == null) // bail if there are no images being uploaded
+                return;
+
+            // the name of the folder to upload all the images
+            string uploadFolderName = "uploads";
+            // generate a random file name for all the images that are being uploaded
+            string[] imageFileNames = images.Select(image => GetRandomFileNameWithOriginalExtension(image.FileName)).ToArray();
+            // get all the relative paths (uploads\<filename>)
+            string[] relativeImagePaths = imageFileNames.Select(filename => Path.Combine(uploadFolderName, filename)).ToArray();
+            // get the path to the uploads folder on the server
+            string uploadFolderPath = Path.Combine(_environment.WebRootPath, uploadFolderName);
+            // get the full path (c:\...\wwwroot\uploads\<filename>)
+            string[] fullImagePaths = imageFileNames.Select(filename => Path.Combine(uploadFolderPath, filename)).ToArray();
+            int i = 0;
+
+            // create uploads folder if it doesnt exist
+            if (Directory.Exists(uploadFolderPath) == false)
+                Directory.CreateDirectory(uploadFolderPath);
+
+            foreach (IFormFile image in images)
+            {
+                if (image.Length <= 0 && image.Length > ConvertMegabytesToBytes(5)) // image size should not exceed 5 megabytes
+                    continue; // skip the iteration; dont upload the image
+
+                if (image.ContentType.Contains("image") == false)
+                    continue; // if it isnt an image being uploaded; skip it!
+
+                if (HasExtension(image.FileName, ".png", ".jpg", ".jpeg") == false)
+                    continue; // if it doesnt have an image extension; skip it!
+
+                using (FileStream fileStream = new FileStream(fullImagePaths[i], FileMode.Create))
+                {
+                    _dbContext.AttachmentPathRelations.Add(new AttachmentPathRelation
+                    {
+                        ImagePath = relativeImagePaths[i],
+                        RouteAttachment = attachment
+                    });
+                    await image.CopyToAsync(fileStream);
+                }
+                i++;
+            }
+        }
+
+        /// <summary>
+        /// Checks if the filename has one of the extensions provided.
+        /// </summary>
+        private bool HasExtension(string fileName, params string[] extensions)
+        {
+            string fileExtension = Path.GetExtension(fileName);
+
+            return extensions.Any(extension => extension.Equals(fileExtension));
+        }
+
+        #region These should probably be moved (can be made extension methods)
+
+        public long ConvertMegabytesToBytes(long megabytes) => megabytes * 1024L * 1024L;
+
+        public string GetRandomFileNameWithOriginalExtension(string fileName) => $"{Path.GetFileNameWithoutExtension(Path.GetRandomFileName())}{Path.GetExtension(fileName)}";
+
+        #endregion
 
         public async Task<IActionResult> List(string archived = "false", string creator = null)
         {
@@ -207,14 +284,22 @@ namespace electric_mouse.Controllers
                 ApplicationUser user = await _userManager.GetUserAsync(User);
                 creatorOrAdmin = creators.Contains(user) || (await _userManager.IsInRoleAsync(user, RoleHandler.Admin)); //TODO const when merging
             }
-	        RouteDetailViewModel model = new RouteDetailViewModel
+
+            // Get all the images related to the route
+            AttachmentPathRelation[] attachments = _dbContext.AttachmentPathRelations.Include(relation => relation.RouteAttachment).ToArray();
+            string[] imagePaths = attachments?.Where(attachment => attachment.RouteAttachment.RouteID == id)
+                                             ?.Select(attachment => attachment.ImagePath)
+                                             .ToArray();
+
+            RouteDetailViewModel model = new RouteDetailViewModel
 	        {
 		        Route = route,
 		        Section = section,
 		        Hall = hall,
 		        Creators = creators,
 		        EditRights = creatorOrAdmin,
-		        Comments = comments
+		        Comments = comments,
+                Images = imagePaths
 	        };
 
 	        return model;
@@ -278,6 +363,12 @@ namespace electric_mouse.Controllers
 
                 List<string> builderIDs = Builders.Select(x => x.Id).ToList();
 
+                // Get all the images related to the route
+                AttachmentPathRelation[] relations = _dbContext.AttachmentPathRelations.Include(relation => relation.RouteAttachment).ToArray();
+                Tuple<string, int>[] imagePaths = relations?.Where(attachment => attachment.RouteAttachment.RouteID == id)
+                                                 ?.Select(attachment => new Tuple<string, int>(attachment.ImagePath, attachment.AttachmentPathRelationID))
+                                                 .ToArray();
+
                 RouteCreateViewModel model = new RouteCreateViewModel
                 {
                     Halls = routeHalls.ToList(),
@@ -292,7 +383,9 @@ namespace electric_mouse.Controllers
                     UpdateID = id,
                     RouteSectionID = selectedSections,
                     BuilderList = Builders,
-                    Builders = builderIDs
+                    Builders = builderIDs,
+                    Images = imagePaths,
+                    Attachment = _dbContext.RouteAttachments.FirstOrDefault(att => att.RouteID == id)
                 };
 
                 return View("Create", model);
@@ -344,6 +437,35 @@ namespace electric_mouse.Controllers
                     _dbContext.RouteUserRelations.RemoveRange(toRemove);
                     _dbContext.RouteUserRelations.AddRange(toAdd);
                 }
+
+                #region Attachment related code
+                // Get the path relations that should be deleted
+                List<AttachmentPathRelation> pathRelationsToRemove = _dbContext.AttachmentPathRelations.Where(relation => model.ImagePathRelationID.Contains(relation.AttachmentPathRelationID)).ToList();
+                // Get the paths to the images on the server that should be deleted
+                List<string> imagesToDelete = pathRelationsToRemove.Select(relation => relation.ImagePath).ToList();
+
+                // Delete the path relations
+                _dbContext.AttachmentPathRelations.RemoveRange(pathRelationsToRemove);
+
+                // Delete the images on the server
+                foreach (string path in imagesToDelete)
+                {
+                    System.IO.File.Delete(Path.Combine(_environment.WebRootPath, path));
+                }
+
+                // If the video url is updated we want to update this in the attachment
+                RouteAttachment attachment = _dbContext.RouteAttachments.First(att => att.RouteAttachmentID == model.AttachmentID);
+                attachment.VideoUrl = model.VideoUrl;
+                //_dbContext.RouteAttachments.Add(attachment);
+
+                // Upload the new images to the server
+                // Add the image(s) attachment to the database
+                // Get all the image names that should be excluded from the upload
+                string[] exclude = Request.Form["jfiler-items-exclude-Images-0"].ToString().Trim('[', ']').Replace("\"", "").Split(',');
+                // Filter out the images that the user removed during the upload
+                IEnumerable<IFormFile> imagesToUpload = Request.Form.Files.Where(image => image.Name.Contains("Images") && exclude.Contains(image.FileName) == false);
+                await AddImageAttachmentsToDatabase(imagesToUpload.ToList(), attachment);
+                #endregion
 
                 await _dbContext.SaveChangesAsync();
                 return RedirectToAction("List");
