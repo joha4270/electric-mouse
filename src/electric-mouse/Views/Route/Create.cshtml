@@ -65,31 +65,7 @@
     </div>
   </div>
 
-
   <div class=row>
-    @*
-    @for (int i = 0; i < Model.Builders.Count; i++)
-{
-    <div data-userid="@Model.Builders[i]"class="valign-wrapper selected-user-display">
-      <p class="valign">@Model.BuilderNames[i]<a class="waves-effect waves-light" onclick="removeBuilder('@Model.Builders[i]')">
-          <i class="material-icons right">clear</i></a>
-      </p>
-      <input type="hidden" name="Builders[@i]" value="@Model.Builders[i]" /></div>
-}
-
-    <div id="builderscontainer" style="display: table;">
-      <button type="button" id="btnaddbuilder" class="btn waves-effect waves-light red" style="display: table-row; height: 36px; ">
-        Tilføj bygger
-        <i class="material-icons right">add</i>
-      </button>
-      <div id="buildersearchwrapper" style="display: none;position: relative;">
-        <div  class="input-field inline " style="margin-top: -1px;" >
-          <input id="buildersearch" type="text" class="validate red" style="margin-bottom: 0px; height:36px">
-          <label for="buildersearch" data-error="wrong" >Search</label>
-        </div>
-        <div id="searchcontainer" style="border: 2px solid black; background-color: white; position: absolute; left: inherit; width: 100%; z-index: 2000"></div>
-      </div>
-    </div>*@
     <div class="col s12">
       <div class="input-field">
         <label for="search_input">Builders</label>
