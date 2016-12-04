@@ -169,3 +169,9 @@
 	line-height: 22px;
 	padding: 14px 16px;
 }
+
+.tt-selectable:hover { /* UPDATE: newer versions use .tt-suggestion.tt-cursor */
+	color: #fff;
+	background-color: #0097cf;
+	cursor: pointer;
+}

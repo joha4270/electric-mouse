@@ -176,6 +176,10 @@
 			      }
 		      }
 	      );
+      $("#search_input").on('itemRemoved', function(event) {
+	      $(".tt-input").focus().select();
+	      console.log(event);
+      });
 
       $("#route_form").submit(function(e) {
 	      var self = this;
@@ -193,6 +197,10 @@
 	      return false; // fallback
       });
 
+	  $("#route_form").bind('keypress keydown keyup', function(e){
+	     if(e.keyCode == 13) { e.preventDefault(); }
+	  });
+
       @foreach (ApplicationUser builder in Model.BuilderList)
       {
 	      @Html.Raw("$(\"#search_input\").materialtags(\"add\",")
@@ -202,5 +210,7 @@
 	      @Html.Raw("value: \"")@Html.Raw(@builder.DisplayName)@Html.Raw("\"")
 	      @Html.Raw("});");
       }
+
+
   </script>
 }
