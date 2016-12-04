@@ -61,18 +61,38 @@
 
   <div class="row">
     <div class="input-field col s12">
-        <input type="text" name="VideoUrl" />
+        <input type="text" name="VideoUrl"  value="@Model?.Attachment?.VideoUrl"/>
         <label asp-for="VideoUrl">VideoUrl</label>
+        <input asp-for="AttachmentID" value="@Model?.Attachment?.RouteAttachmentID" type="hidden" />
     </div>
   </div>
+
+    @* Only display the image edit if in route edit *@
+    @if (@Model.UpdateID > 0)
+    {
+        <div>Tilføjede billeder (klik på billederne for at fjerne):</div>
+        <div class="row">
+            @foreach (Tuple<string, int> image in Model.Images)
+            {
+                <div class="col s6">
+                    <img src="~/@image.Item1" id="@image.Item2" onclick="imageClicked('@image.Item2')" />
+                </div>
+            }
+            @* This select is to send the images that the user wants to delete back to the server *@
+        </div>
+        <div id="hideSelect">
+            <select asp-for="ImagePathRelationID" multiple id="imageSelect"></select>
+        </div>
+        
+    }
+
 
     @* IMAGE UPLOAD *@
     <div class="row">
         Upload billede
-        @*<input type="file" asp-for="Images" multiple/>*@
-       <input type="file" name="Images[]" id="filer_input" multiple>
+        
+        <input type="file" name="Images" id="filer_input" multiple/>
     </div>
-
 
   <div class="row">
     <div class="input-field col s12">
@@ -83,7 +103,7 @@
 
   <div class="row">
     <div class="col s12">
-      <button class="btn waves-effect waves-light red right" type="submit">
+      <button class="btn waves-effect waves-light red right" type="submit" id="upload">
         Create Route
         <i class="material-icons right">send</i>
       </button>
@@ -91,157 +111,167 @@
   </div>
 </form>
 
-@section scripts {
+    @section scripts {
 
-<script>
-    var sections = {
-        @foreach (var hall in Model.Halls)
-        {
-            @Html.Raw("'")@hall.RouteHallID@Html.Raw("': {")
-             foreach (var s in Model.Sections.Where(i => i.RouteHallID == hall.RouteHallID))
-             {
-                 @Html.Raw("'")@s.RouteSectionID@Html.Raw("': '")@s.Name@Html.Raw("',")
-             }
-            @Html.Raw("},\n")
-        }
-    };
+        <script>
+            $(document).ready(function () {
+                var select = document.getElementById('hideSelect');
+                if(select != null)
+                    select.style.visibility = 'hidden';
+            });
 
-    $("#hallSelect").on('change', function() {
-        var data = "";
-        var parent = $(this).val();
-        $.each(sections[parent], function(key, val) {
-            data += '<option value="' + key + '">' + val + '</option>';
-        });
-        if(data == "") {data = '<option value="" disabled selected>No Sections Found</option>'}
-        $("#SectionSelect").material_select("destroy");
-        $("#SectionSelect").html(data);
-        $("#SectionSelect").material_select();
-    });
+            function imageClicked(id)
+            {
+                var img = document.getElementById(id);
+                img.style.visibility = 'hidden';
 
-    $(document).ready(function () {
-        $('#filer_input').filer({ showThumbs: true });
-    });
-        //Example 2
-    //    $("#filer_input").filer({
-    //        limit: null,
-    //        maxSize: null,
-    //        extensions: null,
-    //        changeInput: '<div class="jFiler-input-dragDrop"><div class="jFiler-input-inner"><div class="jFiler-input-icon"><i class="icon-jfi-cloud-up-o"></i></div><div class="jFiler-input-text"><h3>Drag&Drop files here</h3> <span style="display:inline-block; margin: 15px 0">or</span></div><a class="jFiler-input-choose-btn blue">Browse Files</a></div></div>',
-    //        showThumbs: true,
-    //        theme: "dragdropbox",
-    //        templates: {
-    //            box: '<ul class="jFiler-items-list jFiler-items-grid"></ul>',
-    //            item: '<li class="jFiler-item">\
-	//					<div class="jFiler-item-container">\
-	//						<div class="jFiler-item-inner">\
-	//							<div class="jFiler-item-thumb">\
-	//								<div class="jFiler-item-status"></div>\
-	//								<div class="jFiler-item-thumb-overlay">\
-	//									<div class="jFiler-item-info">\
-	//										<div style="display:table-cell;vertical-align: middle;">\
-	//											<span class="jFiler-item-title"><b title="{{fi-name}}">{{fi-name}}</b></span>\
-	//											<span class="jFiler-item-others">{{fi-size2}}</span>\
-	//										</div>\
-	//									</div>\
-	//								</div>\
-	//								{{fi-image}}\
-	//							</div>\
-	//							<div class="jFiler-item-assets jFiler-row">\
-	//								<ul class="list-inline pull-left">\
-	//									<li>{{fi-progressBar}}</li>\
-	//								</ul>\
-	//								<ul class="list-inline pull-right">\
-	//									<li><a class="icon-jfi-trash jFiler-item-trash-action"></a></li>\
-	//								</ul>\
-	//							</div>\
-	//						</div>\
-	//					</div>\
-	//				</li>',
-    //            itemAppend: '<li class="jFiler-item">\
-	//						<div class="jFiler-item-container">\
-	//							<div class="jFiler-item-inner">\
-	//								<div class="jFiler-item-thumb">\
-	//									<div class="jFiler-item-status"></div>\
-	//									<div class="jFiler-item-thumb-overlay">\
-	//										<div class="jFiler-item-info">\
-	//											<div style="display:table-cell;vertical-align: middle;">\
-	//												<span class="jFiler-item-title"><b title="{{fi-name}}">{{fi-name}}</b></span>\
-	//												<span class="jFiler-item-others">{{fi-size2}}</span>\
-	//											</div>\
-	//										</div>\
-	//									</div>\
-	//									{{fi-image}}\
-	//								</div>\
-	//								<div class="jFiler-item-assets jFiler-row">\
-	//									<ul class="list-inline pull-left">\
-	//										<li><span class="jFiler-item-others">{{fi-icon}}</span></li>\
-	//									</ul>\
-	//									<ul class="list-inline pull-right">\
-	//										<li><a class="icon-jfi-trash jFiler-item-trash-action"></a></li>\
-	//									</ul>\
-	//								</div>\
-	//							</div>\
-	//						</div>\
-	//					</li>',
-    //            progressBar: '<div class="bar"></div>',
-    //            itemAppendToEnd: false,
-    //            canvasImage: true,
-    //            removeConfirmation: true,
-    //            _selectors: {
-    //                list: '.jFiler-items-list',
-    //                item: '.jFiler-item',
-    //                progressBar: '.bar',
-    //                remove: '.jFiler-item-trash-action'
-    //            }
-    //        },
-    //        dragDrop: {
-    //            dragEnter: null,
-    //            dragLeave: null,
-    //            drop: null,
-    //            dragContainer: null,
-    //        },
-    //        files: null,
-    //        addMore: false,
-    //        allowDuplicates: true,
-    //        clipBoardPaste: true,
-    //        excludeName: null,
-    //        beforeRender: null,
-    //        afterRender: null,
-    //        beforeShow: null,
-    //        beforeSelect: null,
-    //        onSelect: null,
-    //        afterShow: null,
-    //        onRemove: function (itemEl, file, id, listEl, boxEl, newInputEl, inputEl) {
-    //            var filerKit = inputEl.prop("jFiler"),
-    //                file_name = filerKit.files_list[id].name;
+                var select = document.getElementById('imageSelect');
+                var option = document.createElement("option");
+                option.value = id;
+                option.selected = "selected";
+                select.add(option);
+                console.log(image);
+            }
 
-    //            $.post('./php/ajax_remove_file.php', { file: file_name });
-    //        },
-    //        onEmpty: null,
-    //        options: null,
-    //        dialogs: {
-    //            alert: function (text) {
-    //                return alert(text);
-    //            },
-    //            confirm: function (text, callback) {
-    //                confirm(text) ? callback() : null;
-    //            }
-    //        },
-    //        captions: {
-    //            button: "Choose Files",
-    //            feedback: "Choose files To Upload",
-    //            feedback2: "files were chosen",
-    //            drop: "Drop file here to Upload",
-    //            removeConfirmation: "Are you sure you want to remove this file?",
-    //            errors: {
-    //                filesLimit: "Only {{fi-limit}} files are allowed to be uploaded.",
-    //                filesType: "Only Images are allowed to be uploaded.",
-    //                filesSize: "{{fi-name}} is too large! Please upload file up to {{fi-maxSize}} MB.",
-    //                filesSizeAll: "Files you've choosed are too large! Please upload files up to {{fi-maxSize}} MB."
-    //            }
-    //        }
-    //    });
-    //});
+            var sections = {
+                @foreach (var hall in Model.Halls)
+            {
+                @Html.Raw("'")@hall.RouteHallID@Html.Raw("': {")
+                foreach (var s in Model.Sections.Where(i => i.RouteHallID == hall.RouteHallID))
+                {
+                    @Html.Raw("'")@s.RouteSectionID@Html.Raw("': '")@s.Name@Html.Raw("',")
+                }
+                @Html.Raw("},\n")
+            }
+            };
 
-</script>
-}
+            $("#hallSelect").on('change', function () {
+                var data = "";
+                var parent = $(this).val();
+                $.each(sections[parent], function (key, val) {
+                    data += '<option value="' + key + '">' + val + '</option>';
+                });
+                if (data == "") {
+                    data = '<option value="" disabled selected>No Sections Found</option>'
+                }
+                $("#SectionSelect").material_select("destroy");
+                $("#SectionSelect").html(data);
+                $("#SectionSelect").material_select();
+            });
+
+            $("#filer_input").filer({
+                limit: null,
+                maxSize: null,
+                extensions: null,
+                changeInput: '<div class="jFiler-input-dragDrop"><div class="jFiler-input-inner"><div class="jFiler-input-icon"><i class="icon-jfi-cloud-up-o"></i></div><div class="jFiler-input-text"><h3>Drag&Drop files here</h3> <span style="display:inline-block; margin: 15px 0">or</span></div><a class="jFiler-input-choose-btn blue">Browse Files</a></div></div>',
+                showThumbs: true,
+                theme: "dragdropbox",
+                templates: {
+                    box: '<ul class="jFiler-items-list jFiler-items-grid"></ul>',
+                    item: '<li class="jFiler-item">\
+						<div class="jFiler-item-container">\
+							<div class="jFiler-item-inner">\
+								<div class="jFiler-item-thumb">\
+									<div class="jFiler-item-status"></div>\
+									<div class="jFiler-item-thumb-overlay">\
+										<div class="jFiler-item-info">\
+											<div style="display:table-cell;vertical-align: middle;">\
+												<span class="jFiler-item-title"><b title="{{fi-name}}">{{fi-name}}</b></span>\
+												<span class="jFiler-item-others">{{fi-size2}}</span>\
+											</div>\
+										</div>\
+									</div>\
+									{{fi-image}}\
+								</div>\
+								<div class="jFiler-item-assets jFiler-row">\
+									<ul class="list-inline pull-left">\
+										<li>{{fi-progressBar}}</li>\
+									</ul>\
+									<ul class="list-inline pull-right">\
+										<li><a class="icon-jfi-trash jFiler-item-trash-action"></a></li>\
+									</ul>\
+								</div>\
+							</div>\
+						</div>\
+					</li>',
+                    itemAppend: '<li class="jFiler-item">\
+							<div class="jFiler-item-container">\
+								<div class="jFiler-item-inner">\
+									<div class="jFiler-item-thumb">\
+										<div class="jFiler-item-status"></div>\
+										<div class="jFiler-item-thumb-overlay">\
+											<div class="jFiler-item-info">\
+												<div style="display:table-cell;vertical-align: middle;">\
+													<span class="jFiler-item-title"><b title="{{fi-name}}">{{fi-name}}</b></span>\
+													<span class="jFiler-item-others">{{fi-size2}}</span>\
+												</div>\
+											</div>\
+										</div>\
+										{{fi-image}}\
+									</div>\
+									<div class="jFiler-item-assets jFiler-row">\
+										<ul class="list-inline pull-left">\
+											<li><span class="jFiler-item-others">{{fi-icon}}</span></li>\
+										</ul>\
+										<ul class="list-inline pull-right">\
+											<li><a class="icon-jfi-trash jFiler-item-trash-action"></a></li>\
+										</ul>\
+									</div>\
+								</div>\
+							</div>\
+						</li>',
+                    progressBar: '<div class="bar"></div>',
+                    itemAppendToEnd: true,
+                    canvasImage: true,
+                    removeConfirmation: false,
+                    _selectors: {
+                        list: '.jFiler-items-list',
+                        item: '.jFiler-item',
+                        progressBar: '.bar',
+                        remove: '.jFiler-item-trash-action'
+                    }
+                },
+                dragDrop: {
+                    dragEnter: null,
+                    dragLeave: null,
+                    drop: null,
+                    dragContainer: null,
+                },
+                files: null,
+                addMore: false,
+                allowDuplicates: true,
+                clipBoardPaste: true,
+                excludeName: null,
+                beforeRender: null,
+                afterRender: null,
+                beforeShow: null,
+                beforeSelect: null,
+                onSelect: null,
+                afterShow: null,
+                onRemove: function () { },
+                onEmpty: null,
+                options: null,
+                dialogs: {
+                    alert: function (text) {
+                        return alert(text);
+                    },
+                    confirm: function (text, callback) {
+                        confirm(text) ? callback() : null;
+                    }
+                },
+                captions: {
+                    button: "Choose Files",
+                    feedback: "Choose files To Upload",
+                    feedback2: "files were chosen",
+                    drop: "Drop file here to Upload",
+                    removeConfirmation: "Are you sure you want to remove this file?",
+                    errors: {
+                        filesLimit: "Only {{fi-limit}} files are allowed to be uploaded.",
+                        filesType: "Only Images are allowed to be uploaded.",
+                        filesSize: "{{fi-name}} is too large! Please upload file up to {{fi-maxSize}} MB.",
+                        filesSizeAll: "Files you've choosed are too large! Please upload files up to {{fi-maxSize}} MB."
+                    }
+                }
+            });
+        </script>
+    }

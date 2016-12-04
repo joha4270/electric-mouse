@@ -33,6 +33,9 @@ namespace electric_mouse.Models.RouteViewModels
         public string Note { get; set; }
 
         public string VideoUrl { get; set; }
-        public ICollection<IFormFile> Images { get; set; }
+        public RouteAttachment Attachment { get; set; }
+        public int AttachmentID { get; set; }
+        public IList<int> ImagePathRelationID { get; set; }
+        public IList<System.Tuple<string, int>> Images { get; set; }
     }
 }
