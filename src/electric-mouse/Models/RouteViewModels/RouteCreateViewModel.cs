@@ -37,5 +37,7 @@ namespace electric_mouse.Models.RouteViewModels
 
         public List<string> Builders { get; set; }
 	    public List<ApplicationUser> BuilderList { get; set; }
+
+        public string VideoUrl { get; set; }
     }
 }
