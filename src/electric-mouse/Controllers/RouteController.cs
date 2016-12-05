@@ -139,6 +139,16 @@ namespace electric_mouse.Controllers
             return RedirectToAction(nameof(List), "Route");
         }
 
+        /// <summary>
+        /// Checks if the filename has one of the extensions provided.
+        /// </summary>
+        private bool HasExtension(string fileName, params string[] extensions)
+        {
+            string fileExtension = Path.GetExtension(fileName);
+
+            return extensions.Any(extension => extension.Equals(fileExtension, StringComparison.OrdinalIgnoreCase));
+        }
+
         public async Task<IActionResult> List(string archived = "false", string creator = null)
         {
             RouteListViewModel model = await GetListViewModel(archived, creator);
