@@ -168,6 +168,7 @@ namespace electric_mouse.Controllers
                         RouteAttachment = attachment
                     });
                     await image.CopyToAsync(fileStream);
+                    await fileStream.FlushAsync();
                 }
                 i++;
             }
@@ -180,7 +181,7 @@ namespace electric_mouse.Controllers
         {
             string fileExtension = Path.GetExtension(fileName);
 
-            return extensions.Any(extension => extension.Equals(fileExtension));
+            return extensions.Any(extension => extension.Equals(fileExtension, StringComparison.OrdinalIgnoreCase));
         }
 
         #region These should probably be moved (can be made extension methods)
