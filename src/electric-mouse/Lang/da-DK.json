@@ -1,13 +1,12 @@
 ﻿{
-  "Route_Id": "ID",
-  "Route_Hall": "Hal",
+  "TEST_STRING": "Din mor lugter af hyldebær",
+  "ANOTHER_STRING": "Din mor lugter værre",
   "Route_Section": "Sektion",
   "Route_Difficulty": "Sværhedsgrad",
   "Route_Grip_Color": "Grebsfarve",
   "Route_Builders": "Byggere",
   "Route_Date": "Dato",
   "Route_Note": "Note",
-  "Route_Type": "Rute Type",
 
 
   "Create_Route_Creation": "Rute Oprettelse",
@@ -47,9 +46,5 @@
   "Create_Difficulty_Name": "Sværhedsgradsnavn",
 
   "Create_Section_Name": "Sektionsnavn",
-  "Create_Section_Type": "Sektiontype",
-
-  "Comment_Create": "Ny Kommentar",
-  "Comment_Reply": "Besvar",
-  "Comment_Delete": "Slet",
+  "Create_Section_Type": "Sektiontype"
 }

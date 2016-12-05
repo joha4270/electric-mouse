@@ -1,13 +1,12 @@
 ﻿{
-  "Route_Id": "ID",
-  "Route_Hall": "Hall",
+  "TEST_STRING": "Your mother smells of elderberries",
+  "ANOTHER_STRING": "But your mother smells worse",
   "Route_Section": "Section",
   "Route_Difficulty": "Difficulty",
   "Route_Grip_Color": "Grip Color",
   "Route_Builders": "Builders",
   "Route_Date": "Date",
   "Route_Note": "Note",
-  "Route_Type": "Route Type",
 
   "Create_Route_Creation": "Route Creation",
   "Create_Route_ID": "Route ID",
@@ -47,10 +46,6 @@
   "Create_Difficulty_Name": "Difficulty Name",
 
   "Create_Section_Name": "Section Name",
-  "Create_Section_Type": "Section Type",
-
-  "Comment_Create": "New Comment",
-  "Comment_Reply": "Reply",
-  "Comment_Delete": "Delete",
+  "Create_Section_Type": "Section Type"
 
 }
