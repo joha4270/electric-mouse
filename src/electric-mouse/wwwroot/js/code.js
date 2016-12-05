@@ -37,12 +37,24 @@ function viewRoute(route_id)
 			 modalclose:true
 		}, "Details", "/Route/Details/" + route_id);
 
+		setupReply();
+
 		$('#modal1').openModal({
 			complete: function () { history.back(-1); }
 		});
   }).fail(function() {
 		$("#loading").hide();
 		Materialize.toast('Loading error!', 4500);
+	});
+}
+
+// Necessary for manual calls, as static loading will not call viewroute()
+function setupReply()
+{
+	$(".show_reply_field a:link").click(function () {  //This function is added to all comment-buttons.
+		$(".show_reply_field").css("display", "inline");
+		$(".reply_field").css("display", "none");
+		$(this).parent().parent().children(".reply_field").css("display", "block");
 	});
 }
 

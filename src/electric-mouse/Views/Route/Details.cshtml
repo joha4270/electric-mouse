@@ -34,7 +34,7 @@
     </div>
     <div class="row">
         <div class="col s3">@Model.Route.GripColour</div>
-        <div class="col s9">@(Model.Route.Date.ToString("yy-mm-dd") ?? "")</div>
+        <div class="col s9">@Model.Route.Date.ToString("yyyy-MM-dd")</div>
     </div>
     <div class="row small_margin">
         <div class="col s3" style="font-size:0.75em;">Afsat</div>
@@ -55,13 +55,27 @@
         @for (int i = 0; i < 14; i++)
         {
             <div class="col s6">
-                <img  src="//i.imgur.com/GeKVzQw.jpg" />
+                <img src="//i.imgur.com/GeKVzQw.jpg" />
             </div>
         }
         <button onclick="togglemore();" type="button" style="position:absolute; bottom:0px; left:0px; width: 100%; height:2em; background-color:#fafafa; border:none;">Show More</button>
     </div>
-    @foreach (CommentViewModel topLevelComment in Model.Comments)
-    {
-        @Html.Partial("Comment", topLevelComment)
-    }
+	<div>
+	@if (Model.UserIsLoggedIn)
+	{
+			@*This is the field that comments can be written in.*@
+		<div style="display: block;" class="reply_field">
+		  <form asp-controller="Comments" asp-action="AddComment" method="post">
+		    <label for="Content">Comment Text</label>
+		    <input name="Content" type="text" class="materialize-textarea" height="4" width="20"/>
+		    <input class="btn" type="submit" value="Submit"/>
+		    <input name="RouteID" type="hidden" value="@Model.Route.ID"/>
+		  </form>
+		</div>
+	}
+	@foreach (CommentViewModel topLevelComment in Model.Comments)
+	{
+		@Html.Partial("Comment", topLevelComment)
+	}
+	</div>
 </div>

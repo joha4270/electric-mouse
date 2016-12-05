@@ -157,3 +157,9 @@ nav ul img {
 .user-display p {
     margin-top: 0px;
 }
+
+/* Details */
+.comment p {
+	word-wrap: break-word;
+	margin: 5px 0px;
+}
