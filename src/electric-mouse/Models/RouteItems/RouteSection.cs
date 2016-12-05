@@ -26,6 +26,8 @@ namespace electric_mouse.Models.RouteItems
 
         public virtual ICollection<RouteSectionRelation> Routes { get; set; }
 
+        public bool Archived { get; set; } = false;
+
         public RouteSection()
         {
             Routes = new List<RouteSectionRelation>();
