@@ -61,14 +61,17 @@
         <button onclick="togglemore();" type="button" style="position:absolute; bottom:0px; left:0px; width: 100%; height:2em; background-color:#fafafa; border:none;">Show monkey</button>
     </div>
     <div>
-        @*This is the field that comments can be written in.*@
-        <div style="display:block;" class="reply_field">
-            <form asp-controller="Route" asp-action="AddComment" method="post">
-                <input name="Content" type="text" class="materialize-textarea" height="4" width="20" />
-                <input class="btn" type="submit" value="THAT'LL SHOW HIM" />
-                <input name="RouteID" type="hidden" value="@Model.Routes.ID" />
-            </form>
-        </div>
+        @if (Model.UserIsLoggedIn)
+        {
+            @*This is the field that comments can be written in.*@
+            <div style="display:block;" class="reply_field">
+                <form asp-controller="Comments" asp-action="AddComment" method="post">
+                    <input name="Content" type="text" class="materialize-textarea" height="4" width="20" />
+                    <input class="btn" type="submit" value="THAT'LL SHOW EM" />
+                    <input name="RouteID" type="hidden" value="@Model.Routes.ID" />
+                </form>
+            </div>
+        }
         @foreach (CommentViewModel topLevelComment in Model.Comments)
         {
             @Html.Partial("Comment", topLevelComment)

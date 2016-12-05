@@ -141,28 +141,29 @@ namespace electric_mouse.Controllers
                 .Routes
                 .Where(r => r.ID == id)
                 .Include(x => x.Difficulty).ToList().First();
+
             RouteSection section = null;
             RouteHall hall = null;
-
-
             foreach (var s in _dbContext.RouteSectionRelations.Where(t => t.RouteID == routes.ID).ToList())
             {
                 section = _dbContext.RouteSections.First(t => s.RouteSectionID == t.RouteSectionID);
                 hall = _dbContext.RouteHalls.First(p => p.RouteHallID == section.RouteHallID);
                 break;
             }
+
             List<ApplicationUser> creators = _dbContext.RouteUserRelations.Where(r => r.Route == routes).Select(r => r.User).ToList();
-            bool creatorOrAdmin = false;
-            bool userIsAdmin = false;
             ApplicationUser user = null;
-            if (_signInManager.IsSignedIn(User))
+            bool userIsAdmin = false;
+            bool creatorOrAdmin = false;
+            bool userLoggedIn = _signInManager.IsSignedIn(User);
+            if (userLoggedIn)
             {
                 user = await _userManager.GetUserAsync(User);
                 userIsAdmin = await _userManager.IsInRoleAsync(user, "Administrator");
                 creatorOrAdmin = creators.Contains(user) || userIsAdmin; //TODO const when merging
             }
 
-            List<CommentViewModel> comments = new List<CommentViewModel>();   //TODO: Actually load comments.
+            List<CommentViewModel> comments = new List<CommentViewModel>();
             List<Comment> allComments = _dbContext.Comments
                 .Where(x => x.RouteID == id).ToList();
             List<Comment> topLevelComments = allComments
@@ -171,9 +172,19 @@ namespace electric_mouse.Controllers
             {
                 comments.Add(FetchCommentData(comment, allComments, user, userIsAdmin));
             }
+            comments = comments.OrderByDescending<CommentViewModel, DateTime>(c => c.Date).ToList();
 
-            return PartialView(new RouteDetailViewModel(routes, section, hall, comments, creators, creatorOrAdmin));
-
+            RouteDetailViewModel view = new RouteDetailViewModel
+            {
+                Creators = creators,
+                UserIsLoggedIn = userLoggedIn,
+                EditRights = creatorOrAdmin,
+                Comments = comments,
+                Hall = hall,
+                Routes = routes,
+                Section = section
+            };
+            return PartialView(view);
         }
 
 
@@ -189,9 +200,11 @@ namespace electric_mouse.Controllers
             {
                 children.Add(FetchCommentData(reply, AllComments, User, UserIsAdmin));
             }
+            children.OrderByDescending<CommentViewModel, DateTime>(c => c.Date).Reverse();
 
-            bool editRights = User!=null && comment.ApplicationUserRefId == User.Id;
-            bool deletionRights = (User != null && comment.ApplicationUserRefId == User.Id) || UserIsAdmin;
+            bool userIsLoggedIn = User != null;
+            bool userIsOwner = userIsLoggedIn && comment.ApplicationUserRefId == User.Id;
+            bool deletionRights = userIsOwner || UserIsAdmin;
             ApplicationUser user = _dbContext.Users.Where(u => u.Id == comment.ApplicationUserRefId).First();
             CommentViewModel result = new CommentViewModel
             {
@@ -204,92 +217,12 @@ namespace electric_mouse.Controllers
                 DeletionDate = comment.DeletionDate,
                 Content = comment.Content,
                 Children = children,
-                EditRights = editRights,
+                UserIsLoggedIn = userIsLoggedIn,
+                EditRights = userIsOwner,
                 DeletionRights = deletionRights
             };
 
             return result;
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> Reply (CommentViewModel model)
-        {
-            ApplicationUser user = await _userManager.GetUserAsync(User);
-            if (user != null)
-            {
-                _dbContext.Comments.Add(new Comment
-                {
-                    RouteID = model.RouteID,
-                    OriginalPostID = model.CommentID,
-                    User = user,
-                    Date = DateTime.Now,
-                    Content = model.Content
-                });
-                _dbContext.SaveChanges();
-                return RedirectToAction(nameof(List), "Route");
-            }
-            HttpContext.Response.StatusCode = (int) HttpStatusCode.Forbidden;
-            return Content("You don't have access to this action. 403 Forbidden");
-        }
-
-        public async Task<IActionResult> AddComment(int RouteID, string Content)
-        {
-            CommentViewModel result = new CommentViewModel
-            {
-                RouteID = RouteID,
-                Content = Content
-            };
-            await Reply(result);
-
-            return RedirectToAction(nameof(List), "Route");
-        }
-        
-        
-        public async Task<IActionResult> Delete (CommentViewModel model)
-        {
-            ApplicationUser user = null;
-            bool userIsAdmin = false;
-            bool userIsOwner = false;
-            if (_signInManager.IsSignedIn(User))
-            {
-                user = await _userManager.GetUserAsync(User);
-                userIsAdmin = await _userManager.IsInRoleAsync(user, "Administrator");
-                userIsOwner = user.Id == model.ApplicationUserRefId;
-            }
-
-            if (userIsOwner || userIsAdmin)
-            {
-                _dbContext.Comments.First(c => c.CommentID == model.CommentID).Deleted = true;
-                _dbContext.SaveChanges();
-
-                return RedirectToAction(nameof(List), "Route");
-            }
-
-            HttpContext.Response.StatusCode = (int) HttpStatusCode.Forbidden;
-            return Content("You don't have access to this action. 403 Forbidden");
-        }
-
-        
-        public async Task<IActionResult> Edit (CommentViewModel model)
-        {
-            ApplicationUser user = null;
-            bool userIsOwner = false;
-            if (_signInManager.IsSignedIn(User))
-            {
-                user = await _userManager.GetUserAsync(User);
-                userIsOwner = user.Id == model.User.Id;
-            }
-
-            if (userIsOwner)
-            {
-                _dbContext.Comments.First(c => c.CommentID == model.CommentID).Content = model.Content;
-                _dbContext.SaveChanges();
-
-                return RedirectToAction(nameof(List), "Route");
-            }
-
-            HttpContext.Response.StatusCode = (int) HttpStatusCode.Forbidden;
-            return Content("You don't have access to this action. 403 Forbidden");
         }
 
 

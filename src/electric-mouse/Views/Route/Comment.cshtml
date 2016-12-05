@@ -6,13 +6,14 @@
     @if (Model.Deleted)
     {
         <div> 
-            <b>COMMENT HAS BEEN VIOLENTLY AND VIGOROUSLY PURGED BY THE MINISTRY OF PUBLIC DECENCY</b> (@Model.Date.ToString("dd-mm-yy"))
+            <b>COMMENT HAS BEEN VIOLENTLY AND VIGOROUSLY PURGED BY THE MINISTRY OF PUBLIC DECENCY</b> 
+            (@Model.Date.ToString("dd-MM-yy"), VIOLENTLY AND VIGOROUSLY PURGED @Model.DeletionDate.ToString("dd-MM-yy") )
         </div>
     } else
     {
         <img src="@Model.User.URLPath" width="32" height="32" style="display:inline" />
         <div style="display:inline">
-            <label><b> @Model.User.DisplayName</b> (@Model.Date.ToString("dd-mm-yy") ) </label>
+            <label><b> @Model.User.DisplayName</b> (@Model.Date.ToString("dd-MM-yy") ) </label>
 
             <br />
 
@@ -22,7 +23,7 @@
         </div>
         @if (Model.DeletionRights)
         {
-            <form asp-controller="Route" asp-action="Delete" style="display:inline"  method="post">
+            <form asp-controller="Comments" asp-action="Delete" style="display:inline"  method="post">
                 <input asp-for="ApplicationUserRefId" type="hidden" value="@Model.ApplicationUserRefId" />
                 <input asp-for="CommentID" type="hidden" value="@Model.CommentID" />
                 <input type="submit" value="D" />
@@ -30,22 +31,24 @@
         }
         @*@if (Model.EditRights)
     {
-        <div class="show_edit_field" style="display:inline">
-            <button class="btn" type="button">
-                E
-            </button>
-        </div>
-        <div style="display:none;" class="edit_field">
-            <form asp-controller="Route" asp-action="Reply" method="post">
-                <input name="Content" type="text" class="materialize-textarea" height="4" width="20" />
-                <input class="btn" type="submit" value="THAT'S BETTER" />
-                <input asp-for="RouteID" type="hidden" value="@Model.RouteID" />
-                <input asp-for="CommentID" type="hidden" value="@Model.CommentID" />
-            </form>
+        <div>
+            <div class="show_edit_field" style="display:inline">
+                <button class="btn" type="button">
+                    E
+                </button>
+            </div>
+            <div style="display:none;" class="edit_field">
+                <form asp-controller="Comments" asp-action="Reply" method="post">
+                    <input name="Content" type="text" class="materialize-textarea" height="4" width="20" />
+                    <input class="btn" type="submit" value="THAT'S BETTER" />
+                    <input asp-for="RouteID" type="hidden" value="@Model.RouteID" />
+                    <input asp-for="CommentID" type="hidden" value="@Model.CommentID" />
+                </form>
+            </div>
         </div>
     }*@
     }
-    @if (Model.User != null) {
+    @if (Model.UserIsLoggedIn) {
         @*The button that brings up the reply field.*@
         <div class="show_reply_field" style="display:inline">
             <button class="btn" type="button">
@@ -54,7 +57,7 @@
         </div>
         @*This is the field that replies can be written in.*@
         <div style="display:none;" class="reply_field">
-            <form asp-controller="Route" asp-action="Reply" method="post">
+            <form asp-controller="Comments" asp-action="Reply" method="post">
                 <input name="Content" type="text" class="materialize-textarea" height="4" width="20" />
                 <input  class="btn" type="submit" value="THAT'LL SHOW HIM" />
                 <input asp-for="RouteID" type="hidden" value="@Model.RouteID"/>

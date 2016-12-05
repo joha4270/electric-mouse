@@ -16,6 +16,7 @@ namespace electric_mouse.Models
         public DateTime DeletionDate { get; set; }
         public string Content { get; set; }
         public List<CommentViewModel> Children { get; set; } = new List<CommentViewModel>();
+        public bool UserIsLoggedIn { get; set; }
         public bool EditRights { get; set; }
         public bool DeletionRights { get; set; }
         public CommentViewModel ()
