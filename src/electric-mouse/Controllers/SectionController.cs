@@ -28,11 +28,7 @@ namespace electric_mouse.Controllers
         {
             if (!string.IsNullOrEmpty(model.SectionName) && model.HallID != null)
             {
-                RouteSection section = new RouteSection
-                {
-	                Name = model.SectionName,
-	                RouteHall = _dbContext.RouteHalls.First(h => h.RouteHallID == model.HallID)
-                };
+                RouteSection section = new RouteSection { Name = model.SectionName, RouteHall = _dbContext.RouteHalls.First() };
                 _dbContext.RouteSections.Add(section);
                 _dbContext.SaveChanges();
             }
@@ -42,7 +38,7 @@ namespace electric_mouse.Controllers
 
         public IActionResult List()
         {
-            IList<RouteSection> sections = _dbContext.RouteSections.Include(s => s.RouteHall).Include(s => s.Routes).ToList();
+            IList<RouteSection> sections = _dbContext.RouteSections.Include(s => s.RouteHall).Include(s => s.Routes).ThenInclude(s => s.Route).ToList();
             SectionListViewModel model = new SectionListViewModel {Sections = sections};
             model.Halls = _dbContext.RouteHalls.ToList();
 
@@ -52,11 +48,12 @@ namespace electric_mouse.Controllers
         [HttpPost]
         public async Task<IActionResult> Delete(SectionListViewModel model)
         {
-            RouteSection section = _dbContext.RouteSections.Include(s => s.Routes).First(s => s.RouteSectionID == model.SectionID);
-
-            if (section.Routes.Count <= 0)
+            RouteSection section = _dbContext.RouteSections.Include(s => s.Routes).ThenInclude(s => s.Route).First(s => s.RouteSectionID == model.SectionID);
+            
+            if (section.Routes.All(r => r.Route.Archived))
             {
-                _dbContext.RouteSections.Remove(section);
+                section.Archived = true;
+                _dbContext.RouteSections.Update(section);
                 _dbContext.SaveChanges();
             }
 
@@ -78,7 +75,8 @@ namespace electric_mouse.Controllers
             {
                 foreach (RouteSectionRelation relation in relations)
                 {
-                    _dbContext.RouteSectionRelations.Remove(relation);
+                    relation.Route.Archived = true;
+                    _dbContext.Routes.Update(relation.Route);
                 }
                 _dbContext.SaveChanges();
             }

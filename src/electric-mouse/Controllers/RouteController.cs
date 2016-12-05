@@ -44,7 +44,8 @@ namespace electric_mouse.Controllers
             RouteCreateViewModel model = new RouteCreateViewModel();
             model.Halls = routeHalls.ToList();
             model.Difficulties = _dbContext.RouteDifficulties.ToList();
-            model.Sections = routeSections.ToList();
+            model.Sections = routeSections.Where(s => !s.Archived).ToList();
+            
 
             ApplicationUser user = await _userManager.GetUserAsync(User);
             model.Builders = new List<string>(){user.Id};
