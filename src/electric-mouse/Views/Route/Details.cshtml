@@ -9,34 +9,34 @@
       <div class="col s6" style="font-size:0.75em">@strings["Route_Hall"]</div>
 @if (Model.EditRights)
 {
-    @if (Model.Route.Archived)
-    {
-	  <form asp-controller="Route" asp-action="Archive" asp-route-id="@Model.Route.ID">
-	    <a href="javascript:void(0)" onclick="$(this).closest('form').submit()" class="right" title="Delete">
-	      <i class="small material-icons">delete</i>
-	    </a>
-	  </form>
-    }
-    else
-    {
-        <form asp-controller="Route" asp-action="Archive" asp-route-id="@Model.Route.ID">
-            <input class="col" type="submit" value="Archive" />
-        </form>
-    }
-    @if (Model.Route.Archived)
-    {
-        <form asp-controller="Route" asp-action="DeleteRoute" asp-route-id="@Model.Route.ID">
-            <input class="col" type="submit" value="Delete permanently" />
-        </form>
-    }
-    else
-    {
+	if (Model.Route.Archived)
+	{
+		<form asp-controller="Route" asp-action="DeleteRoute" asp-route-id="@Model.Route.ID">
+		  <a href="javascript:void(0)" onclick="$(this).closest('form').submit()" class="right" title="Delete">
+		    <i class="small material-icons">delete</i>
+		  </a>
+		</form>
+
+		<form asp-controller="Route" asp-action="MakeActive" asp-route-id="@Model.Route.ID">
+		  <a href="javascript:void(0)" onclick="$(this).closest('form').submit()" class="right" title="Unarchive">
+		    <i class="small material-icons">unarchive</i>
+		  </a>
+		</form>
+	}
+	else
+	{
+		<form asp-controller="Route" asp-action="Archive" asp-route-id="@Model.Route.ID">
+		  <a href="javascript:void(0)" onclick="$(this).closest('form').submit()" class="right" title="Archive">
+		    <i class="small material-icons">archive</i>
+		  </a>
+		</form>
+
 		<a href="/Route/Update/@Model.Route.ID" class="right" title="Edit">
 		  <i class="small material-icons">edit</i>
 		</a>
-    }
+	}
 
-	</div>
+
 }
     </div>
     <div class="row">
