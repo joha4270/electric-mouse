@@ -15,5 +15,6 @@ namespace electric_mouse.Models
         public string URLPath { get; set; }
         public string AuthToken { get; set; }
         public DateTime AuthTokenExpiration { get; set; }
+	    public List<Comment> Comments { get; set; }
     }
 }

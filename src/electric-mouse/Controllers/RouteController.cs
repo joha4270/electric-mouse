@@ -33,7 +33,7 @@ namespace electric_mouse.Controllers
             _logger = logger.CreateLogger<RouteController>();
         }
 
-        [Authorize(Roles= RoleHandler.Post)]
+        [Authorize(Roles = RoleHandler.Post)]
         // RouteCreate name instead? - We'll have to implement hall etc create seperately
         public async Task<IActionResult> Create()
         {
@@ -57,7 +57,7 @@ namespace electric_mouse.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles= RoleHandler.Post)]
+        [Authorize(Roles = RoleHandler.Post)]
         public async Task<IActionResult> Create(RouteCreateViewModel model)
         {
             _logger.LogInformation("Recived following users [{users}]", string.Join(", ", model.Builders));
@@ -121,10 +121,10 @@ namespace electric_mouse.Controllers
 
         public async Task<IActionResult> Details(int id)
         {
-            Task<RouteDetailViewModel> model =  GetDetailViewModel(id);
+            RouteDetailViewModel model = await GetDetailViewModel(id);
             if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
             {
-                return PartialView(await model);
+                return PartialView(model);
             }
             else
             {
@@ -133,14 +133,51 @@ namespace electric_mouse.Controllers
                 listModel.ModalContent = new ModalContentViewModel
                 {
 	                ViewName = "Details",
-	                Model = await model
+	                Model = model
                 };
 
                 return View("List", listModel);
             }
         }
 
-        private async Task<RouteListViewModel> GetListViewModel(string archived, string creator)
+	    /// <summary>
+	    /// Goes and fetches all information from database and loads it into a CommentViewModel, but not before recursively fetching all replies.
+	    /// </summary>
+	    private CommentViewModel FetchCommentData(Comment comment, List<Comment> AllComments, ApplicationUser User, bool UserIsAdmin)
+	    {
+		    List<Comment> replies = AllComments
+			    .Where(x => x.OriginalPostID == comment.CommentID).ToList();
+		    List<CommentViewModel> children = new List<CommentViewModel>();
+		    foreach (Comment reply in replies)
+		    {
+			    children.Add(FetchCommentData(reply, AllComments, User, UserIsAdmin));
+		    }
+		    children.OrderByDescending<CommentViewModel, DateTime>(c => c.Date).Reverse();
+
+		    bool userIsLoggedIn = User != null;
+		    bool userIsOwner = userIsLoggedIn && comment.ApplicationUserRefId == User.Id;
+		    bool deletionRights = userIsOwner || UserIsAdmin;
+		    ApplicationUser user = _dbContext.Users.Where(u => u.Id == comment.ApplicationUserRefId).First();
+		    CommentViewModel result = new CommentViewModel
+		    {
+			    CommentID = comment.CommentID,
+			    Deleted = comment.Deleted,
+			    User = user,
+			    ApplicationUserRefId = user.Id,
+			    RouteID = comment.RouteID,
+			    Date = comment.Date,
+			    DeletionDate = comment.DeletionDate,
+			    Content = comment.Content,
+			    Children = children,
+			    UserIsLoggedIn = userIsLoggedIn,
+			    EditRights = userIsOwner,
+			    DeletionRights = deletionRights
+		    };
+
+		    return result;
+	    }
+
+	    private async Task<RouteListViewModel> GetListViewModel(string archived, string creator)
         {
             IQueryable<Route> routes = _dbContext.Routes;
 
@@ -189,8 +226,7 @@ namespace electric_mouse.Controllers
         {
             List<CommentViewModel> comments = new List<CommentViewModel>();
 
-            Route route = _dbContext
-                .Routes
+            Route route = _dbContext.Routes
                 .Include(x => x.Difficulty)
 	            .First(r => r.ID == id);
 
@@ -198,14 +234,35 @@ namespace electric_mouse.Controllers
 	        RouteSection section = _dbContext.RouteSections.First(t => rs.RouteSectionID == t.RouteSectionID);
 	        RouteHall hall = _dbContext.RouteHalls.First(p => p.RouteHallID == section.RouteHallID);
 
-            List<ApplicationUser> creators = _dbContext.RouteUserRelations.Where(r => r.Route == route).Select(r => r.User).ToList();
+            List<ApplicationUser> creators = _dbContext.RouteUserRelations
+	            .Where(r => r.Route == route)
+	            .Select(r => r.User)
+	            .ToList();
+
             bool creatorOrAdmin = false;
 
+	        ApplicationUser user = null; // TODO: This makes no sense
+	        bool userIsAdmin = false;
             if (_signInManager.IsSignedIn(User))
             {
-                ApplicationUser user = await _userManager.GetUserAsync(User);
-                creatorOrAdmin = creators.Contains(user) || (await _userManager.IsInRoleAsync(user, RoleHandler.Admin)); //TODO const when merging
+                user = await _userManager.GetUserAsync(User);
+	            userIsAdmin = await _userManager.IsInRoleAsync(user, "Administrator");
+	            creatorOrAdmin = creators.Contains(user) || (await _userManager.IsInRoleAsync(user, RoleHandler.Admin)); //TODO const when merging
             }
+
+	        List<Comment> allComments = _dbContext.Comments
+		        .Where(x => x.RouteID == id)
+		        .ToList();
+	        List<Comment> topLevelComments = allComments
+		        .Where(x => x.OriginalPostID == 0)
+		        .ToList();
+
+	        foreach (Comment comment in topLevelComments)
+	        {
+		        comments.Add(FetchCommentData(comment, allComments, user, userIsAdmin));
+	        }
+	        comments = comments.OrderByDescending<CommentViewModel, DateTime>(c => c.Date).ToList();
+
 	        RouteDetailViewModel model = new RouteDetailViewModel
 	        {
 		        Route = route,
@@ -213,7 +270,8 @@ namespace electric_mouse.Controllers
 		        Hall = hall,
 		        Creators = creators,
 		        EditRights = creatorOrAdmin,
-		        Comments = comments
+		        Comments = comments,
+		        UserIsLoggedIn = _signInManager.IsSignedIn(User) // TODO: This makes no sense
 	        };
 
 	        return model;

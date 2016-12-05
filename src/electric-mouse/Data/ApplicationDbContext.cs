@@ -20,8 +20,9 @@ namespace electric_mouse.Data
         public DbSet<RouteDifficulty> RouteDifficulties { get; set; }
         public DbSet<RouteSectionRelation> RouteSectionRelations { get; set; }
         public DbSet<RouteApplicationUserRelation> RouteUserRelations { get; set; }
+	    public DbSet<Comment> Comments { get; set; }
 
-        protected override void OnModelCreating(ModelBuilder builder)
+	    protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
             // Customize the ASP.NET Identity model and override the defaults if needed.
@@ -40,6 +41,11 @@ namespace electric_mouse.Data
                 .HasOne(rel => rel.Route)
                 .WithMany(u => u.Creators)
                 .HasForeignKey(rel => rel.RouteRefId);
+
+	        builder.Entity<Comment>()
+		        .HasOne(rel => rel.User)
+		        .WithMany(u => u.Comments)
+		        .HasForeignKey(rel => rel.ApplicationUserRefId);
         }
     }
 }
