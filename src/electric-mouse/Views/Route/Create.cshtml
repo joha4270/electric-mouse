@@ -99,11 +99,11 @@
   <div class="row">
     <div class="col s12">
       <p>@strings["Attachment_Upload_Image"]</p>
-      <input type="file" name="Images" id="filer_input" multiple />
+      <input type="file" name="Images" id="filer_input" multiple style="padding-bottom: 10px;" />
 
 
       @* Only display the image edit if in route edit *@
-      @if (@Model.UpdateID > 0)
+      @if (@Model.UpdateID > 0  && Model.Images.Count > 0)
       {
 	      <ul class="jFiler-items-list jFiler-items-grid">
 	        @foreach (Tuple<string, int> image in Model.Images)
@@ -146,7 +146,14 @@
   <div class="row">
     <div class="col s12">
       <button class="btn waves-effect waves-light red right" type="submit">
-        @strings["Create_Route_Button"]
+      @if (@Model.UpdateID > 0)
+      {
+	      @strings["Create_Route_Update_Button"]
+      }
+      else
+      {
+	      @strings["Create_Route_Button"]
+      }
         <i class="material-icons right">send</i>
       </button>
     </div>
