@@ -311,7 +311,7 @@ namespace electric_mouse.Controllers
 		        Creators = creators,
 		        EditRights = creatorOrAdmin,
 		        Comments = comments,
-                Images = imagePaths
+                Images = imagePaths,
 		        UserIsLoggedIn = _signInManager.IsSignedIn(User) // TODO: This makes no sense
 	        };
 
