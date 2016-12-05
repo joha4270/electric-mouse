@@ -20,7 +20,7 @@ namespace electric_mouse.Services
         {
             string fileExtension = Path.GetExtension(fileName);
 
-            return extensions.Any(extension => extension.Equals(fileExtension));
+            return extensions.Any(extension => extension.Equals(fileExtension, StringComparison.OrdinalIgnoreCase));
         }
 
         /// <summary>

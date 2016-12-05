@@ -48,6 +48,7 @@ namespace electric_mouse.Services
                 using (FileStream fileStream = new FileStream(fullImagePaths[i], FileMode.Create))
                 {
                     await image.CopyToAsync(fileStream);
+                    await fileStream.FlushAsync();
                 }
                 i++;
             }
