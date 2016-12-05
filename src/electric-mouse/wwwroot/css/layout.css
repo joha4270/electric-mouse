@@ -48,7 +48,8 @@ html {
 
 .table td, .table th {border-radius: 0;}
 .table {min-width: 100%;}
-td form .right {margin-left: 10px;}
+td form .right, 
+td button .right {margin-right: 10px;}
 
 .dataTables_filter {display: none;}
 .nav-search input {width: 100%;}
