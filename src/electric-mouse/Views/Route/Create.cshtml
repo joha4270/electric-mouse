@@ -44,7 +44,9 @@
 
   <div class="row">
     <div class="input-field col s12">
-      <select asp-for="RouteSectionID" asp-items="@(Model.UpdateID > 0 ? Model.Sections.Where(x => x.RouteHallID == Model.RouteHallID).Select(s => new SelectListItem { Text = s.Name, Value = s.RouteSectionID.ToString() }) : new SelectListItem[] { })" id="SectionSelect" multiple>
+      <select asp-for="RouteSectionID" asp-items="@(Model.UpdateID > 0 ? Model.Sections
+          .Where(x => x.RouteHallID == Model.RouteHallID)
+          .Select(s => new SelectListItem { Text = s.Name, Value = s.RouteSectionID.ToString() }) : new SelectListItem[] { })" id="SectionSelect" multiple>
         <option value="" disabled selected>No Sections Found</option>
       </select>
       <label for="sections">Section</label>
