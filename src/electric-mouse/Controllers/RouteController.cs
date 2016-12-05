@@ -28,15 +28,18 @@ namespace electric_mouse.Controllers
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly ILogger _logger;
         private readonly IHostingEnvironment _environment;
+        private readonly AttachmentHandler _attachmentHandler;
 
         public RouteController(ApplicationDbContext dbContext, UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, ILoggerFactory logger
-            ,IHostingEnvironment environment)
+            ,IHostingEnvironment environment
+            , AttachmentHandler attachmentHandler)
         {
             _dbContext = dbContext;
             _userManager = userManager;
             _signInManager = signInManager;
             _logger = logger.CreateLogger<RouteController>();
             _environment = environment;
+            _attachmentHandler = attachmentHandler;
         }
 
         [Authorize(Roles = RoleHandler.Post)]
@@ -121,75 +124,20 @@ namespace electric_mouse.Controllers
             string[] exclude = Request.Form["jfiler-items-exclude-Images-0"].ToString().Trim('[', ']').Replace("\"", "").Split(',');
             // Filter out the images that the user removed during the upload
             IEnumerable<IFormFile> imagesToUpload = Request.Form.Files.Where(image => image.Name.Contains("Images") && exclude.Contains(image.FileName) == false);
-            await AddImageAttachmentsToDatabase(imagesToUpload.ToList(), attachment);
+            await _attachmentHandler.AddImageAttachmentsToDatabase(imagesToUpload.ToList(), _environment.WebRootPath, "uploads");
+
+            // Add the imagepaths to the database
+
+            _dbContext.AttachmentPathRelations.Add(new AttachmentPathRelation
+            {
+                ImagePath = relativeImagePaths[i],
+                RouteAttachment = attachment
+            });
 
             _dbContext.SaveChanges();
 
             return RedirectToAction(nameof(List), "Route");
         }
-
-        private async Task AddImageAttachmentsToDatabase(IList<IFormFile> images, RouteAttachment attachment)
-        {
-            if (images == null) // bail if there are no images being uploaded
-                return;
-
-            // the name of the folder to upload all the images
-            string uploadFolderName = "uploads";
-            // generate a random file name for all the images that are being uploaded
-            string[] imageFileNames = images.Select(image => GetRandomFileNameWithOriginalExtension(image.FileName)).ToArray();
-            // get all the relative paths (uploads\<filename>)
-            string[] relativeImagePaths = imageFileNames.Select(filename => Path.Combine(uploadFolderName, filename)).ToArray();
-            // get the path to the uploads folder on the server
-            string uploadFolderPath = Path.Combine(_environment.WebRootPath, uploadFolderName);
-            // get the full path (c:\...\wwwroot\uploads\<filename>)
-            string[] fullImagePaths = imageFileNames.Select(filename => Path.Combine(uploadFolderPath, filename)).ToArray();
-            int i = 0;
-
-            // create uploads folder if it doesnt exist
-            if (Directory.Exists(uploadFolderPath) == false)
-                Directory.CreateDirectory(uploadFolderPath);
-
-            foreach (IFormFile image in images)
-            {
-                if (image.Length <= 0 && image.Length > ConvertMegabytesToBytes(5)) // image size should not exceed 5 megabytes
-                    continue; // skip the iteration; dont upload the image
-
-                if (image.ContentType.Contains("image") == false)
-                    continue; // if it isnt an image being uploaded; skip it!
-
-                if (HasExtension(image.FileName, ".png", ".jpg", ".jpeg") == false)
-                    continue; // if it doesnt have an image extension; skip it!
-
-                using (FileStream fileStream = new FileStream(fullImagePaths[i], FileMode.Create))
-                {
-                    _dbContext.AttachmentPathRelations.Add(new AttachmentPathRelation
-                    {
-                        ImagePath = relativeImagePaths[i],
-                        RouteAttachment = attachment
-                    });
-                    await image.CopyToAsync(fileStream);
-                }
-                i++;
-            }
-        }
-
-        /// <summary>
-        /// Checks if the filename has one of the extensions provided.
-        /// </summary>
-        private bool HasExtension(string fileName, params string[] extensions)
-        {
-            string fileExtension = Path.GetExtension(fileName);
-
-            return extensions.Any(extension => extension.Equals(fileExtension));
-        }
-
-        #region These should probably be moved (can be made extension methods)
-
-        public long ConvertMegabytesToBytes(long megabytes) => megabytes * 1024L * 1024L;
-
-        public string GetRandomFileNameWithOriginalExtension(string fileName) => $"{Path.GetFileNameWithoutExtension(Path.GetRandomFileName())}{Path.GetExtension(fileName)}";
-
-        #endregion
 
         public async Task<IActionResult> List(string archived = "false", string creator = null)
         {
