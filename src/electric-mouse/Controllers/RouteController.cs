@@ -119,34 +119,30 @@ namespace electric_mouse.Controllers
             RouteAttachment attachment = new RouteAttachment { VideoUrl = model.VideoUrl, Route = route, RouteID = route.ID };
             _dbContext.RouteAttachments.Add(attachment);
 
-            // Add the image(s) attachment to the database
-            // Get all the image names that should be excluded from the upload
-            string[] exclude = Request.Form["jfiler-items-exclude-Images-0"].ToString().Trim('[', ']').Replace("\"", "").Split(',');
-            // Filter out the images that the user removed during the upload
-            IEnumerable<IFormFile> imagesToUpload = Request.Form.Files.Where(image => image.Name.Contains("Images") && exclude.Contains(image.FileName) == false);
-            await _attachmentHandler.AddImageAttachmentsToDatabase(imagesToUpload.ToList(), _environment.WebRootPath, "uploads");
-
-            // Add the imagepaths to the database
-
-            _dbContext.AttachmentPathRelations.Add(new AttachmentPathRelation
-            {
-                ImagePath = relativeImagePaths[i],
-                RouteAttachment = attachment
-            });
+            // Add the image(s) attachment and imagepaths to the database
+            await UploadImages(attachment);
 
             _dbContext.SaveChanges();
 
             return RedirectToAction(nameof(List), "Route");
         }
 
-        /// <summary>
-        /// Checks if the filename has one of the extensions provided.
-        /// </summary>
-        private bool HasExtension(string fileName, params string[] extensions)
+        private async Task UploadImages(RouteAttachment attachment)
         {
-            string fileExtension = Path.GetExtension(fileName);
+            // Get all the image names that should be excluded from the upload
+            string[] exclude = Request.Form["jfiler-items-exclude-Images-0"].ToString().Trim('[', ']').Replace("\"", "").Split(',');
+            // Filter out the images that the user removed during the upload
+            IEnumerable<IFormFile> imagesToUpload = Request.Form.Files.Where(image => image.Name.Contains("Images") && exclude.Contains(image.FileName) == false);
+            string[] relativeImagePaths = await _attachmentHandler.SaveImagesOnServer(imagesToUpload.ToList(), _environment.WebRootPath, "uploads");
 
-            return extensions.Any(extension => extension.Equals(fileExtension, StringComparison.OrdinalIgnoreCase));
+            foreach (string relativeImagePath in relativeImagePaths)
+            {
+                _dbContext.AttachmentPathRelations.Add(new AttachmentPathRelation
+                {
+                    ImagePath = relativeImagePath,
+                    RouteAttachment = attachment
+                });
+            }
         }
 
         public async Task<IActionResult> List(string archived = "false", string creator = null)
@@ -244,9 +240,10 @@ namespace electric_mouse.Controllers
             }
 
             // Get all the images related to the route
-            AttachmentPathRelation[] attachments = _dbContext.AttachmentPathRelations.Include(relation => relation.RouteAttachment).ToArray();
-            string[] imagePaths = attachments?.Where(attachment => attachment.RouteAttachment.RouteID == id)
-                                             ?.Select(attachment => attachment.ImagePath)
+            AttachmentPathRelation[] attachments = _dbContext.AttachmentPathRelations.Include(relation => relation.RouteAttachment)
+                .Where(attachment => attachment.RouteAttachment.RouteID == id)
+                .ToArray();
+            string[] imagePaths = attachments?.Select(attachment => attachment.ImagePath)
                                              .ToArray();
 
             RouteDetailViewModel model = new RouteDetailViewModel
@@ -416,15 +413,9 @@ namespace electric_mouse.Controllers
                 // If the video url is updated we want to update this in the attachment
                 RouteAttachment attachment = _dbContext.RouteAttachments.First(att => att.RouteAttachmentID == model.AttachmentID);
                 attachment.VideoUrl = model.VideoUrl;
-                //_dbContext.RouteAttachments.Add(attachment);
 
                 // Upload the new images to the server
-                // Add the image(s) attachment to the database
-                // Get all the image names that should be excluded from the upload
-                string[] exclude = Request.Form["jfiler-items-exclude-Images-0"].ToString().Trim('[', ']').Replace("\"", "").Split(',');
-                // Filter out the images that the user removed during the upload
-                IEnumerable<IFormFile> imagesToUpload = Request.Form.Files.Where(image => image.Name.Contains("Images") && exclude.Contains(image.FileName) == false);
-                await AddImageAttachmentsToDatabase(imagesToUpload.ToList(), attachment);
+                await UploadImages(attachment);
                 #endregion
 
                 await _dbContext.SaveChangesAsync();

@@ -11,12 +11,18 @@ namespace electric_mouse.Services
 {
     public class AttachmentHandler
     {
-
-
-        public async Task AddImageAttachmentsToDatabase(IList<IFormFile> images, string webRootPath, string folderName)
+        
+        /// <summary>
+        /// Saves the given images based on the specified webRootPath and folderName.
+        /// </summary>
+        /// <param name="images">The images that should be saved.</param>
+        /// <param name="webRootPath">The web root path.</param>
+        /// <param name="folderName">The folder relative to the webRootPath where the images are to be saved.</param>
+        /// <returns>Returns the relative paths in which where the files were saved.</returns>
+        public async Task<string[]> SaveImagesOnServer(IList<IFormFile> images, string webRootPath, string folderName)
         {
             if (images == null) // bail if there are no images being uploaded
-                return;
+                return null;
 
             // the name of the folder to upload all the images
             string uploadFolderName = folderName;
@@ -52,6 +58,8 @@ namespace electric_mouse.Services
                 }
                 i++;
             }
+
+            return relativeImagePaths;
         }
     }
 }
