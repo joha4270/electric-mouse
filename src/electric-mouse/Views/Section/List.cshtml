@@ -1,4 +1,7 @@
 ﻿@model electric_mouse.Models.RouteViewModels.SectionListViewModel
+@{
+	var strings = ViewBag.Language.Strings;
+}
 
 <div class="col s12">
     <div class="row" style="margin-bottom: 0;">
@@ -6,16 +9,16 @@
             <div class="input-field col">
                 <button type="submit" class="btn waves-effect waves-light red" style="padding: 0 15px;">
                     <i class="material-icons left">add</i>
-                    New Section
+                    @strings["Sections_Create"]
                 </button>
             </div>
             <div class="input-field col s4">
-                <label>Section Name</label>
+                <label>@strings["Sections_Name"]</label>
                 <input type="text" id="SectionName" name="SectionName" />
             </div>
             <div class="input-field col s4">
                 <select name="HallID" id="HallID">
-                    <option disabled selected value="">Select Hall</option>
+                    <option disabled selected value="">@strings["Hall_Select"]</option>
                     @foreach (var hall in Model.Halls)
                     {
                         <option value="@hall.RouteHallID">@hall.Name</option>
@@ -32,9 +35,9 @@
     <table class="table">
         <thead>
             <tr>
-                <th class="app_name">Name</th>
-                <th class="app_hallname">Hall</th>
-                <th class="app_routeamount">Amount of Routes</th>
+                <th class="app_name">@strings["Route_Name"]</th>
+                <th class="app_hallname">@strings["Route_Hall"]</th>
+                <th class="app_routeamount">@strings["Route_Amount"]</th>
                 <th></th>
             </tr>
         </thead>
@@ -50,21 +53,21 @@
                         <td>
                             @if (item.Routes.All(r => r.Route.Archived))
                             {
-                                <button class="btn waves-effect waves-light red right" type="submit" onclick="Dialog('@item.RouteSectionID')">Delete</button>
+                                <button class="btn waves-effect waves-light red right" type="submit" onclick="Dialog('@item.RouteSectionID')">@strings["Delete"]</button>
                             }
                             else
                             {
-                                <button class="btn waves-effect waves-light red right" type="submit" disabled>Delete</button>
+                                <button class="btn waves-effect waves-light red right" type="submit" disabled>@strings["Delete"]</button>
                             }
                             <form asp-controller="Section" asp-action="Clear" method="post">
                                 @* We gray out the buttons if there are no routes (the buttons dont do anything then) *@
                                 @if (item.Routes.Count(r => r.Route.Archived == false) > 0)
                                 {
-                                    <button class="btn waves-effect waves-light red right" type="submit">Clear</button>
+                                    <button class="btn waves-effect waves-light red right" type="submit">@strings["Clear"]</button>
                                 }
                                 else
                                 {
-                                    <button class="btn waves-effect waves-light red right" type="submit" disabled>Clear</button>
+                                    <button class="btn waves-effect waves-light red right" type="submit" disabled>@strings["Clear"]</button>
                                 }
                                 <input type="hidden" name="SectionID" value="@item.RouteSectionID" />
                             </form>
@@ -77,9 +80,9 @@
 </div>
 
 <div id="dialog" title="Delete section" style="display: none;">
-    <p>Are you sure you want to delete this section? All routes in the system (including those in the archive) will be DELETED.</p>
+    <p>@strings["Warning_Delete_Section"]</p>
     <form asp-controller="Section" asp-action="Delete" method="post">
-        <button type="submit" class="btn waves-effect waves-light red right">Delete</button>
+        <button type="submit" class="btn waves-effect waves-light red right">@strings["Sections_Delete"]</button>
         <input id="dialog_id" type="hidden" asp-for="SectionID" value="1" />
     </form>
 </div>

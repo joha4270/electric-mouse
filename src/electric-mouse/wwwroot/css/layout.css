@@ -45,6 +45,7 @@ html {
   }
 
 .nav-wrapper i {height: 48px !important;}
+.hide-on-med-and-down .dropdown-content { width: auto !important; }
 
 .table td, .table th {border-radius: 0;}
 .table {min-width: 100%;}

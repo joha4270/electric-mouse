@@ -1,5 +1,8 @@
 @using electric_mouse.Models.RouteItems
 @model electric_mouse.Models.RouteViewModels.RouteListViewModel
+@{
+	var strings = ViewBag.Language.Strings;
+}
 
 @* Difficulty Test, do not attempt to make it work yourself *@
 <div class="row" style="margin-top: 10px;">
@@ -27,7 +30,7 @@
       <div class="input-field">
         <i class="material-icons prefix" style="bottom: 8px;">search</i>
         <input id="search" type="search" required>
-        <label for="search">Search</label>
+        <label for="search">@strings["Search"]</label>
         <i class="material-icons">close</i>
       </div>
     </form>
@@ -40,12 +43,12 @@
     <thead>
     <tr>
       <th class="app_id">#</th>
-      <th class="app_section">Section</th>
-      <th class="app_difficulty">Difficulty</th>
-      <th class="app_color">Grip Color</th>
-      <th class="app_builder">Builders</th>
-      <th class="app_date">Date</th>
-      <th class="app_note">Note</th>
+      <th class="app_section">@strings["Route_Section"]</th>
+      <th class="app_difficulty">@strings["Route_Difficulty"]</th>
+      <th class="app_color">@strings["Route_Grip_Color"]</th>
+      <th class="app_builder">@strings["Route_Builders"]</th>
+      <th class="app_date">@strings["Route_Date"]</th>
+      <th class="app_note">@strings["Route_Note"]</th>
     </tr>
     </thead>
     <tbody class="app_routetable" id="central_route_table">

@@ -1,6 +1,9 @@
 ﻿@model electric_mouse.Models.RouteViewModels.RouteCreateViewModel
 @using electric_mouse.Models.RouteItems;
-<h2>Stuff</h2>
+@{
+	var strings = ViewBag.Language.Strings;
+}
+
 @* enctype="multipart/form-data" is for getting all the image files *@
 <form asp-controller="Route" asp-action="@(Model.UpdateID < 0 ? "Create" : "Update")" method="post" class="col s12" id="route_form" 
       enctype="multipart/form-data">
@@ -8,20 +11,20 @@
   <div class="row">
     <div class="input-field col s2">
       <input type="number" min="1" name="RouteID" value="@Model.RouteID" />
-      <label for="id">Route ID</label>
+      <label for="id">@strings["Route_Name"] ID</label>
     </div>
     <div class="input-field col s10">
       <select asp-for="RouteHallID"  id="hallSelect">
         @if (Model.UpdateID < 0)
         {
-	        <option value="" disabled selected>Select a Hall</option>
+	        <option value="" disabled selected>@strings["Hall_Select"]</option>
         }
         @foreach (RouteHall hall in Model.Halls)
         {
 	        <option value ="@hall.RouteHallID" data-guess="@(hall.ExpectedType.HasValue ? (int)hall.ExpectedType.Value : -1)">@hall.Name</option>
         }
       </select>
-      <label>Hal</label>
+      <label>@strings["Route_Hall"]</label>
     </div>
   </div>
 
@@ -30,17 +33,17 @@
       <select asp-for="RouteDifficultyID" asp-items="@Model.Difficulties.Select(d => new SelectListItem { Text = d.Name, Value = d.RouteDifficultyID.ToString() }) ">
         @if (Model.UpdateID < 0)
         {
-	        <option value="" disabled selected>Select a Difficulity</option>
+	        <option value="" disabled selected>@strings["Difficulty_Select"]</option>
         }
       </select>
-      <label>Difficulty</label>
+      <label>@strings["Route_Difficulty"]</label>
     </div>
     <div class="input-field col s6">
       <select asp-for="Type" id="TypeSelect">
         <option value="0">Boulder</option>
         <option value="1">Sport</option>
       </select>
-      <label>Route Type</label>
+      <label>@strings["Route_Type"]</label>
     </div>
   </div>
 
@@ -49,15 +52,15 @@
       <select asp-for="RouteSectionID" asp-items="@(Model.UpdateID > 0 ? Model.Sections
           .Where(x => x.RouteHallID == Model.RouteHallID)
           .Select(s => new SelectListItem { Text = s.Name, Value = s.RouteSectionID.ToString() }) : new SelectListItem[] { })" id="SectionSelect" multiple>
-        <option value="" disabled selected>No Sections Found</option>
+        <option value="" disabled selected>@strings["Sections_None"]</option>
       </select>
-      <label for="sections">Section</label>
+      <label for="sections">@strings["Route_Section"]</label>
     </div>
   </div>
 
   <div class="row">
     <div class="input-field col s12">
-      <label for="date">Date</label>
+      <label for="date">@strings["Route_Date"]</label>
       <input type="date" class="datepicker" name="Date" value="@Model.Date">
     </div>
   </div>
@@ -65,14 +68,14 @@
   <div class="row">
     <div class="input-field col s12">
       <input id="grip_color" type="text" name="GripColor" value="@Model.GripColor">
-      <label for="grip_color">Grip Color</label>
+      <label for="grip_color">@strings["Route_Grip_Color"]</label>
     </div>
   </div>
 
   <div class=row>
     <div class="col s12">
       <div class="input-field">
-        <label for="search_input">Builders</label>
+        <label for="search_input">@strings["Route_Builders"]</label>
         <input type="text" id="search_input" />
         <div id="builder_container"></div>
       </div>
@@ -81,7 +84,7 @@
 
   <div class="row">
     <div class="col s12">
-        <h5>Attachments</h5>
+        <h5>@strings["Route_Attachments"]</h5>
         <div class="input-field col s12">
             <input type="text" name="VideoUrl"  value="@Model?.Attachment?.VideoUrl"/>
             <label asp-for="VideoUrl">YouTube Video</label>
@@ -111,7 +114,7 @@
     @* IMAGE UPLOAD *@
   <div class="row">
     <div class="col s12">
-      <p>Upload billede</p>
+      <p>@strings["Attachment_Upload_Image"]</p>
       <input type="file" name="Images" id="filer_input" multiple />
     </div>
   </div>
@@ -119,14 +122,14 @@
     <div class="row">
     <div class="input-field col s12">
       <textarea id="textarea1" class="materialize-textarea" name="Note">@Model.Note</textarea>
-      <label for="textarea1">Note</label>
+      <label for="textarea1">@strings["Route_Note"]</label>
     </div>
   </div>
 
   <div class="row">
     <div class="col s12">
       <button class="btn waves-effect waves-light red right" type="submit">
-        Create Route
+        @strings["Create_Route_Button"]
         <i class="material-icons right">send</i>
       </button>
     </div>
@@ -155,13 +158,13 @@
 		      function() {
 			      var data = "";
 			      var parent = $(this).val();
-			      data += '<option value="" disabled selected>Select a Section</option>';
+			      data += '<option value="" disabled selected>@strings["Sections_Select"]</option>';
 			      $.each(sections[parent],
 				      function(key, val) {
 					      data += '<option value="' + key + '">' + val + '</option>';
 				      });
 			      if (data == "") {
-				      data = '<option value="" disabled selected>No Sections Found</option>'
+				      data = '<option value="" disabled selected>@strings["Sections_None"]</option>'
 			      }
 			      $("#SectionSelect").material_select("destroy");
 			      $("#SectionSelect").html(data);

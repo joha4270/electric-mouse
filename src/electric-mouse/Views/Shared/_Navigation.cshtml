@@ -1,5 +1,8 @@
 ﻿@inject SignInManager<ApplicationUser> SignInManager
 @inject UserManager<ApplicationUser> UserManager
+@{
+	var strings = ViewBag.Language.Strings;
+}
 
 @if (SignInManager.IsSignedIn(User))
 {
@@ -7,7 +10,7 @@
 	<ul id="user_dropdown" class="dropdown-content">
 	  <li>
 	    <form asp-area="" asp-controller="Account" asp-action="LogOff" method="post" id="logoutForm">
-	      <a href="javascript:void(0)" onclick="$(this).closest('form').submit()"><i class="material-icons">exit_to_app</i>Log Out</a>
+	      <a href="javascript:void(0)" onclick="$(this).closest('form').submit()"><i class="material-icons">exit_to_app</i>@strings["User_Log_Out"]</a>
 	    </form>
 	  </li>
 	</ul>
@@ -15,21 +18,21 @@
 	if (await UserManager.IsInRoleAsync(user, electric_mouse.Services.RoleHandler.Admin))
 	{
         @* Admin Dropdown *@
-		<ul id="admin_dropdown" class="dropdown-content">
+		<ul id="admin_dropdown" class="dropdown-content" style="width: auto !important;">
 		  <li>
-		    <a href="/difficulty/create">Difficulties</a>
-		    <a href="/user/list">Users</a>
-		    <a href="/hall/create">Halls</a>
-		    <a href="/section/">Sections</a>
+		    <a href="/difficulty/create">@strings["Route_Difficulties"]</a>
+		    <a href="/user/list">@strings["User_Name_Plural"]</a>
+		    <a href="/hall/create">@strings["Route_Halls"]</a>
+		    <a href="/section/">@strings["Route_Sections"]</a>
 		  </li>
 		</ul>
 
         <ul id="mobile_admin_dropdown" class="dropdown-content">
             <li>
-                <a href="/difficulty/create">Difficulties</a>
-                <a href="/user/list">Users</a>
-                <a href="/hall/create">Halls</a>
-                <a href="/section/">Sections</a>
+              <a href="/difficulty/create">@strings["Route_Difficulties"]</a>
+              <a href="/user/list">@strings["User_Name_Plural"]</a>
+              <a href="/hall/create">@strings["Route_Halls"]</a>
+              <a href="/section/">@strings["Route_Sections"]</a>
             </li>
         </ul>
     }
@@ -75,7 +78,7 @@
               <img src="/images/@(ViewBag.Language.Country).svg" class="nav-flag"/><i class="material-icons right" style="margin-left: 0;">arrow_drop_down</i>
             </a>
           </li>
-          <li><a href="/route"><img src="/images/climber_boulder.svg" class="left" />Routes</a></li>
+          <li><a href="/route"><img src="/images/climber_boulder.svg" class="left" />@strings["Route_Name_Plural"]</a></li>
           @if (SignInManager.IsSignedIn(User))
           {
 	          ApplicationUser user = await UserManager.GetUserAsync(User);
@@ -91,14 +94,14 @@
           }
           else
           {
-	          <li><a href="/Account/Login"><i class="material-icons left">person</i>Login</a></li>
+	          <li><a href="/Account/Login"><i class="material-icons left">person</i>@strings["User_Log_In"]</a></li>
           }
         </ul>
 
         @* Mobile Navigation *@
         <ul class="side-nav" id="mobile-nav">
           <li><a href="/"><i class="material-icons">home</i>Home</a></li>
-          <li><a href="/route"><i class="material-icons">place</i>Routes</a></li>
+          <li><a href="/route"><i class="material-icons">place</i>@strings["Route_Name_Plural"]</a></li>
           <li>
             <a class="dropdown-button" href="javascript:void(0)" data-activates="mobile_language_dropdown" data-beloworigin="true" style="max-height: 64px;">
               <i class="material-icons left" style="margin-left: 0;">language</i>Select Language<i class="material-icons right" style="margin-left: 0;">arrow_drop_down</i>
@@ -115,13 +118,13 @@
 	          }
 	          <li>
 	            <form asp-area="" asp-controller="Account" asp-action="LogOff" method="post" id="logoutForm">
-	              <a href="javascript:void(0)" onclick="$(this).closest('form').submit()"><i class="material-icons">exit_to_app</i>Log Out</a>
+	              <a href="javascript:void(0)" onclick="$(this).closest('form').submit()"><i class="material-icons">exit_to_app</i>@strings["User_Log_Out"]</a>
 	            </form>
 	          </li>
           }
           else
           {
-	          <li><a href="/Account/Login"><i class="material-icons">person</i>Login</a></li>
+	          <li><a href="/Account/Login"><i class="material-icons">person</i>@strings["User_Log_In"]</a></li>
           }
 
         </ul>

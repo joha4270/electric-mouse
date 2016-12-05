@@ -1,16 +1,13 @@
 ﻿@model CommentViewModel
+@{
+	var strings = ViewBag.Language.Strings;
+}
 
-<div style="margin-left:5em" class="comment" data-id="1">
+@if (!Model.Deleted)
+{
+	<div style="margin-left:5em" class="comment" data-id="1">
 
-  <br />
-  @if (Model.Deleted)
-  {
-	  @*<div>
-	    <b>COMMENT HAS BEEN VIOLENTLY AND VIGOROUSLY PURGED BY THE MINISTRY OF PUBLIC DECENCY</b>
-	    (@Model.Date.ToString("dd-MM-yy"), VIOLENTLY AND VIGOROUSLY PURGED @Model.DeletionDate.ToString("dd-MM-yy") )
-	  </div>*@
-  } else
-  {
+	  <br />
 	  <img src="@Model.User.URLPath" width="32" height="32" style="display:inline" />
 	  <div style="display: inline;">
 	    <label><b>@Model.User.DisplayName</b> (@Model.Date.ToString("dd-MM-yy"))</label>
@@ -19,20 +16,20 @@
 
 	  @if (Model.UserIsLoggedIn) {
         @*The button that brings up the reply field.*@
-		   <div class="show_reply_field" style="display:inline">
-		     <a href="javascript:void(0)">Reply</a>
-		   </div>
-	   }
+		  <div class="show_reply_field" style="display:inline">
+		    <a href="javascript:void(0)">@strings["Comment_Reply"]</a>
+		  </div>
+	  }
 
 	  @if (Model.DeletionRights)
-	   {
-		   <form asp-controller="Comments" asp-action="Delete" style="display:inline" method="post">
-		     <input asp-for="ApplicationUserRefId" type="hidden" value="@Model.ApplicationUserRefId" />
-		     <input asp-for="CommentID" type="hidden" value="@Model.CommentID" />
-		     <span> · </span>
-		     <a href="javascript:void(0)" onclick="$(this).closest('form').submit()">Delete</a>
-		   </form>
-	   }
+	  {
+		  <form asp-controller="Comments" asp-action="Delete" style="display:inline" method="post">
+		    <input asp-for="ApplicationUserRefId" type="hidden" value="@Model.ApplicationUserRefId" />
+		    <input asp-for="CommentID" type="hidden" value="@Model.CommentID" />
+		    <span> · </span>
+		    <a href="javascript:void(0)" onclick="$(this).closest('form').submit()">@strings["Delete"]</a>
+		  </form>
+	  }
         @*@if (Model.EditRights)
     {
         <div>
@@ -51,24 +48,25 @@
             </div>
         </div>
     }*@
-	  @if (Model.UserIsLoggedIn)
-	   {
-		   <div style="display: none;" class="reply_field">
-		     <form asp-controller="Comments" asp-action="Reply" method="post">
-		       <input name="Content" type="text" class="materialize-textarea" height="4" width="20"/>
-		       <input class="btn" type="submit" value="Reply"/>
-		       <input asp-for="RouteID" type="hidden" value="@Model.RouteID"/>
-		       <input asp-for="CommentID" type="hidden" value="@Model.CommentID"/>
-		     </form>
-		   </div>
-	   }
-  }
+	@if (Model.UserIsLoggedIn)
+	{
+		<div style="display: none;" class="reply_field">
+		  <form asp-controller="Comments" asp-action="Reply" method="post">
+		    <input name="Content" type="text" class="materialize-textarea" height="4" width="20"/>
+		    <input class="btn" type="submit" value="@strings["Comment_Reply"]"/>
+		    <input asp-for="RouteID" type="hidden" value="@Model.RouteID"/>
+		    <input asp-for="CommentID" type="hidden" value="@Model.CommentID"/>
+		  </form>
+		</div>
+	}
 
-  <br />
 
-  @*Print comment children below.*@
-  @foreach (CommentViewModel child in Model.Children)
-  {
-	  @Html.Partial("Comment", child);
-  }
-</div>
+	  <br />
+
+	  @*Print comment children below.*@
+	  @foreach (CommentViewModel child in Model.Children)
+	  {
+		  @Html.Partial("Comment", child);
+	  }
+	</div>
+}

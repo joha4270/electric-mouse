@@ -9,12 +9,19 @@
       <div class="col s6" style="font-size:0.75em">@strings["Route_Hall"]</div>
 @if (Model.EditRights)
 {
-    <form asp-controller="Route" asp-action="Archive" asp-route-id="@Model.Route.ID">
-      <input class="col" type="submit" value="Slet"/>
-    </form>
-    <a asp-controller="Route" asp-action="Update" asp-route-id="@Model.Route.ID">
-      <input class="col" type="submit" value="Rediger"/>
-    </a>
+	<div class="col s3">
+	  <form asp-controller="Route" asp-action="Archive" asp-route-id="@Model.Route.ID">
+	    <a href="javascript:void(0)" onclick="$(this).closest('form').submit()" class="right" title="Delete">
+	      <i class="small material-icons">delete</i>
+	    </a>
+	  </form>
+	  <form asp-controller="Route" asp-action="Update" asp-route-id="@Model.Route.ID">
+	    <a href="javascript:void(0)" onclick="$(this).closest('form').submit()" class="right" title="Edit">
+	      <i class="small material-icons">edit</i>
+	    </a>
+	  </form>
+
+	</div>
 }
     </div>
     <div class="row">
@@ -58,7 +65,7 @@
         @foreach(string image in Model.Images)
         {
             <div class="col s6">
-                <img  src="~/@image" />
+                <img src="~/@image" />
             </div>
         }
         <button onclick="togglemore();" type="button" style="position:absolute; bottom:0px; left:0px; width: 100%; height:2em; background-color:#fafafa; border:none;">@strings["Show_More"]</button>
@@ -71,7 +78,7 @@
 		  <form asp-controller="Comments" asp-action="AddComment" method="post">
 		    <label for="Content">@strings["Comment_Create"]</label>
 		    <input name="Content" type="text" class="materialize-textarea" height="4" width="20"/>
-		    <input class="btn" type="submit" value="Submit"/>
+		    <input class="btn" type="submit" value="@strings["Comment_Send"]"/>
 		    <input name="RouteID" type="hidden" value="@Model.Route.ID"/>
 		  </form>
 		</div>

@@ -63,9 +63,11 @@ function togglemore()
     var element = $('#long_content');
     var size = element.css("max-height");
     if (size === "300px") {
-        element.css('max-height', "3000px")
+        element.css('max-height', "3000px");
+	    $("#long_content button").html("Show Less");
     } else {
-        element.css('max-height', "300px")
+	    $("#long_content button").html("Show More");
+	    element.css('max-height', "300px");
     }
 }
 
