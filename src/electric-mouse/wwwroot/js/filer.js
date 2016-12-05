@@ -1,4 +1,5 @@
-﻿$("#filer_input").filer({
+﻿// This template from the jquery.filer website.
+$("#filer_input").filer({
     limit: null,
     maxSize: null,
     extensions: null,
@@ -70,12 +71,6 @@
             remove: '.jFiler-item-trash-action'
         }
     },
-    //dragDrop: {
-    //    dragEnter: null,
-    //    dragLeave: null,
-    //    drop: null,
-    //    dragContainer: null,
-    //},
     files: null,
     addMore: false,
     allowDuplicates: true,
