@@ -5,10 +5,10 @@
   <br />
   @if (Model.Deleted)
   {
-	  <div>
+	  @*<div>
 	    <b>COMMENT HAS BEEN VIOLENTLY AND VIGOROUSLY PURGED BY THE MINISTRY OF PUBLIC DECENCY</b>
 	    (@Model.Date.ToString("dd-MM-yy"), VIOLENTLY AND VIGOROUSLY PURGED @Model.DeletionDate.ToString("dd-MM-yy") )
-	  </div>
+	  </div>*@
   } else
   {
 	  <img src="@Model.User.URLPath" width="32" height="32" style="display:inline" />
