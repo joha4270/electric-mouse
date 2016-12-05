@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using electric_mouse.Models.Api;
 using electric_mouse.Models.RouteItems;
 using Models;
@@ -37,5 +38,11 @@ namespace electric_mouse.Models.RouteViewModels
 
         public List<string> Builders { get; set; }
 	    public List<ApplicationUser> BuilderList { get; set; }
+
+        public string VideoUrl { get; set; }
+        public RouteAttachment Attachment { get; set; }
+        public int AttachmentID { get; set; }
+        public IList<int> ImagePathRelationID { get; set; }
+        public IList<Tuple<string, int>> Images { get; set; }
     }
 }

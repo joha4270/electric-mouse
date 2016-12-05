@@ -15,121 +15,22 @@
   <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/materialize/0.97.7/css/materialize.min.css" />
   <link rel="stylesheet" type="text/css" href="//cdn.datatables.net/1.10.12/css/jquery.dataTables.min.css" />
   <link rel="stylesheet" type="text/css" href="/css/layout.css" />
-  <link rel="stylesheet" type="text/css" href="/css/bootstrap-social.css" />
+  <link rel="stylesheet" type="text/css" href="/css/bootstrap-social.css"/>
+  <link rel="stylesheet" type="text/css" href="/css/jquery.filer.css" />
+  <link rel="stylesheet" type="text/css" href="/css/themes/jquery.filer-dragdropbox-theme.css" />
   <link rel="stylesheet" href="/css/materialize-tags.css" />
   <link rel='stylesheet' href='/css/spectrum.css' />
   <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.css" />
   <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.theme.min.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.css" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.theme.min.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.theme.min.css"/>
+  <link rel="stylesheet" type="text/css" href="/fonts/jquery.filer-icons/jquery-filer.css" />
   <link rel="manifest" href="/manifest.json">
 </head>
 <body>
 
 @* Login navigation *@
-@if (SignInManager.IsSignedIn(User))
-{
-    ApplicationUser user = await UserManager.GetUserAsync(User);
-    <ul id="user_dropdown" class="dropdown-content">
-      <li>
-        <form asp-area="" asp-controller="Account" asp-action="LogOff" method="post" id="logoutForm">
-          <a href="javascript:void(0)" onclick="$(this).closest('form').submit()"><i class="material-icons">exit_to_app</i>Log Out</a>
-        </form>
-      </li>
-    </ul>
-
-    if (await UserManager.IsInRoleAsync(user, electric_mouse.Services.RoleHandler.Admin))
-    {
-        @* Admin Dropdown *@
-        <ul id="admin_dropdown" class="dropdown-content">
-          <li>
-            <a href="/difficulty/create">Difficulties</a>
-            <a href="/user/list">@*<i class="material-icons left">people</i>*@Users</a>
-            <a href="/hall/create">@*<i class="material-icons left">room</i>*@Halls</a>
-            <a href="/section/">Sections</a>
-          </li>
-        </ul>
-    }
-
-}
-
-<ul id="language_dropdown" class="dropdown-content">
-  <form asp-controller="Language" asp-action="Change" asp-route-returnurl="/" method="post">
-    <li>
-      @foreach (var c in ViewBag.Language.Countries)
-      {
-          <a href="javascript:void(0)" onclick="langUpdate('@(c.Value)');"><img src="/images/@(c.Value).svg" class="nav-flag-dropdown"/></a>
-      }
-      <input type="hidden" name="newLocale" id="lang_id" value="" />
-    </li>
-  </form>
-</ul>
-
-<div class="navbar-fixed">
-  <nav>
-    <div class="nav-wrapper">
-      <div class="nav-content">
-        <a class="brand-logo" href="/">Klatreklub</a>
-
-        <a href="javascript:void(0)" data-activates="mobile-nav" class="button-collapse"><i class="material-icons">menu</i></a>
-        <ul class="right hide-on-med-and-down">
-          @*<li>
-            <form asp-controller="Language" asp-action="Change" asp-route-returnurl="/" method="post">
-              @{
-                  IReadOnlyList<SelectListItem> countries = ViewBag.Language.Countries;
-                  string newLocale = ViewBag.Language.Country;
-              }
-              <select asp-for="@newLocale" asp-items="countries" style="display:block;"></select>
-              <input type="submit" />
-            </form>
-
-          </li>*@
-          <li>
-              <a class="dropdown-button" href="javascript:void(0)" data-activates="language_dropdown" data-beloworigin="true" style="max-height: 64px;">
-                <img src="/images/@(ViewBag.Language.Country).svg" class="nav-flag"/><i class="material-icons right" style="margin-left: 0;">arrow_drop_down</i>
-              </a>
-          </li>
-          <li><a href="/route"><img src="/images/climber_boulder.svg" class="left" />Routes</a></li>
-            @if (SignInManager.IsSignedIn(User))
-            {
-                ApplicationUser user = await UserManager.GetUserAsync(User);
-                if (await UserManager.IsInRoleAsync(user, electric_mouse.Services.RoleHandler.Admin))
-                {
-                    <li>
-                      <a class="dropdown-button" href="#" data-activates="admin_dropdown" data-beloworigin="true">Admin<i class="material-icons right" style="margin-left: 0;">arrow_drop_down</i></a>
-                    </li>
-                }
-                <li>
-                    <a class="dropdown-button" href="#" data-activates="user_dropdown" data-beloworigin="true"><i class="material-icons left">person</i>@(user.DisplayName)<i class="material-icons right" style="margin-left: 0;">arrow_drop_down</i></a>
-                </li>
-            }
-            else
-            {
-                <li><a href="/Account/Login"><i class="material-icons left">person</i>Login</a></li>
-            }
-        </ul>
-        <ul class="side-nav" id="mobile-nav">
-          <li><a href="/"><i class="material-icons">home</i>Home</a></li>
-          <li><a href="/route"><i class="material-icons">place</i>Routes</a></li>
-          @if (SignInManager.IsSignedIn(User))
-          {
-              <li>
-                <form asp-area="" asp-controller="Account" asp-action="LogOff" method="post" id="logoutForm">
-                  <a href="javascript:void(0)" onclick="$(this).closest('form').submit()"><i class="material-icons">exit_to_app</i>Log Out</a>
-                </form>
-              </li>
-          }
-          else
-          {
-              <li><a href="/Account/Login"><i class="material-icons">person</i>Login</a></li>
-          }
-            
-        </ul>
-      </div>
-
-    </div>
-  </nav>
-</div>
+@Html.Partial("_Navigation")
 
 <div class="container">
   @RenderBody()
@@ -152,6 +53,7 @@
 
 <script type="text/javascript" src="//cdn.datatables.net/1.10.12/js/jquery.dataTables.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+<script src="/js/jquery.filer.min.js"></script>
 <script type="text/javascript" src="/js/code.js"></script>
 <script src='/js/spectrum.js'></script>
 @RenderSection("scripts", required: false)

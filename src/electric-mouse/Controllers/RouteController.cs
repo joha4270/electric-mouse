@@ -15,6 +15,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Authorization;
 using electric_mouse.Services;
+using Microsoft.AspNetCore.Hosting;
+using System.IO;
+using Microsoft.AspNetCore.Http;
 
 namespace electric_mouse.Controllers
 {
@@ -24,13 +27,19 @@ namespace electric_mouse.Controllers
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly ILogger _logger;
+        private readonly IHostingEnvironment _environment;
+        private readonly AttachmentHandler _attachmentHandler;
 
-        public RouteController(ApplicationDbContext dbContext, UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, ILoggerFactory logger)
+        public RouteController(ApplicationDbContext dbContext, UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, ILoggerFactory logger
+            ,IHostingEnvironment environment
+            , AttachmentHandler attachmentHandler)
         {
             _dbContext = dbContext;
             _userManager = userManager;
             _signInManager = signInManager;
             _logger = logger.CreateLogger<RouteController>();
+            _environment = environment;
+            _attachmentHandler = attachmentHandler;
         }
 
         [Authorize(Roles = RoleHandler.Post)]
@@ -107,11 +116,34 @@ namespace electric_mouse.Controllers
             }
 
 
+            // Add the video attachment to the database
+            RouteAttachment attachment = new RouteAttachment { VideoUrl = model.VideoUrl, Route = route, RouteID = route.ID };
+            _dbContext.RouteAttachments.Add(attachment);
 
+            // Add the image(s) attachment and imagepaths to the database
+            await UploadImages(attachment);
 
             _dbContext.SaveChanges();
 
             return RedirectToAction(nameof(List), "Route");
+        }
+
+        private async Task UploadImages(RouteAttachment attachment)
+        {
+            // Get all the image names that should be excluded from the upload
+            string[] exclude = Request.Form["jfiler-items-exclude-Images-0"].ToString().Trim('[', ']').Replace("\"", "").Split(',');
+            // Filter out the images that the user removed during the upload
+            IEnumerable<IFormFile> imagesToUpload = Request.Form.Files.Where(image => image.Name.Contains("Images") && exclude.Contains(image.FileName) == false);
+            string[] relativeImagePaths = await _attachmentHandler.SaveImagesOnServer(imagesToUpload.ToList(), _environment.WebRootPath, "uploads");
+
+            foreach (string relativeImagePath in relativeImagePaths)
+            {
+                _dbContext.AttachmentPathRelations.Add(new AttachmentPathRelation
+                {
+                    ImagePath = relativeImagePath,
+                    RouteAttachment = attachment
+                });
+            }
         }
 
         public async Task<IActionResult> List(string archived = "false", string creator = null)
@@ -264,7 +296,14 @@ namespace electric_mouse.Controllers
 	        }
 	        comments = comments.OrderByDescending<CommentViewModel, DateTime>(c => c.Date).ToList();
 
-	        RouteDetailViewModel model = new RouteDetailViewModel
+            // Get all the images related to the route
+            AttachmentPathRelation[] attachments = _dbContext.AttachmentPathRelations.Include(relation => relation.RouteAttachment)
+                .Where(attachment => attachment.RouteAttachment.RouteID == id)
+                .ToArray();
+            string[] imagePaths = attachments?.Select(attachment => attachment.ImagePath)
+                                             .ToArray();
+
+            RouteDetailViewModel model = new RouteDetailViewModel
 	        {
 		        Route = route,
 		        Section = section,
@@ -272,6 +311,7 @@ namespace electric_mouse.Controllers
 		        Creators = creators,
 		        EditRights = creatorOrAdmin,
 		        Comments = comments,
+                Images = imagePaths,
 		        UserIsLoggedIn = _signInManager.IsSignedIn(User) // TODO: This makes no sense
 	        };
 
@@ -282,7 +322,7 @@ namespace electric_mouse.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles= RoleHandler.Post)]
+        [Authorize(Roles = RoleHandler.Post)]
         public async Task<IActionResult> Archive(int id)
         {
             //Cannot be null as Role requires user being logged in
@@ -305,8 +345,7 @@ namespace electric_mouse.Controllers
             return Content("You don't have access to this action. 403 Forbidden");
         }
 
-        [ValidateAntiForgeryToken]
-        [Authorize(Roles= RoleHandler.Post)]
+        [Authorize(Roles = RoleHandler.Post)]
         public async Task<IActionResult> Update(int id)
         {
             ApplicationUser user = await _userManager.GetUserAsync(User);
@@ -336,6 +375,15 @@ namespace electric_mouse.Controllers
 
                 List<string> builderIDs = Builders.Select(x => x.Id).ToList();
 
+                // Get all the images related to the route
+                IList<AttachmentPathRelation> relations = _dbContext.AttachmentPathRelations
+	                .Include(relation => relation.RouteAttachment)
+	                .Where(x => x.RouteAttachment.RouteID == id)
+	                .ToList();
+
+                Tuple<string, int>[] imagePaths = relations?.Select(attachment => new Tuple<string, int>(attachment.ImagePath, attachment.AttachmentPathRelationID))
+                                                 .ToArray();
+
                 RouteCreateViewModel model = new RouteCreateViewModel
                 {
                     Halls = routeHalls.ToList(),
@@ -350,7 +398,9 @@ namespace electric_mouse.Controllers
                     UpdateID = id,
                     RouteSectionID = selectedSections,
                     BuilderList = Builders,
-                    Builders = builderIDs
+                    Builders = builderIDs,
+                    Images = imagePaths,
+                    Attachment = _dbContext.RouteAttachments.FirstOrDefault(att => att.RouteID == id)
                 };
 
                 return View("Create", model);
@@ -362,7 +412,7 @@ namespace electric_mouse.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles= RoleHandler.Post)]
+        [Authorize(Roles = RoleHandler.Post)]
         public async Task<IActionResult> Update(RouteCreateViewModel model)
         {
             
@@ -402,6 +452,29 @@ namespace electric_mouse.Controllers
                     _dbContext.RouteUserRelations.RemoveRange(toRemove);
                     _dbContext.RouteUserRelations.AddRange(toAdd);
                 }
+
+                #region Attachment related code
+                // Get the path relations that should be deleted
+                List<AttachmentPathRelation> pathRelationsToRemove = _dbContext.AttachmentPathRelations.Where(relation => model.ImagePathRelationID.Contains(relation.AttachmentPathRelationID)).ToList();
+                // Get the paths to the images on the server that should be deleted
+                List<string> imagesToDelete = pathRelationsToRemove.Select(relation => relation.ImagePath).ToList();
+
+                // Delete the path relations
+                _dbContext.AttachmentPathRelations.RemoveRange(pathRelationsToRemove);
+
+                // Delete the images on the server
+                foreach (string path in imagesToDelete)
+                {
+                    System.IO.File.Delete(Path.Combine(_environment.WebRootPath, path));
+                }
+
+                // If the video url is updated we want to update this in the attachment
+                RouteAttachment attachment = _dbContext.RouteAttachments.First(att => att.RouteAttachmentID == model.AttachmentID);
+                attachment.VideoUrl = model.VideoUrl;
+
+                // Upload the new images to the server
+                await UploadImages(attachment);
+                #endregion
 
                 await _dbContext.SaveChangesAsync();
                 return RedirectToAction("List");

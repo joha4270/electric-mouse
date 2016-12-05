@@ -74,6 +74,22 @@ namespace electric_mouse.Data.Migrations
                     b.ToTable("AspNetUsers");
                 });
 
+            modelBuilder.Entity("electric_mouse.Models.AttachmentPathRelation", b =>
+                {
+                    b.Property<int>("AttachmentPathRelationID")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<string>("ImagePath");
+
+                    b.Property<int>("RouteAttachmentID");
+
+                    b.HasKey("AttachmentPathRelationID");
+
+                    b.HasIndex("RouteAttachmentID");
+
+                    b.ToTable("AttachmentPathRelations");
+                });
+
             modelBuilder.Entity("electric_mouse.Models.Route", b =>
                 {
                     b.Property<int>("ID")
@@ -113,6 +129,24 @@ namespace electric_mouse.Data.Migrations
                     b.HasIndex("RouteRefId");
 
                     b.ToTable("RouteUserRelations");
+                });
+
+            modelBuilder.Entity("electric_mouse.Models.RouteItems.RouteAttachment", b =>
+                {
+                    b.Property<int>("RouteAttachmentID")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<int?>("ID");
+
+                    b.Property<int>("RouteID");
+
+                    b.Property<string>("VideoUrl");
+
+                    b.HasKey("RouteAttachmentID");
+
+                    b.HasIndex("ID");
+
+                    b.ToTable("RouteAttachments");
                 });
 
             modelBuilder.Entity("electric_mouse.Models.RouteItems.RouteDifficulty", b =>
@@ -284,6 +318,14 @@ namespace electric_mouse.Data.Migrations
                     b.ToTable("AspNetUserTokens");
                 });
 
+            modelBuilder.Entity("electric_mouse.Models.AttachmentPathRelation", b =>
+                {
+                    b.HasOne("electric_mouse.Models.RouteItems.RouteAttachment", "RouteAttachment")
+                        .WithMany()
+                        .HasForeignKey("RouteAttachmentID")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
             modelBuilder.Entity("electric_mouse.Models.Route", b =>
                 {
                     b.HasOne("electric_mouse.Models.RouteItems.RouteDifficulty", "Difficulty")
@@ -303,6 +345,13 @@ namespace electric_mouse.Data.Migrations
                         .WithMany("Creators")
                         .HasForeignKey("RouteRefId")
                         .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("electric_mouse.Models.RouteItems.RouteAttachment", b =>
+                {
+                    b.HasOne("electric_mouse.Models.Route", "Route")
+                        .WithMany()
+                        .HasForeignKey("ID");
                 });
 
             modelBuilder.Entity("electric_mouse.Models.RouteItems.RouteSection", b =>
