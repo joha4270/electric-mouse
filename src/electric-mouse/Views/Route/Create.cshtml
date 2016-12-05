@@ -93,29 +93,46 @@
     </div>
 </div>
 
-    @* Only display the image edit if in route edit *@
-    @if (@Model.UpdateID > 0)
-    {
-        <div>Tilføjede billeder (klik på billederne for at fjerne):</div>
-        <div class="row">
-            @foreach (Tuple<string, int> image in Model.Images)
-            {
-                <div class="col s6">
-                    <img src="~/@image.Item1" id="@image.Item2" onclick="imageClicked('@image.Item2')" width="250px" />
-                </div>
-            }
-            @* This select is to send the images that the user wants to delete back to the server *@
-        </div>
-        <div id="hideSelect">
-            <select asp-for="ImagePathRelationID" multiple id="imageSelect"></select>
-        </div>
-    }
+
 
     @* IMAGE UPLOAD *@
   <div class="row">
     <div class="col s12">
       <p>@strings["Attachment_Upload_Image"]</p>
       <input type="file" name="Images" id="filer_input" multiple />
+
+
+      @* Only display the image edit if in route edit *@
+      @if (@Model.UpdateID > 0)
+      {
+	      <ul class="jFiler-items-list jFiler-items-grid">
+	        @foreach (Tuple<string, int> image in Model.Images)
+            {
+				<li class="jFiler-item" id="@image.Item2">
+				  <div class="jFiler-item-container">
+					<div class="jFiler-item-inner">
+					  <div class="jFiler-item-thumb">
+						<img src="~/@image.Item1" />
+					  </div>
+					  <div class="jFiler-item-assets jFiler-row">
+						<ul class="list-inline pull-right">
+						  <li>
+							<a href="javascript:void(0)" onclick="imageClicked('@image.Item2')" class="icon-jfi-trash jFiler-item-trash-action"></a>
+						  </li>
+						</ul>
+					  </div>
+					</div>
+				  </div>
+				</li>
+            }
+	      </ul>
+
+		  @* This select is to send the images that the user wants to delete back to the server *@
+	      <div id="hideSelect">
+	        <select asp-for="ImagePathRelationID" multiple id="imageSelect"></select>
+	      </div>
+      }
+
     </div>
   </div>
 
@@ -257,14 +274,13 @@
 
       function imageClicked(id) {
           var img = document.getElementById(id);
-          img.style.visibility = 'hidden';
+          img.style.display = 'none';
 
           var select = document.getElementById('imageSelect');
           var option = document.createElement("option");
           option.value = id;
           option.selected = "selected";
           select.add(option);
-          console.log(image);
       }
   </script>
 }

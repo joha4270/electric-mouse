@@ -15,11 +15,9 @@
 	      <i class="small material-icons">delete</i>
 	    </a>
 	  </form>
-	  <form asp-controller="Route" asp-action="Update" asp-route-id="@Model.Route.ID">
-	    <a href="javascript:void(0)" onclick="$(this).closest('form').submit()" class="right" title="Edit">
-	      <i class="small material-icons">edit</i>
-	    </a>
-	  </form>
+		<a href="/Route/Update/@Model.Route.ID" class="right" title="Edit">
+		  <i class="small material-icons">edit</i>
+		</a>
 
 	</div>
 }
