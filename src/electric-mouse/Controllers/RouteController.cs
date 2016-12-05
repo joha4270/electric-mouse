@@ -190,7 +190,7 @@ namespace electric_mouse.Controllers
 		    bool userIsLoggedIn = User != null;
 		    bool userIsOwner = userIsLoggedIn && comment.ApplicationUserRefId == User.Id;
 		    bool deletionRights = userIsOwner || UserIsAdmin;
-		    ApplicationUser user = _dbContext.Users.Where(u => u.Id == comment.ApplicationUserRefId).First();
+		    ApplicationUser user = _dbContext.Users.First(u => u.Id == comment.ApplicationUserRefId);
 		    CommentViewModel result = new CommentViewModel
 		    {
 			    CommentID = comment.CommentID,
@@ -215,7 +215,7 @@ namespace electric_mouse.Controllers
             IQueryable<Route> routes = _dbContext.Routes;
 
             //Build search query
-            if (archived == "yes")
+            if (archived == "true")
             {
                 routes = routes.Where(r => r.Archived == true);
             }
@@ -483,6 +483,42 @@ namespace electric_mouse.Controllers
             HttpContext.Response.StatusCode = (int) HttpStatusCode.Forbidden;
 
             return Content("You don't have access to this action. 403 Forbidden");
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteRoute(int id)
+        {
+            ApplicationUser admin = await _userManager.GetUserAsync(User);
+            if (await _userManager.IsInRoleAsync(admin, RoleHandler.Admin))
+            {
+                Route routeToDelete = _dbContext.Routes.First(route => route.ID == id);
+                if (routeToDelete.Archived)
+                    _dbContext.Routes.Remove(routeToDelete);
+
+                await _dbContext.SaveChangesAsync();
+            }
+
+            return RedirectToAction(nameof(List), "Route", new { archived = "true" });
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> MakeActive(int id)
+        {
+            ApplicationUser admin = await _userManager.GetUserAsync(User);
+            if (await _userManager.IsInRoleAsync(admin, RoleHandler.Admin))
+            {
+                Route routeToMakeActive = _dbContext.Routes.First(route => route.ID == id);
+                if (routeToMakeActive.Archived)
+                {
+                    routeToMakeActive.Archived = false;
+                    _dbContext.Routes.Update(routeToMakeActive);
+                    _dbContext.SaveChanges();
+                }
+            }
+
+            return RedirectToAction(nameof(List), "Route", new { archived = "true" });
         }
     }
 }

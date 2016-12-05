@@ -6,12 +6,31 @@
       <div class="col s6" style="font-size:0.75em">BLUE</div>
 @if (Model.EditRights)
 {
-    <form asp-controller="Route" asp-action="Archive" asp-route-id="@Model.Route.ID">
-      <input class="col" type="submit" value="Slet"/>
-    </form>
-    <a asp-controller="Route" asp-action="Update" asp-route-id="@Model.Route.ID">
-      <input class="col" type="submit" value="Rediger"/>
-    </a>
+    @if (Model.Route.Archived)
+    {
+        <form asp-controller="Route" asp-action="MakeActive" asp-route-id="@Model.Route.ID">
+            <input class="col" type="submit" value="Make active" />
+        </form>
+    }
+    else
+    {
+        <form asp-controller="Route" asp-action="Archive" asp-route-id="@Model.Route.ID">
+            <input class="col" type="submit" value="Archive" />
+        </form>
+    }
+    @if (Model.Route.Archived)
+    {
+        <form asp-controller="Route" asp-action="DeleteRoute" asp-route-id="@Model.Route.ID">
+            <input class="col" type="submit" value="Delete permanently" />
+        </form>
+    }
+    else
+    {
+        <a asp-controller="Route" asp-action="Update" asp-route-id="@Model.Route.ID">
+            <input class="col" type="submit" value="Edit" />
+        </a>
+    }
+
 }
     </div>
     <div class="row">
