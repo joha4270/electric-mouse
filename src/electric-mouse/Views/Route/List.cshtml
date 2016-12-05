@@ -76,23 +76,29 @@
 @section scripts
 {
   <script>
-  $(document).ready(function() {
-	  $('#search').keyup(function(){
-		  table.search($(this).val()).draw();
-	  });
+	  $(document).ready(function() {
+		  $('#search').keyup(function(){
+			  table.search($(this).val()).draw();
+		  });
 
-	  $('tbody tr').click(function () {
-		  var id = $(this).attr('data-id');
-		  viewRoute(id);
-	  });
+		  $('tbody tr').click(function () {
+			  var id = $(this).attr('data-id');
+			  viewRoute(id);
+		  });
 
-	  initRouteTable();
+		  initRouteTable();
 
-      $(".difficulty-checkbox").click(function() {
-          difffield = $(".difficulty-checkbox:checked").map(function(){return $(this).attr("data-difficulty-id");}).get();
-          table.draw();
-      });
-      $.fn.dataTable.ext.search.push(difficultySearchFilter);
+		  $(".difficulty-checkbox").click(function() {
+			  difffield = $(".difficulty-checkbox:checked").map(function(){return $(this).attr("data-difficulty-id");}).get();
+			  table.draw();
+		  });
+		  $.fn.dataTable.ext.search.push(difficultySearchFilter);
+
+		  @if (Model.ModalContent != null)
+		  {
+			  @Html.Raw("setupReply();")
+		  }
+
   });
 
   </script>
