@@ -57,7 +57,7 @@ namespace electric_mouse.Controllers
         {
             var hall = _dbContext.RouteHalls.Include(s => s.Sections).First(h => h.RouteHallID == model.ID);
 
-            if (hall.Sections?.Count <= 0)
+            if (hall.Sections?.Count(s => s.Archived == false) <= 0)
             {
                 _dbContext.RouteHalls.Remove(hall);
                 _dbContext.SaveChanges();
