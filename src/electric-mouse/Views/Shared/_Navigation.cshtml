@@ -8,12 +8,12 @@
 {
 	ApplicationUser user = await UserManager.GetUserAsync(User);
 	<ul id="user_dropdown" class="dropdown-content">
+	  <li><a href="/Route/List?creator=@user.Id">@strings["User_Routes"]</a></li>
 	  <li>
 	    <form asp-area="" asp-controller="Account" asp-action="LogOff" method="post" id="logoutForm">
 	      <a href="javascript:void(0)" onclick="$(this).closest('form').submit()"><i class="material-icons">exit_to_app</i>@strings["User_Log_Out"]</a>
 	    </form>
 	  </li>
-	  <li><a href="/Route/List?creator=@user.Id">@strings["User_Routes"]</a></li>
 	</ul>
 
 	if (await UserManager.IsInRoleAsync(user, electric_mouse.Services.RoleHandler.Admin))
@@ -122,12 +122,12 @@
 		          </li>
 	          }
               <li>
+                <a href="/Route/List?creator=@user.Id">@strings["User_Routes"]</a>
+              </li>
+              <li>
                 <form asp-area="" asp-controller="Account" asp-action="LogOff" method="post" id="logoutForm">
                   <a href="javascript:void(0)" onclick="$(this).closest('form').submit()"><i class="material-icons">exit_to_app</i>@strings["User_Log_Out"]</a>
                 </form>
-              </li>
-              <li>
-                <a href="/Route/List?creator=@user.Id">@strings["User_Routes"]</a>
               </li>
           }
           else
