@@ -24,7 +24,10 @@ namespace electric_mouse.Controllers
 
         public IActionResult Create()
         {
-            IQueryable<RouteHall> halls = _dbContext.RouteHalls.Include(s => s.Sections);
+            IQueryable<RouteHall> halls = _dbContext.RouteHalls
+                .Where(hall => hall.Archived == false)
+                .Include(s => s.Sections);
+            
             HallCreateViewModel model = new HallCreateViewModel { Halls = halls.ToList() };
             return View(model);
         }
@@ -59,7 +62,7 @@ namespace electric_mouse.Controllers
 
             if (hall.Sections?.Count(s => s.Archived == false) <= 0)
             {
-                _dbContext.RouteHalls.Remove(hall);
+                hall.Archived = true;
                 _dbContext.SaveChanges();
             }
 

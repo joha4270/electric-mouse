@@ -29,5 +29,7 @@ namespace electric_mouse.Models.RouteItems
 
         public virtual ICollection<RouteSection> Sections { get; set; }
 
+        public bool Archived { get; set; }
+
     }
 }
