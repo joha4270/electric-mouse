@@ -13,7 +13,7 @@ using Microsoft.AspNetCore.Identity;
 
 namespace electric_mouse.Controllers
 {
-    [Authorize(Roles= RoleHandler.Admin)]
+    [Authorize(Roles = RoleHandler.Admin)]
     public class DifficultyController : Controller
     {
         private ApplicationDbContext _dbContext;
