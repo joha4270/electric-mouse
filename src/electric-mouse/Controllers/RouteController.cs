@@ -149,14 +149,14 @@ namespace electric_mouse.Controllers
 
         public async Task<IActionResult> List(string type = null, string archived = "false", string creator = null)
         {
-            RouteType? nullAbleParsedtype = null;
+            RouteType? nullableParsedtype = null;
             RouteType parsedtype;
             if (RouteType.TryParse(type, true, out parsedtype))
             {
-                nullAbleParsedtype = parsedtype;
+                nullableParsedtype = parsedtype;
             }
 
-            RouteListViewModel model = await GetListViewModel(archived, creator, nullAbleParsedtype);
+            RouteListViewModel model = await GetListViewModel(archived, creator, nullableParsedtype);
             return View(model);
         }
 
