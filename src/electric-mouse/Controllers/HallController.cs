@@ -41,7 +41,7 @@ namespace electric_mouse.Controllers
                     Sections = new List<RouteSection>()
                 };
 
-                if (model.Type <= 0)
+                if (model.Type >= 0)
                 {
                     hall.ExpectedType = model.Type;
                 }
