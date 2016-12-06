@@ -46,7 +46,7 @@
     <li>
       @foreach (var c in ViewBag.Language.Countries)
       {
-	      <a href="javascript:void(0)" onclick="langUpdate('@(c.Value)');"><img src="/images/@(c.Value).svg" class="nav-flag-dropdown" width="60px" /></a>
+	      <a href="javascript:void(0)" onclick="langUpdate('@(c.Value)');"><img src="/images/@(c.Value).svg" class="nav-flag-dropdown" style="width: 60px;" /></a>
       }
       <input type="hidden" name="newLocale" id="lang_id" value="" />
     </li>
@@ -59,7 +59,7 @@
         <li>
             @foreach (var c in ViewBag.Language.Countries)
             {
-                <a href="javascript:void(0)" onclick="langUpdate('@(c.Value)');"><img src="/images/@(c.Value).svg" class="nav-flag-dropdown" width="60px" /></a>
+                <a href="javascript:void(0)" onclick="langUpdate('@(c.Value)');"><img src="/images/@(c.Value).svg" class="nav-flag-dropdown" style="width: 60px;" /></a>
             }
             <input type="hidden" name="newLocale" id="lang_id" value="" />
         </li>
