@@ -327,17 +327,17 @@ namespace electric_mouse.Controllers
             string url = _dbContext.RouteAttachments.First(att => att.RouteID == id).VideoUrl;
 
             RouteDetailViewModel model = new RouteDetailViewModel
-	        {
-		        Route = route,
-		        Section = section,
-		        Hall = hall,
-		        Creators = creators,
-		        EditRights = creatorOrAdmin,
-		        Comments = comments,
+            {
+                Route = route,
+                Section = section,
+                Hall = hall,
+                Creators = creators,
+                EditRights = creatorOrAdmin,
+                Comments = comments,
                 Images = imagePaths,
                 VideoUrl = url,
-		        UserIsLoggedIn = _signInManager.IsSignedIn(User) // TODO: This makes no sense
-	        };
+                UserIsLoggedIn = _signInManager.IsSignedIn(User) // TODO: This makes no sense
+            };
 
 	        return model;
         }
