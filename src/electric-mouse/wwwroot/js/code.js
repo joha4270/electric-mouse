@@ -17,9 +17,12 @@ $(document).ready(function(){
 
 function difficultySearchFilter(settings, data, dataIndex, obj) {
 
-    if(difffield.length === 0) return true;
+    if(difffield.length === 0)
+	    return true;
+
     var difficulty_id = obj[2]["@data-filter"];
     var res = difffield.includes(difficulty_id);
+
     return res;
 };
 
@@ -42,6 +45,7 @@ function viewRoute(route_id)
 		$('#modal1').openModal({
 			complete: function () { history.back(-1); }
 		});
+
   }).fail(function() {
 		$("#loading").hide();
 		Materialize.toast('Loading error!', 4500);
@@ -63,9 +67,11 @@ function togglemore()
     var element = $('#long_content');
     var size = element.css("max-height");
     if (size === "300px") {
-        element.css('max-height', "3000px")
+        element.css('max-height', "3000px");
+	    $("#long_content button").html("Show Less");
     } else {
-        element.css('max-height', "300px")
+	    $("#long_content button").html("Show More");
+	    element.css('max-height', "300px");
     }
 }
 

@@ -1,12 +1,26 @@
 ﻿{
-  "TEST_STRING": "Your mother smells of elderberries",
-  "ANOTHER_STRING": "But your mother smells worse",
+  "Route_Id": "ID",
+  "Route_Name": "Route",
+  "Route_Name_Plural": "Routes",
+  "Route_Sport_Name_Plural": "Sport routes",
+  "Route_Boulder_Name_Plural": "Boulder routes",
+  "Route_Hall": "Hall",
+  "Route_Halls": "Halls",
   "Route_Section": "Section",
+  "Route_Sections": "Sections",
   "Route_Difficulty": "Difficulty",
+  "Route_Difficulties": "Difficulties",
   "Route_Grip_Color": "Grip Color",
+  "Route_Builder": "Builder",
   "Route_Builders": "Builders",
   "Route_Date": "Date",
   "Route_Note": "Note",
+  "Route_Type": "Route Type",
+  "Route_Attachment": "Attachment",
+  "Route_Attachments": "Attachments",
+  "Route_Amount": "Amount of Routes",
+
+  "Routes_Archived": "Archived Routes",
 
   "Create_Route_Creation": "Route Creation",
   "Create_Route_ID": "Route ID",
@@ -20,18 +34,21 @@
   "Create_Route_Video": "Video",
   "Create_Route_Note": "Note",
   "Create_Route_Button": "Create Route",
+  "Create_Route_Update_Button": "Update Route",
 
-
-  "Difficulty_Red": "Red",
-  "Difficulty_Blue": "Blue",
-  "Difficulty_Green": "Green",
-  "Difficulty_White": "White",
-  "Difficulty_Black": "Black",
-
-
+  "User_Name": "User",
+  "User_Name_Plural": "Users",
+  "User_Username": "Username",
+  "User_Status": "User Status",
+  "User_Log_In": "Login",
+  "User_Log_Out": "Log Out",
+  "User_Admin": "Administrator",
+  "User_Member": "Member",
+  "User_Banned": "Banned",
+  "User_Routes": "My routes",
   "Ban_Member": "Ban Member",
   "Unban_Member": "Unban Member",
-  "Demote_Admin": "Demote Admin",
+  "Demote_Admin": "Demote To Member",
   "Promote_To_Admin": "Promote To Admin",
   "Warning_Delete_Member": "Are you sure you want to delete this member? The user will have to recreate his/her account.",
   "Warning_Delete_Hall": "Are you sure you want to delete this hall?",
@@ -40,12 +57,36 @@
   "Warning_Clear_Section": "Are you sure you want to clear this section?",
 
   "Show_More": "Show More",
+  "Search": "Search",
+  "Clear": "Clear",
+  "None": "None",
+  "Delete": "Delete",
+  "Edit": "Edit",
 
+  "Difficulty_Name": "Difficulty Name",
   "Difficulty_Creation": "Difficulty Creation",
   "Create_Difficulty": "Create Difficulty",
   "Create_Difficulty_Name": "Difficulty Name",
+  "Difficulty_Select": "Select a Difficulty",
 
   "Create_Section_Name": "Section Name",
-  "Create_Section_Type": "Section Type"
+  "Create_Section_Type": "Section Type",
 
+  "Comment_Create": "New Comment",
+  "Comment_Send": "Send",
+  "Comment_Reply": "Reply",
+  "Comment_Delete": "Delete",
+
+  "Hall_Select": "Select a Hall",
+  "Hall_Create": "New Hall",
+  "Hall_Name": "Hall Name",
+  "Hall_Amount": "Amount of Halls",
+
+  "Sections_Create": "New Section",
+  "Sections_Name": "Section Name",
+  "Sections_Select": "Select a Section",
+  "Sections_None": "No Sections Found",
+  "Sections_Amount": "Amount of Sections",
+
+  "Attachment_Upload_Image": "Upload Image"
 }

@@ -1,20 +1,23 @@
 ﻿@model electric_mouse.Models.HallViewModels.HallCreateViewModel
+@{
+	var strings = ViewBag.Language.Strings;
+}
 
 <div class="col s12">
     <div class="row" style="margin-bottom: 0;">
       <form asp-controller="Hall" asp-action="Create" method="post">
             <div class="input-field col">
               <button type="submit" class="btn waves-effect waves-light red" style="padding: 0 15px;"><i class="material-icons left">add</i>
-                New Hall
+                @strings["Hall_Create"]
               </button>
             </div>
             <div class="input-field col s4">
               <input type="text" name="Name"/>
-              <label for="Name">Hall Name</label>
+              <label for="Name">@strings["Hall_Name"]</label>
             </div>
           <div class="input-field col s3">
               <select Name="Type">
-                  <option value="" selected">None</option>
+                  <option value="" selected">@strings["None"]</option>
                   <option value="1">Boulder</option>
                   <option value="2">Sport</option>
               </select>
@@ -28,8 +31,8 @@
     <table class="table">
       <thead>
       <tr>
-        <th class="app_Name">Name</th>
-        <th>Number of sections</th>
+        <th class="app_Name">@strings["Hall_Name"]</th>
+        <th>@strings["Hall_Amount"]</th>
         <th></th>
       </tr>
       </thead>
@@ -43,11 +46,11 @@
 	          <form asp-controller="Hall" asp-action="Delete" method="post">
 	            @if (item.Sections.Count > 0)
 	            {
-		            <button type="submit" class="btn waves-effect waves-light red right" disabled>Delete</button>
+		            <button type="submit" class="btn waves-effect waves-light red right" disabled>@strings["Delete"]</button>
 	            }
 	            else
 	            {
-		            <button type="submit" class="btn waves-effect waves-light red right">Delete</button>
+		            <button type="submit" class="btn waves-effect waves-light red right">@strings["Delete"]</button>
 	            }
 
 	            <input type="hidden" name="ID" value="@item.RouteHallID"/>

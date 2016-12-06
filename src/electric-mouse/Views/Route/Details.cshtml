@@ -1,62 +1,68 @@
 @model electric_mouse.Models.RouteViewModels.RouteDetailViewModel
+@{
+	var strings = ViewBag.Language.Strings;
+}
 
 <div class="col s12">
     <div class="row small_margin" style="padding-top: 20px;">
-        <div class="col s3" style="font-size:0.75em">GREEN</div>
-      <div class="col s6" style="font-size:0.75em">BLUE</div>
+        <div class="col s3" style="font-size:0.75em">@strings["Route_Id"]</div>
+      <div class="col s6" style="font-size:0.75em">@strings["Route_Hall"]</div>
 @if (Model.EditRights)
 {
-    @if (Model.Route.Archived)
-    {
-        <form asp-controller="Route" asp-action="MakeActive" asp-route-id="@Model.Route.ID">
-            <input class="col" type="submit" value="Make active" />
-        </form>
-    }
-    else
-    {
-        <form asp-controller="Route" asp-action="Archive" asp-route-id="@Model.Route.ID">
-            <input class="col" type="submit" value="Archive" />
-        </form>
-    }
-    @if (Model.Route.Archived)
-    {
-        <form asp-controller="Route" asp-action="DeleteRoute" asp-route-id="@Model.Route.ID">
-            <input class="col" type="submit" value="Delete permanently" />
-        </form>
-    }
-    else
-    {
-        <a asp-controller="Route" asp-action="Update" asp-route-id="@Model.Route.ID">
-            <input class="col" type="submit" value="Edit" />
-        </a>
-    }
+	if (Model.Route.Archived)
+	{
+		<form asp-controller="Route" asp-action="DeleteRoute" asp-route-id="@Model.Route.ID">
+		  <a href="javascript:void(0)" onclick="$(this).closest('form').submit()" class="right" title="Delete">
+		    <i class="small material-icons">delete</i>
+		  </a>
+		</form>
+
+		<form asp-controller="Route" asp-action="MakeActive" asp-route-id="@Model.Route.ID">
+		  <a href="javascript:void(0)" onclick="$(this).closest('form').submit()" class="right" title="Unarchive">
+		    <i class="small material-icons">unarchive</i>
+		  </a>
+		</form>
+	}
+	else
+	{
+		<form asp-controller="Route" asp-action="Archive" asp-route-id="@Model.Route.ID">
+		  <a href="javascript:void(0)" onclick="$(this).closest('form').submit()" class="right" title="Archive">
+		    <i class="small material-icons">archive</i>
+		  </a>
+		</form>
+
+		<a href="/Route/Update/@Model.Route.ID" class="right" title="Edit">
+		  <i class="small material-icons">edit</i>
+		</a>
+	}
+
 
 }
     </div>
     <div class="row">
         <div class="col s3"><h1>@Model.Route.RouteID</h1></div>
         <div class="col s9">@Model.Hall.Name</div>
-        <div class="col s9" style="font-size:0.75em; padding-top: 5px">MONKEY</div>
+        <div class="col s9" style="font-size:0.75em; padding-top: 5px">@strings["Route_Section"]</div>
         <div class="col s9">@Model.Section.Name</div>
     </div>
     <div class="row small_margin">
-        <div class="col s3" style="font-size:0.75em;">Svaghedsgrad</div>
-        <div class="col s9" style="font-size:0.75em;">Tucopolose</div>
+        <div class="col s3" style="font-size:0.75em;">@strings["Route_Difficulty"]</div>
+        <div class="col s9" style="font-size:0.75em;">@strings["Route_Type"]</div>
     </div>
     <div class="row">
         <div class="col s3">@Model.Route.Difficulty.Name</div>
-        <div class="col s9">Aben Bulder</div>
+        <div class="col s9">@Model.Route.Type</div>
     </div>
     <div class="row small_margin">
-        <div class="col s3" style="font-size:0.75em;">Grebfrugt</div>
-        <div class="col s9" style="font-size:0.75em;">Time</div>
+        <div class="col s3" style="font-size:0.75em;">@strings["Route_Grip_Color"]</div>
+        <div class="col s9" style="font-size:0.75em;">@strings["Route_Date"]</div>
     </div>
     <div class="row">
         <div class="col s3">@Model.Route.GripColour</div>
         <div class="col s9">@Model.Route.Date.ToString("yyyy-MM-dd")</div>
     </div>
     <div class="row small_margin">
-        <div class="col s3" style="font-size:0.75em;">Afsat</div>
+        <div class="col s3" style="font-size:0.75em;">@strings["Route_Builders"]</div>
     </div>
     <div class="row">
       <div class="col s12">
@@ -67,14 +73,14 @@
       </div>
     </div>
     <div class="row small_margin">
-        <div class="col s6">Hund</div>
+        <div class="col s6" style="font-size:0.75em;">@strings["Route_Note"]</div>
     </div>
     <div id="long_content" class="row" style="max-height:300px; overflow:hidden; position:relative; transition: max-height 500ms ease;">
         <div class="col s6">@Model.Route.Note</div>
         @foreach(string image in Model.Images)
         {
             <div class="col s6">
-                <img  src="~/@image" />
+                <img src="~/@image" />
             </div>
         }
         <button onclick="togglemore();" type="button" style="position:absolute; bottom:0px; left:0px; width: 100%; height:2em; background-color:#fafafa; border:none;">Show More</button>
@@ -85,9 +91,9 @@
 			@*This is the field that comments can be written in.*@
 		<div style="display: block;" class="reply_field">
 		  <form asp-controller="Comments" asp-action="AddComment" method="post">
-		    <label for="Content">Comment Text</label>
+		    <label for="Content">@strings["Comment_Create"]</label>
 		    <input name="Content" type="text" class="materialize-textarea" height="4" width="20"/>
-		    <input class="btn" type="submit" value="Submit"/>
+		    <input class="btn" type="submit" value="@strings["Comment_Send"]"/>
 		    <input name="RouteID" type="hidden" value="@Model.Route.ID"/>
 		  </form>
 		</div>
