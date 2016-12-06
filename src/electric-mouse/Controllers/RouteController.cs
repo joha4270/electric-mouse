@@ -18,6 +18,7 @@ using electric_mouse.Services;
 using Microsoft.AspNetCore.Hosting;
 using System.IO;
 using Microsoft.AspNetCore.Http;
+using Models;
 
 namespace electric_mouse.Controllers
 {
@@ -146,9 +147,16 @@ namespace electric_mouse.Controllers
             }
         }
 
-        public async Task<IActionResult> List(string archived = "false", string creator = null)
+        public async Task<IActionResult> List(string type = null, string archived = "false", string creator = null)
         {
-            RouteListViewModel model = await GetListViewModel(archived, creator);
+            RouteType? nullableParsedtype = null;
+            RouteType parsedtype;
+            if (RouteType.TryParse(type, true, out parsedtype))
+            {
+                nullableParsedtype = parsedtype;
+            }
+
+            RouteListViewModel model = await GetListViewModel(archived, creator, nullableParsedtype);
             return View(model);
         }
 
@@ -161,7 +169,7 @@ namespace electric_mouse.Controllers
             }
             else
             {
-                RouteListViewModel listModel = await GetListViewModel("false", null);
+                RouteListViewModel listModel = await GetListViewModel("false", null, model.Route.Type);
 
                 listModel.ModalContent = new ModalContentViewModel
                 {
@@ -210,9 +218,14 @@ namespace electric_mouse.Controllers
 		    return result;
 	    }
 
-	    private async Task<RouteListViewModel> GetListViewModel(string archived, string creator)
-        {
-            IQueryable<Route> routes = _dbContext.Routes;
+	    private async Task<RouteListViewModel> GetListViewModel(string archived, string creator, RouteType? type)
+	    {
+	        IQueryable<Route> routes = _dbContext.Routes;
+
+            if (type.HasValue)
+            {
+                routes = routes.Where(r => r.Type == type);
+            }
 
             //Build search query
             if (archived == "true")
