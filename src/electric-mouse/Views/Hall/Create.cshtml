@@ -32,7 +32,7 @@
       <thead>
       <tr>
         <th class="app_Name">@strings["Hall_Name"]</th>
-        <th>@strings["Hall_Amount"]</th>
+        <th>@strings["Sections_Amount"]</th>
         <th></th>
       </tr>
       </thead>
@@ -41,10 +41,10 @@
       {
 	      <tr>
 	        <td>@item.Name</td>
-	        <td>@item.Sections.Count</td>
+	        <td>@item.Sections.Count(s => s.Archived == false)</td>
 	        <td>
 	          <form asp-controller="Hall" asp-action="Delete" method="post">
-	            @if (item.Sections.Count > 0)
+	            @if (item.Sections.Count(s => s.Archived == false) > 0)
 	            {
 		            <button type="submit" class="btn waves-effect waves-light red right" disabled>@strings["Delete"]</button>
 	            }
