@@ -41,7 +41,7 @@
     </div>
     <div class="row">
         <div class="col s3"><h1>@Model.Route.RouteID</h1></div>
-        <div class="col s9">@Model.Hall.Name</div>
+        <div class="col s9">@(Model.Hall.Name + (Model.Hall.Archived? strings["Hall_Archived"] : ""))</div>
         <div class="col s9" style="font-size:0.75em; padding-top: 5px">@strings["Route_Section"]</div>
         <div class="col s9">@Model.Section.Name</div>
     </div>

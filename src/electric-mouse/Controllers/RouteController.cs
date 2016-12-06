@@ -52,7 +52,7 @@ namespace electric_mouse.Controllers
             IQueryable<RouteSection> routeSections = _dbContext.RouteSections;
 
             RouteCreateViewModel model = new RouteCreateViewModel();
-            model.Halls = routeHalls.ToList();
+            model.Halls = routeHalls.Where(h=> h.Archived == false).ToList();
             model.Difficulties = _dbContext.RouteDifficulties.ToList();
             model.Sections = routeSections.Where(s => !s.Archived).ToList();
             
@@ -410,7 +410,7 @@ namespace electric_mouse.Controllers
 
                 RouteCreateViewModel model = new RouteCreateViewModel
                 {
-                    Halls = routeHalls.ToList(),
+                    Halls = routeHalls.Where(h=> h.Archived == false).ToList(),
                     Difficulties = _dbContext.RouteDifficulties.ToList(),
                     Sections = routeSections.ToList(),
                     Date = route.Date.ToString("yyyy-MM-dd"),
