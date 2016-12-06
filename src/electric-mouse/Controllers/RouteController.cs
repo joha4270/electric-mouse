@@ -265,6 +265,13 @@ namespace electric_mouse.Controllers
                 routeList.Add(r);
             }
 
+            // dont send the whole note (we dont display it anyways)
+            foreach (Route route in routeList)
+            {
+                if (route.Note != null && route.Note.Length >= 50)
+                    route.Note = $"{new string(route.Note.Take(50).ToArray())}...";
+            }
+
             return new RouteListViewModel { Routes = routeList, Difficulities = await difficulityList};
         }
 
