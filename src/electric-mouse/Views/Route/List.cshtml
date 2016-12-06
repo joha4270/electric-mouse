@@ -90,6 +90,7 @@
 		  });
 
 		  initRouteTable();
+		  difffield = $(".difficulty-checkbox:checked").map(function(){return $(this).attr("data-difficulty-id");}).get();
 
 		  $(".difficulty-checkbox").click(function() {
 			  difffield = $(".difficulty-checkbox:checked").map(function(){return $(this).attr("data-difficulty-id");}).get();
