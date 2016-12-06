@@ -15,6 +15,7 @@
   "Route_Builders": "Rutebyggere",
   "Route_Date": "Dato",
   "Route_Note": "Note",
+  "Route_Videourl": "Youtube Video",
   "Route_Type": "Rute Type",
   "Route_Attachment": "Vedhæftelse",
   "Route_Attachments": "Vedhæftelser",
@@ -88,5 +89,5 @@
   "Sections_None": "Ingen Sektioner Fundet",
   "Sections_Amount": "Antal Sektioner",
 
-  "Attachment_Upload_Image": "Upload Billede",
+  "Attachment_Upload_Image": "Upload Billede"
 }

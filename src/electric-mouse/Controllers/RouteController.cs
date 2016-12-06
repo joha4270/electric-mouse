@@ -323,6 +323,9 @@ namespace electric_mouse.Controllers
             string[] imagePaths = attachments?.Select(attachment => attachment.ImagePath)
                                              .ToArray();
 
+            // Get the video url from the route attachment
+            string url = _dbContext.RouteAttachments.First(att => att.RouteID == id).VideoUrl;
+
             RouteDetailViewModel model = new RouteDetailViewModel
 	        {
 		        Route = route,
@@ -332,6 +335,7 @@ namespace electric_mouse.Controllers
 		        EditRights = creatorOrAdmin,
 		        Comments = comments,
                 Images = imagePaths,
+                VideoUrl = url,
 		        UserIsLoggedIn = _signInManager.IsSignedIn(User) // TODO: This makes no sense
 	        };
 
