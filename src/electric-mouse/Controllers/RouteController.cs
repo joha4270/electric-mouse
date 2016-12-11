@@ -31,10 +31,18 @@ namespace electric_mouse.Controllers
         private readonly ILogger _logger;
         private readonly IHostingEnvironment _environment;
         private readonly AttachmentHandler _attachmentHandler;
+        private readonly RouteService _routeService;
 
-        public RouteController(ApplicationDbContext dbContext, UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, ILoggerFactory logger
-            ,IHostingEnvironment environment
-            , AttachmentHandler attachmentHandler)
+        public RouteController
+            (
+            ApplicationDbContext dbContext, 
+            UserManager<ApplicationUser> userManager, 
+            SignInManager<ApplicationUser> signInManager, 
+            ILoggerFactory logger,
+            IHostingEnvironment environment, 
+            AttachmentHandler attachmentHandler,
+            RouteService routeService
+            )
         {
             _dbContext = dbContext;
             _userManager = userManager;
@@ -42,29 +50,28 @@ namespace electric_mouse.Controllers
             _logger = logger.CreateLogger<RouteController>();
             _environment = environment;
             _attachmentHandler = attachmentHandler;
+            _routeService = routeService;
         }
 
         [Authorize(Roles = RoleHandler.Post)]
         // RouteCreate name instead? - We'll have to implement hall etc create seperately
         public async Task<IActionResult> Create()
         {
-
-            IQueryable<RouteHall> routeHalls = _dbContext.RouteHalls.Include(s => s.Sections);
-            IQueryable<RouteSection> routeSections = _dbContext.RouteSections;
-
-            RouteCreateViewModel model = new RouteCreateViewModel();
-            model.Halls = routeHalls.Where(h=> h.Archived == false).ToList();
-            model.Difficulties = _dbContext.RouteDifficulties.ToList();
-            model.Sections = routeSections.Where(s => !s.Archived).ToList();
-            
-
             ApplicationUser user = await _userManager.GetUserAsync(User);
-            model.Builders = new List<string>(){user.Id};
-            model.BuilderList = new List<ApplicationUser>();
-	        model.BuilderList.Add(user);
 
-	        return View(model);
+            RouteCreateViewModel model = new RouteCreateViewModel
+            {
+                Halls           = _routeService.GetAllActiveRouteHalls(),
+                Difficulties    = _routeService.GetAllRouteDifficulties(), // TODO: Move to difficultyService
+                Sections        = _routeService.GetAllActiveRouteSections(),
+                Builders        = new List<string>
+                {
+                    user.Id
+                },
+                BuilderList = new List<ApplicationUser> {user}
+            };
 
+            return View(model);
         }
 
         [HttpPost]
@@ -73,25 +80,17 @@ namespace electric_mouse.Controllers
         public async Task<IActionResult> Create(RouteCreateViewModel model)
         {
             _logger.LogInformation("Recived following users [{users}]", string.Join(", ", model.Builders));
-
-            RouteDifficulty difficulty =
-                _dbContext.RouteDifficulties.First(d => d.RouteDifficultyID == model.RouteDifficultyID);
-            DateTime date = DateTime.ParseExact(model.Date, "dd-MM-yyyy", CultureInfo.InvariantCulture);
-            //TODO: Implement image and video data
             
             // Create Route
             Route route = new Route
             {
                 Note = model.Note,
-                Difficulty = difficulty,
                 RouteID = model.RouteID,
                 GripColour = model.GripColor,
-                Date = date,
                 Type = model.Type
             };
 
-            _dbContext.Routes.Add(route);
-            _dbContext.SaveChanges();
+            _routeService.AddRoute(route, model.Date, model.RouteDifficultyID);
 
             // Create Section Relation
             if (model.RouteSectionID != null)
