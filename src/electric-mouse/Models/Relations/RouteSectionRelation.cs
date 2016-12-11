@@ -1,13 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using electric_mouse.Models.RouteItems;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using electric_mouse.Models.RouteItems;
 
-namespace electric_mouse.Models
+namespace electric_mouse.Models.Relations
 {
     public class RouteSectionRelation
     {

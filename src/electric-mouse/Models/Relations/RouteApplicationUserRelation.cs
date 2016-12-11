@@ -1,4 +1,4 @@
-﻿namespace electric_mouse.Models
+﻿namespace electric_mouse.Models.Relations
 {
     public class RouteApplicationUserRelation
     {

@@ -65,11 +65,12 @@ namespace electric_mouse
             services.Configure<MvcOptions>(options => { options.Filters.Add(new RequireHttpsAttribute()); });
 
             // Add application services.
-            services.AddTransient<IEmailSender, AuthMessageSender>();
-            services.AddTransient<ISmsSender, AuthMessageSender>();
-            services.AddTransient<FacebookAPI>();
-            services.AddTransient<AttachmentHandler>();
-
+            services.AddTransient<IEmailSender, AuthMessageSender>()
+                    .AddTransient<ISmsSender, AuthMessageSender>()
+                    .AddTransient<FacebookAPI>()
+                    .AddTransient<AttachmentHandler>()
+                    .AddTransient<ISectionService, SectionService>();
+            
             services.AddSingleton<LanguageCache>();
         }
 
