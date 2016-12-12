@@ -9,7 +9,7 @@
     "electric-mouse": {
       "target": "project"
     },
-    "moq.netcore": "4.4.0-beta8",
+    "Moq": "4.6.38-alpha",
     "System.Diagnostics.TraceSource": "4.0.0-rc2-24027"
   },
   "testRunner": "xunit",
