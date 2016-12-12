@@ -200,41 +200,11 @@ namespace electric_mouse.Controllers
 
 	    private async Task<RouteListViewModel> GetListViewModel(bool archived, string creator, RouteType? type)
 	    {
-	        IEnumerable<Route> routes = _routeService.GetAllRoutes();
-
-            if (type.HasValue)
-                routes = routes.Where(route => route.Type == type);
-
-            //Build search query
-	        routes = routes.Where(route => route.Archived == archived);
-
-	        if (!string.IsNullOrEmpty(creator))
-	            routes = _routeService.GetRoutesByCreator(creator).AsQueryable();
-
-	        routes = routes.Include(c => c.Difficulty).Include(r => r.Creators).ThenInclude(l => l.User);
-            IList<Route> routeList = new List<Route>();
-            foreach (var route in routes.ToList())
-            {
-                route.Sections = new List<RouteSection>();
-                List<RouteSectionRelation> relations = _routeService.GetAllRouteSectionRelationsByRouteId(route.ID);
-                
-                foreach (var relation in relations)
-                {
-                    RouteSection section = _routeService.GetRouteSectionById(relation.RouteSectionID);
-                    route.Sections.Add(section);
-                }
-
-                routeList.Add(route);
-            }
-
-            // dont send the whole note (we dont display it anyways)
-            foreach (Route route in routeList)
-            {
-                if (route.Note != null && route.Note.Length >= 50)
-                    route.Note = $"{new string(route.Note.Take(50).ToArray())}...";
-            }
-
-            return new RouteListViewModel { Routes = routeList, Difficulities = _routeService.GetAllRouteDifficulties() };
+	        return new RouteListViewModel
+	        {
+	            Routes = _routeService.GetRoutesFiltered(archived, creator, type),
+                Difficulities = _routeService.GetAllRouteDifficulties()
+	        };
         }
 
         private async Task<RouteDetailViewModel> GetDetailViewModel(int id)

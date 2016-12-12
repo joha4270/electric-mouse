@@ -169,5 +169,56 @@ namespace electric_mouse.Services
         public Route GetRouteWithDifficultyById(int routeId) => _dbContext.Routes
                                                                           .Include(route => route.Difficulty)
                                                                           .First(route => route.ID == routeId);
+
+        public List<Route> GetRoutesFiltered(bool archived, string creator, RouteType? type)
+        {
+            IQueryable<Route> routes = _dbContext.Routes;
+
+            //Build search query
+            routes = routes.Where(route => route.Archived == archived);
+            routes = routes.Include(c => c.Difficulty).Include(r => r.Creators).ThenInclude(l => l.User);
+
+            if (type.HasValue)
+                routes = routes.Where(route => route.Type == type);
+
+            if (!string.IsNullOrEmpty(creator))
+                routes = routes.Include(route => route.Creators)
+                               .Where
+                               (
+                                   route => route.Creators
+                                                 .Any(userRelation => userRelation.ApplicationUserRefId == creator)
+                               );
+
+
+
+            IList<Route> routeList = new List<Route>();
+            foreach (var route in routes.ToList())
+            {
+                route.Sections = new List<RouteSection>();
+
+                #region Make better
+
+                List<RouteSectionRelation> relations = GetAllRouteSectionRelationsByRouteId(route.ID);
+
+                foreach (var relation in relations)
+                {
+                    RouteSection section = GetRouteSectionById(relation.RouteSectionID);
+                    route.Sections.Add(section);
+                }
+
+                #endregion
+
+                routeList.Add(route);
+            }
+
+            // dont send the whole note (we dont display it anyways)
+            foreach (Route route in routeList)
+            {
+                if (route.Note != null && route.Note.Length >= 50)
+                    route.Note = $"{new string(route.Note.Take(50).ToArray())}...";
+            }
+
+            return routeList.ToList();
+        }
     }
 }
