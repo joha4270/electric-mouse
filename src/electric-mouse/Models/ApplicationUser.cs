@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using electric_mouse.Models.Relations;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 
 namespace electric_mouse.Models

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using electric_mouse.Models;
+using electric_mouse.Models.Relations;
 using electric_mouse.Models.RouteItems;
 
 namespace electric_mouse.Data
