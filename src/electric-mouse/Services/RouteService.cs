@@ -89,6 +89,11 @@ namespace electric_mouse.Services
             _dbContext.SaveChanges();
         }
 
+        public void UpdateAttachment(int routeId, string videoUrl, string[] relativeImagePaths)
+        {
+            
+        }
+
         /// <summary>
         /// Gets all the route sections that are not archived.
         /// </summary>
@@ -116,12 +121,8 @@ namespace electric_mouse.Services
         public RouteDifficulty GetRouteDifficultyById(int? id) => _dbContext.RouteDifficulties
                                                                            .First(difficulty => difficulty.RouteDifficultyID == id);
 
-        /// <summary>
-        /// Adds a builder to the specified route.
-        /// </summary>
-        /// <param name="route">The route to which the builder is added.</param>
-        /// <param name="builderToAdd">The builder that is to be added to route.</param>
-        public void AddBuilderToRoute(Route route, ApplicationUser builderToAdd)
+        
+        private void AddBuilderToRoute(Route route, ApplicationUser builderToAdd)
         {
             _dbContext.RouteUserRelations.Add(new RouteApplicationUserRelation
             {
@@ -130,95 +131,89 @@ namespace electric_mouse.Services
             });
         }
 
-        public List<Route> GetRoutesByCreator(string creator)
+        /// <summary>
+        /// Adds the given builders to the specified route.
+        /// </summary>
+        /// <param name="route">The route to which the builder is added.</param>
+        /// <param name="buildersToAdd">The builders that is to be added to the route.</param>
+        public void AddBuildersToRoute(Route route, params ApplicationUser[] buildersToAdd)
         {
-            if (string.IsNullOrEmpty(creator))
-                return null;
-
-            return _dbContext.Routes.Include(route => route.Creators)
-                    .Where
-                    (
-                        route => route.Creators
-                            .Any(userRelation => userRelation.ApplicationUserRefId == creator)
-                    ).ToList();
+            buildersToAdd.ToList().ForEach(user => AddBuilderToRoute(route, user));
+            _dbContext.SaveChanges();
         }
-
-        // Not used
-        public List<Route> GetAllActiveRoutes() => _dbContext.Routes
-                                                             .Where(route => route.Archived == false)
-                                                             .ToList();
-
-        // Not used
-        public List<Route> GetAllArchivedRoutes() => _dbContext.Routes
-                                                               .Where(route => route.Archived)
-                                                               .ToList();
-
-        public List<RouteSectionRelation> GetAllRouteSectionRelationsByRouteId(int routeId)
-            => _dbContext.RouteSectionRelations
-                         .Where(t => t.RouteID == routeId)
-                         .ToList();
-
-        public RouteSection GetRouteSectionById(int sectionId)
-            => _dbContext.RouteSections
-                         .First(section => section.RouteSectionID == sectionId);
-
-        public List<Route> GetAllRoutes() => _dbContext.Routes.ToList();
-
-        public List<Route> GetRoutesOfType(RouteType routeType) => _dbContext.Routes.Where(route => route.Type == routeType).ToList();
 
         public Route GetRouteWithDifficultyById(int routeId) => _dbContext.Routes
                                                                           .Include(route => route.Difficulty)
                                                                           .First(route => route.ID == routeId);
 
+        /// <summary>
+        /// Gets all the routes and filters them based on it being archived, who its creator is and its type.
+        /// </summary>
+        /// <param name="archived"></param>
+        /// <param name="creator"></param>
+        /// <param name="type"></param>
         public List<Route> GetRoutesFiltered(bool archived, string creator, RouteType? type)
         {
-            IQueryable<Route> routes = _dbContext.Routes;
+            IQueryable<Route> routes = _dbContext.Routes
+                                                 .Include(route => route.Difficulty)
+                                                 .Include(route => route.Creators)
+                                                 .ThenInclude(userRelation => userRelation.User)
+                                                 .Where(route => route.Archived == archived);
 
-            //Build search query
-            routes = routes.Where(route => route.Archived == archived);
-            routes = routes.Include(c => c.Difficulty).Include(r => r.Creators).ThenInclude(l => l.User);
-
-            if (type.HasValue)
+            if (type != null)
                 routes = routes.Where(route => route.Type == type);
 
             if (!string.IsNullOrEmpty(creator))
-                routes = routes.Include(route => route.Creators)
-                               .Where
-                               (
-                                   route => route.Creators
-                                                 .Any(userRelation => userRelation.ApplicationUserRefId == creator)
-                               );
+                routes = routes.Where
+                    (
+                        route => route.Creators
+                                      .Any(userRelation => userRelation.ApplicationUserRefId == creator)
+                    );
 
+            List<Route> routeList = routes.ToList();
+            routeList.ForEach(route => route.Sections = GetRouteSectionsByRouteId(route.ID));
 
-
-            IList<Route> routeList = new List<Route>();
-            foreach (var route in routes.ToList())
-            {
-                route.Sections = new List<RouteSection>();
-
-                #region Make better
-
-                List<RouteSectionRelation> relations = GetAllRouteSectionRelationsByRouteId(route.ID);
-
-                foreach (var relation in relations)
-                {
-                    RouteSection section = GetRouteSectionById(relation.RouteSectionID);
-                    route.Sections.Add(section);
-                }
-
-                #endregion
-
-                routeList.Add(route);
-            }
-
-            // dont send the whole note (we dont display it anyways)
-            foreach (Route route in routeList)
-            {
-                if (route.Note != null && route.Note.Length >= 50)
-                    route.Note = $"{new string(route.Note.Take(50).ToArray())}...";
-            }
-
-            return routeList.ToList();
+            return routeList;
         }
+
+        public List<Route> TruncateRouteNotes(List<Route> routes, int maxNoteLength)
+        {
+            foreach (Route route in routes)
+            {
+                if (route.Note != null && route.Note.Length >= maxNoteLength)
+                    route.Note = $"{new string(route.Note.Take(maxNoteLength).ToArray())}...";
+            }
+
+            return routes;
+        }
+
+        // TODO: move this to SectionService and use it from that instead
+        private List<RouteSection> GetRouteSectionsByRouteId(int routeId) =>
+            _dbContext.RouteSectionRelations
+                      .Include(relation => relation.RouteSection)
+                      .Where(relation => relation.RouteID == routeId)
+                      .Select(relation => relation.RouteSection).ToList();
+
+        public async void RemoveRoute(int routeId)
+        {
+            Route routeToDelete = GetRouteById(routeId);
+            if (routeToDelete.Archived)
+                _dbContext.Routes.Remove(routeToDelete);
+
+            await _dbContext.SaveChangesAsync();
+        }
+
+        public async void ActivateRoute(int routeId)
+        {
+            Route routeToMakeActive = GetRouteById(routeId);
+            if (routeToMakeActive.Archived)
+            {
+                routeToMakeActive.Archived = false;
+                _dbContext.Routes.Update(routeToMakeActive);
+                await _dbContext.SaveChangesAsync();
+            }
+        }
+
+        public Route GetRouteById(int routeId) => _dbContext.Routes.First(route => route.ID == routeId);
     }
 }

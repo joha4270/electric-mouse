@@ -106,10 +106,7 @@ namespace electric_mouse.Controllers
                 )
                 .Where(user => user != null);
 
-            foreach (ApplicationUser builder in builders)
-            {
-                _routeService.AddBuilderToRoute(route, builder);
-            }
+            _routeService.AddBuildersToRoute(route, builders.ToArray());
             
             // Add the image(s) and imagepaths to the database, and the videourl
             string[] relativeImagePaths = await UploadImages();
@@ -121,9 +118,16 @@ namespace electric_mouse.Controllers
         private async Task<string[]> UploadImages()
         {
             // Get all the image names that should be excluded from the upload
-            string[] exclude = Request.Form["jfiler-items-exclude-Images-0"].ToString().Trim('[', ']').Replace("\"", "").Split(',');
+            string[] exclude = Request.Form["jfiler-items-exclude-Images-0"].ToString()
+                                                                            .Trim('[', ']')
+                                                                            .Replace("\"", "")
+                                                                            .Split(',');
             // Filter out the images that the user removed during the upload
-            IEnumerable<IFormFile> imagesToUpload = Request.Form.Files.Where(image => image.Name.Contains("Images") && exclude.Contains(image.FileName) == false);
+            IEnumerable<IFormFile> imagesToUpload = Request.Form.Files.Where
+                (
+                    image => image.Name.Contains("Images")
+                             && exclude.Contains(image.FileName) == false
+                );
             return await _attachmentHandler.SaveImagesOnServer(imagesToUpload.ToList(), _environment.WebRootPath, "uploads");
         }
 
@@ -132,9 +136,7 @@ namespace electric_mouse.Controllers
             RouteType? nullableParsedtype = null;
             RouteType parsedtype;
             if (RouteType.TryParse(type, true, out parsedtype))
-            {
                 nullableParsedtype = parsedtype;
-            }
 
             RouteListViewModel model = await GetListViewModel(archived, creator, nullableParsedtype);
             return View(model);
@@ -144,27 +146,36 @@ namespace electric_mouse.Controllers
         {
             RouteDetailViewModel model = await GetDetailViewModel(id);
             if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
-            {
                 return PartialView(model);
-            }
-            else
+
+            RouteListViewModel listModel = await GetListViewModel(false, null, model.Route.Type);
+
+            listModel.ModalContent = new ModalContentViewModel
             {
-                RouteListViewModel listModel = await GetListViewModel(false, null, model.Route.Type);
+	            ViewName = "Details",
+	            Model = model
+            };
 
-                listModel.ModalContent = new ModalContentViewModel
-                {
-	                ViewName = "Details",
-	                Model = model
-                };
-
-                return View("List", listModel);
-            }
+            return View("List", listModel);
         }
 
-	    /// <summary>
-	    /// Goes and fetches all information from database and loads it into a CommentViewModel, but not before recursively fetching all replies.
-	    /// </summary>
-	    private CommentViewModel FetchCommentData(Comment comment, List<Comment> allComments, ApplicationUser User, bool UserIsAdmin)
+        private async Task<RouteListViewModel> GetListViewModel(bool archived, string creator, RouteType? type)
+        {
+            List<Route> routes = _routeService.GetRoutesFiltered(archived, creator, type);
+            // limit the length of the notes in list view
+            routes = _routeService.TruncateRouteNotes(routes, 50);
+
+            return new RouteListViewModel
+            {
+                Routes = routes,
+                Difficulities = _routeService.GetAllRouteDifficulties()
+            };
+        }
+
+        /// <summary>
+        /// Goes and fetches all information from database and loads it into a CommentViewModel, but not before recursively fetching all replies.
+        /// </summary>
+        private CommentViewModel FetchCommentData(Comment comment, List<Comment> allComments, ApplicationUser User, bool UserIsAdmin)
 	    {
 		    List<Comment> replies = allComments
 			    .Where(x => x.OriginalPostID == comment.CommentID).ToList();
@@ -197,15 +208,6 @@ namespace electric_mouse.Controllers
 
 		    return result;
 	    }
-
-	    private async Task<RouteListViewModel> GetListViewModel(bool archived, string creator, RouteType? type)
-	    {
-	        return new RouteListViewModel
-	        {
-	            Routes = _routeService.GetRoutesFiltered(archived, creator, type),
-                Difficulities = _routeService.GetAllRouteDifficulties()
-	        };
-        }
 
         private async Task<RouteDetailViewModel> GetDetailViewModel(int id)
         {
@@ -373,70 +375,71 @@ namespace electric_mouse.Controllers
             //Cannot be null as Role requires user being logged in
             ApplicationUser user = await _userManager.GetUserAsync(User);
             if (
-                ModelState.IsValid && (
+                !(ModelState.IsValid && (
                 await _dbContext.RouteUserRelations.AnyAsync(x => x.RouteRefId == model.UpdateID && x.ApplicationUserRefId == user.Id) ||
-                await _userManager.IsInRoleAsync(user, "Administrator")))
+                await _userManager.IsInRoleAsync(user, "Administrator"))))
             {
-                Route route = await _dbContext.Routes.FirstOrDefaultAsync(x => x.ID == model.UpdateID);
+                HttpContext.Response.StatusCode = (int)HttpStatusCode.Forbidden;
 
-                route.RouteID = model.RouteID;
-                route.Note = model.Note;
-                route.GripColour = model.GripColor;
-                route.RouteDifficultyID = model.RouteDifficultyID;
-                route.Date = DateTime.ParseExact(model.Date, "dd-MM-yyyy", CultureInfo.InvariantCulture);
-
-                {
-                    List<RouteSectionRelation> inDb = await _dbContext.RouteSectionRelations.Where(x => x.RouteID == model.UpdateID).ToListAsync();
-
-                    List<RouteSectionRelation> toRemove = inDb.Where(x => !model.RouteSectionID.Contains(x.RouteSectionID)).ToList();
-                    List<int> toAddInt = model.RouteSectionID.Where(x => !inDb.Any(y => y.RouteSectionID == x)).ToList();
-                    List<RouteSectionRelation> toAdd = toAddInt.Select(x => new RouteSectionRelation { Route = route, RouteSectionID = x }).ToList();
-
-
-                    _dbContext.RouteSectionRelations.RemoveRange(toRemove);
-                    _dbContext.RouteSectionRelations.AddRange(toAdd);
-                }
-                {
-                    List<RouteApplicationUserRelation> inDb = await _dbContext.RouteUserRelations.Where(x => x.RouteRefId == model.UpdateID).ToListAsync();
-
-                    List<RouteApplicationUserRelation> toRemove = inDb.Where(x => !model.Builders.Contains(x.ApplicationUserRefId)).ToList();
-                    List<string> toAddId = model.Builders.Where(x => !inDb.Any(y => y.ApplicationUserRefId == x)).ToList();
-                    List<RouteApplicationUserRelation> toAdd = toAddId.Select(x => new RouteApplicationUserRelation { Route = route, ApplicationUserRefId = x }).ToList();
-
-                    _dbContext.RouteUserRelations.RemoveRange(toRemove);
-                    _dbContext.RouteUserRelations.AddRange(toAdd);
-                }
-
-                #region Attachment related code
-                // Get the path relations that should be deleted
-                List<AttachmentPathRelation> pathRelationsToRemove = _dbContext.AttachmentPathRelations.Where(relation => model.ImagePathRelationID.Contains(relation.AttachmentPathRelationID)).ToList();
-                // Get the paths to the images on the server that should be deleted
-                List<string> imagesToDelete = pathRelationsToRemove.Select(relation => relation.ImagePath).ToList();
-
-                // Delete the path relations
-                _dbContext.AttachmentPathRelations.RemoveRange(pathRelationsToRemove);
-
-                // Delete the images on the server
-                foreach (string path in imagesToDelete)
-                {
-                    System.IO.File.Delete(Path.Combine(_environment.WebRootPath, path));
-                }
-
-                // If the video url is updated we want to update this in the attachment
-                RouteAttachment attachment = _dbContext.RouteAttachments.First(att => att.RouteAttachmentID == model.AttachmentID);
-                attachment.VideoUrl = model.VideoUrl;
-
-                // Upload the new images to the server
-                await UploadImages(attachment);
-                #endregion
-
-                await _dbContext.SaveChangesAsync();
-                return RedirectToAction("List");
+                return Content("You don't have access to this action. 403 Forbidden");
             }
 
-            HttpContext.Response.StatusCode = (int) HttpStatusCode.Forbidden;
+            Route route = await _dbContext.Routes.FirstOrDefaultAsync(x => x.ID == model.UpdateID);
 
-            return Content("You don't have access to this action. 403 Forbidden");
+            route.RouteID = model.RouteID;
+            route.Note = model.Note;
+            route.GripColour = model.GripColor;
+            route.RouteDifficultyID = model.RouteDifficultyID;
+            route.Date = DateTime.ParseExact(model.Date, "dd-MM-yyyy", CultureInfo.InvariantCulture);
+
+            {
+                List<RouteSectionRelation> inDb = await _dbContext.RouteSectionRelations.Where(x => x.RouteID == model.UpdateID).ToListAsync();
+
+                List<RouteSectionRelation> toRemove = inDb.Where(x => !model.RouteSectionID.Contains(x.RouteSectionID)).ToList();
+                List<int> toAddInt = model.RouteSectionID.Where(x => !inDb.Any(y => y.RouteSectionID == x)).ToList();
+                List<RouteSectionRelation> toAdd = toAddInt.Select(x => new RouteSectionRelation { Route = route, RouteSectionID = x }).ToList();
+
+
+                _dbContext.RouteSectionRelations.RemoveRange(toRemove);
+                _dbContext.RouteSectionRelations.AddRange(toAdd);
+            }
+            {
+                List<RouteApplicationUserRelation> inDb = await _dbContext.RouteUserRelations.Where(x => x.RouteRefId == model.UpdateID).ToListAsync();
+
+                List<RouteApplicationUserRelation> toRemove = inDb.Where(x => !model.Builders.Contains(x.ApplicationUserRefId)).ToList();
+                List<string> toAddId = model.Builders.Where(x => !inDb.Any(y => y.ApplicationUserRefId == x)).ToList();
+                List<RouteApplicationUserRelation> toAdd = toAddId.Select(x => new RouteApplicationUserRelation { Route = route, ApplicationUserRefId = x }).ToList();
+
+                _dbContext.RouteUserRelations.RemoveRange(toRemove);
+                _dbContext.RouteUserRelations.AddRange(toAdd);
+            }
+
+            #region Attachment related code
+            // Get the path relations that should be deleted
+            List<AttachmentPathRelation> pathRelationsToRemove = _dbContext.AttachmentPathRelations.Where(relation => model.ImagePathRelationID.Contains(relation.AttachmentPathRelationID)).ToList();
+            // Get the paths to the images on the server that should be deleted
+            List<string> imagesToDelete = pathRelationsToRemove.Select(relation => relation.ImagePath).ToList();
+
+            // Delete the path relations
+            _dbContext.AttachmentPathRelations.RemoveRange(pathRelationsToRemove);
+
+            // Delete the images on the server
+            foreach (string path in imagesToDelete)
+            {
+                System.IO.File.Delete(Path.Combine(_environment.WebRootPath, path));
+            }
+
+            // If the video url is updated we want to update this in the attachment
+            RouteAttachment attachment = _dbContext.RouteAttachments.First(att => att.RouteAttachmentID == model.AttachmentID);
+            attachment.VideoUrl = model.VideoUrl;
+
+            // Upload the new images to the server
+            string[] relativeImagePaths = await UploadImages();
+            // TODO: add the updated imagepaths to the database with UpdateAttachment
+            #endregion
+
+            await _dbContext.SaveChangesAsync();
+            return RedirectToAction("List");
         }
 
         [HttpPost]
@@ -445,13 +448,7 @@ namespace electric_mouse.Controllers
         {
             ApplicationUser admin = await _userManager.GetUserAsync(User);
             if (await _userManager.IsInRoleAsync(admin, RoleHandler.Admin))
-            {
-                Route routeToDelete = _dbContext.Routes.First(route => route.ID == id);
-                if (routeToDelete.Archived)
-                    _dbContext.Routes.Remove(routeToDelete);
-
-                await _dbContext.SaveChangesAsync();
-            }
+                _routeService.RemoveRoute(id);;
 
             return RedirectToAction(nameof(List), "Route", new { archived = "true" });
         }
@@ -463,13 +460,7 @@ namespace electric_mouse.Controllers
             ApplicationUser admin = await _userManager.GetUserAsync(User);
             if (await _userManager.IsInRoleAsync(admin, RoleHandler.Admin))
             {
-                Route routeToMakeActive = _dbContext.Routes.First(route => route.ID == id);
-                if (routeToMakeActive.Archived)
-                {
-                    routeToMakeActive.Archived = false;
-                    _dbContext.Routes.Update(routeToMakeActive);
-                    _dbContext.SaveChanges();
-                }
+                _routeService.ActivateRoute(id);
             }
 
             return RedirectToAction(nameof(List), "Route", new { archived = "true" });
