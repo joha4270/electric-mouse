@@ -62,7 +62,7 @@ namespace electric_mouse.Controllers
             RouteCreateViewModel model = new RouteCreateViewModel
             {
                 Halls           = _routeService.GetAllActiveRouteHalls(),
-                Difficulties    = _routeService.GetAllRouteDifficulties(), // TODO: Move to difficultyService
+                Difficulties    = _routeService.GetAllRouteDifficulties(), 
                 Sections        = _routeService.GetAllActiveRouteSections(),
                 Builders        = new List<string>
                 {
@@ -79,7 +79,7 @@ namespace electric_mouse.Controllers
         [Authorize(Roles = RoleHandler.Post)]
         public async Task<IActionResult> Create(RouteCreateViewModel model)
         {
-            _logger.LogInformation("Recived following users [{users}]", string.Join(", ", model.Builders));
+            _logger.LogInformation("Received following users [{users}]", string.Join(", ", model.Builders));
             
             // Create Route
             Route route = new Route
@@ -89,65 +89,45 @@ namespace electric_mouse.Controllers
                 GripColour = model.GripColor,
                 Type = model.Type
             };
-
             _routeService.AddRoute(route, model.Date, model.RouteDifficultyID);
 
             // Create Section Relation
-            if (model.RouteSectionID != null)
-            {
-                foreach (var sectionId in model.RouteSectionID)
-                {
-                    RouteSection section = _dbContext.RouteSections.Include(h => h.RouteHall).First(s => s.RouteSectionID == sectionId);
-                    section.Routes.Add(new RouteSectionRelation { RouteSection = section, Route = route });
-                }
-
-                _dbContext.SaveChanges();
-            }
-
+            _routeService.AddRouteToSections(route, model.RouteSectionID.ToList());
+            
             //Find all the users by id in model.Builders, in parallel, then discard missing results
-            foreach (
-                ApplicationUser builder in
-                (await Task.WhenAll(
-                    model.Builders
-                        .Distinct()
-                        .Select(x => _userManager.FindByIdAsync(x)))
-                ).Where(x => x != null))
+            IEnumerable<ApplicationUser> builders =
+                (
+                    await Task.WhenAll
+                        (
+                            model.Builders
+                                .Distinct()
+                                .Select(userId => _userManager.FindByIdAsync(userId))
+                        )
+                )
+                .Where(user => user != null);
+
+            foreach (ApplicationUser builder in builders)
             {
-                _dbContext.RouteUserRelations.Add(new RouteApplicationUserRelation{User = builder, Route = route});
+                _routeService.AddBuilderToRoute(route, builder);
             }
-
-
-            // Add the video attachment to the database
-            RouteAttachment attachment = new RouteAttachment { VideoUrl = model.VideoUrl, Route = route, RouteID = route.ID };
-            _dbContext.RouteAttachments.Add(attachment);
-
-            // Add the image(s) attachment and imagepaths to the database
-            await UploadImages(attachment);
-
-            _dbContext.SaveChanges();
+            
+            // Add the image(s) and imagepaths to the database, and the videourl
+            string[] relativeImagePaths = await UploadImages();
+            _routeService.AddAttachment(route, model.VideoUrl, relativeImagePaths);
 
             return RedirectToAction(nameof(List), "Route");
         }
 
-        private async Task UploadImages(RouteAttachment attachment)
+        private async Task<string[]> UploadImages()
         {
             // Get all the image names that should be excluded from the upload
             string[] exclude = Request.Form["jfiler-items-exclude-Images-0"].ToString().Trim('[', ']').Replace("\"", "").Split(',');
             // Filter out the images that the user removed during the upload
             IEnumerable<IFormFile> imagesToUpload = Request.Form.Files.Where(image => image.Name.Contains("Images") && exclude.Contains(image.FileName) == false);
-            string[] relativeImagePaths = await _attachmentHandler.SaveImagesOnServer(imagesToUpload.ToList(), _environment.WebRootPath, "uploads");
-
-            foreach (string relativeImagePath in relativeImagePaths)
-            {
-                _dbContext.AttachmentPathRelations.Add(new AttachmentPathRelation
-                {
-                    ImagePath = relativeImagePath,
-                    RouteAttachment = attachment
-                });
-            }
+            return await _attachmentHandler.SaveImagesOnServer(imagesToUpload.ToList(), _environment.WebRootPath, "uploads");
         }
 
-        public async Task<IActionResult> List(string type = null, string archived = "false", string creator = null)
+        public async Task<IActionResult> List(string type = null, bool archived = false, string creator = null)
         {
             RouteType? nullableParsedtype = null;
             RouteType parsedtype;
@@ -169,7 +149,7 @@ namespace electric_mouse.Controllers
             }
             else
             {
-                RouteListViewModel listModel = await GetListViewModel("false", null, model.Route.Type);
+                RouteListViewModel listModel = await GetListViewModel(false, null, model.Route.Type);
 
                 listModel.ModalContent = new ModalContentViewModel
                 {
@@ -184,14 +164,14 @@ namespace electric_mouse.Controllers
 	    /// <summary>
 	    /// Goes and fetches all information from database and loads it into a CommentViewModel, but not before recursively fetching all replies.
 	    /// </summary>
-	    private CommentViewModel FetchCommentData(Comment comment, List<Comment> AllComments, ApplicationUser User, bool UserIsAdmin)
+	    private CommentViewModel FetchCommentData(Comment comment, List<Comment> allComments, ApplicationUser User, bool UserIsAdmin)
 	    {
-		    List<Comment> replies = AllComments
+		    List<Comment> replies = allComments
 			    .Where(x => x.OriginalPostID == comment.CommentID).ToList();
 		    List<CommentViewModel> children = new List<CommentViewModel>();
 		    foreach (Comment reply in replies)
 		    {
-			    children.Add(FetchCommentData(reply, AllComments, User, UserIsAdmin));
+			    children.Add(FetchCommentData(reply, allComments, User, UserIsAdmin));
 		    }
 		    children.OrderByDescending<CommentViewModel, DateTime>(c => c.Date).Reverse();
 
@@ -218,51 +198,33 @@ namespace electric_mouse.Controllers
 		    return result;
 	    }
 
-	    private async Task<RouteListViewModel> GetListViewModel(string archived, string creator, RouteType? type)
+	    private async Task<RouteListViewModel> GetListViewModel(bool archived, string creator, RouteType? type)
 	    {
-	        IQueryable<Route> routes = _dbContext.Routes;
+	        IEnumerable<Route> routes = _routeService.GetAllRoutes();
 
             if (type.HasValue)
-            {
-                routes = routes.Where(r => r.Type == type);
-            }
+                routes = routes.Where(route => route.Type == type);
 
             //Build search query
-            if (archived == "true")
-            {
-                routes = routes.Where(r => r.Archived == true);
-            }
-            else if (archived == "both") { } //noop
-            //Catch all case here as instead of if yes else if no ; as it makes it less likely to expose on accident
-            else
-            {
-                routes = routes.Where(r => r.Archived == false);
-            }
+	        routes = routes.Where(route => route.Archived == archived);
 
-            if (!string.IsNullOrEmpty(creator))
-            {
-                routes = routes
-                    .Include(x => x.Creators)
-                    .Where(x => x.Creators
-                        .Any(c => c.ApplicationUserRefId == creator)
-                    );
-            }
+	        if (!string.IsNullOrEmpty(creator))
+	            routes = _routeService.GetRoutesByCreator(creator).AsQueryable();
 
-            routes = routes.Include(c => c.Difficulty).Include(r => r.Creators).ThenInclude(l => l.User);
+	        routes = routes.Include(c => c.Difficulty).Include(r => r.Creators).ThenInclude(l => l.User);
             IList<Route> routeList = new List<Route>();
-            var difficulityList = _dbContext.RouteDifficulties.ToListAsync();
-            foreach (var r in routes.ToList())
+            foreach (var route in routes.ToList())
             {
-                r.Sections = new List<RouteSection>();
-                List<RouteSectionRelation> relations = _dbContext.RouteSectionRelations.Where(t => t.RouteID == r.ID).ToList();
-
-                foreach (var s in relations)
+                route.Sections = new List<RouteSection>();
+                List<RouteSectionRelation> relations = _routeService.GetAllRouteSectionRelationsByRouteId(route.ID);
+                
+                foreach (var relation in relations)
                 {
-                    RouteSection section = _dbContext.RouteSections.First(t => s.RouteSectionID == t.RouteSectionID);
-                    r.Sections.Add(section);
+                    RouteSection section = _routeService.GetRouteSectionById(relation.RouteSectionID);
+                    route.Sections.Add(section);
                 }
 
-                routeList.Add(r);
+                routeList.Add(route);
             }
 
             // dont send the whole note (we dont display it anyways)
@@ -272,18 +234,16 @@ namespace electric_mouse.Controllers
                     route.Note = $"{new string(route.Note.Take(50).ToArray())}...";
             }
 
-            return new RouteListViewModel { Routes = routeList, Difficulities = await difficulityList};
+            return new RouteListViewModel { Routes = routeList, Difficulities = _routeService.GetAllRouteDifficulties() };
         }
 
         private async Task<RouteDetailViewModel> GetDetailViewModel(int id)
         {
             List<CommentViewModel> comments = new List<CommentViewModel>();
 
-            Route route = _dbContext.Routes
-                .Include(x => x.Difficulty)
-	            .First(r => r.ID == id);
+            Route route = _routeService.GetRouteWithDifficultyById(id);
 
-	        RouteSectionRelation rs = _dbContext.RouteSectionRelations.First(t => t.RouteID == route.ID);
+            RouteSectionRelation rs = _dbContext.RouteSectionRelations.First(t => t.RouteID == route.ID);
 	        RouteSection section = _dbContext.RouteSections.First(t => rs.RouteSectionID == t.RouteSectionID);
 	        RouteHall hall = _dbContext.RouteHalls.First(p => p.RouteHallID == section.RouteHallID);
 
@@ -300,12 +260,12 @@ namespace electric_mouse.Controllers
             {
                 user = await _userManager.GetUserAsync(User);
 	            userIsAdmin = await _userManager.IsInRoleAsync(user, "Administrator");
-	            creatorOrAdmin = creators.Contains(user) || (await _userManager.IsInRoleAsync(user, RoleHandler.Admin)); //TODO const when merging
+	            creatorOrAdmin = creators.Contains(user) || (await _userManager.IsInRoleAsync(user, RoleHandler.Admin));
             }
 
-	        List<Comment> allComments = _dbContext.Comments
-		        .Where(x => x.RouteID == id)
-		        .ToList();
+            List<Comment> allComments = _dbContext.Comments
+                .Where(x => x.RouteID == id)
+                .ToList();
 	        List<Comment> topLevelComments = allComments
 		        .Where(x => x.OriginalPostID == 0)
 		        .ToList();
