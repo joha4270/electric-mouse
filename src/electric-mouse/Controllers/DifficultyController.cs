@@ -48,9 +48,7 @@ namespace electric_mouse.Controllers
         private bool IsHexColorString(string color)
         {
             if (Regex.IsMatch(color, @"^[a-fA-F0-9#]+$") && color.Length < 8)
-            {
                 return true;
-            }
             return false;
         }
 

@@ -70,8 +70,8 @@ namespace electric_mouse
                     .AddTransient<ISmsSender, AuthMessageSender>()
                     .AddTransient<FacebookAPI>()
                     .AddTransient<AttachmentHandler>()
-                    .AddTransient<ISectionService, SectionService>()
-                    .AddTransient<IDifficultyService, DifficultyService>();
+                    .AddTransient<IDifficultyService, DifficultyService>()
+                    .AddTransient<ISectionService, SectionService>();
             
             services.AddSingleton<LanguageCache>();
         }
