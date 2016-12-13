@@ -71,6 +71,7 @@ namespace electric_mouse
                     .AddTransient<FacebookAPI>()
                     .AddTransient<AttachmentHandler>()
                     .AddTransient<IDifficultyService, DifficultyService>()
+                    .AddTransient<IHallService, HallService>()
                     .AddTransient<ISectionService, SectionService>();
             
             services.AddSingleton<LanguageCache>();
