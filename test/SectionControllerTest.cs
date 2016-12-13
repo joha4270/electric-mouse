@@ -174,7 +174,7 @@ namespace test
 
         #endregion
 
-        #region Clear tests
+        #region Delete tests
 
         [Fact]
         public async Task Clear_SectionIdValid_ArchiveAllRoutesInSectionCalledAndRedirectsToListAction()
