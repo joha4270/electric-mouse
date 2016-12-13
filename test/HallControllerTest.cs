@@ -17,7 +17,7 @@ namespace test
     {      
 
         [Fact]
-        public void List_ListOfRouteHall_ReturnViewModel()
+        public void List_RouteHall_ReturnViewModel()
         {
             // Arrange
             var mockService = new Mock<IHallService>();
@@ -40,7 +40,7 @@ namespace test
         #region Create Tests
 
         [Fact]
-        public async Task Create_vaildInputNameAndType_RedirectToActionCreateHall()
+        public async Task Create_ValidInputNameAndType_RedirectToActionCreateHall()
         {
             // Arrange
             var mockService = new Mock<IHallService>();
@@ -79,7 +79,7 @@ namespace test
 
 
         [Fact]
-        public async Task Create_RoutTypeInvilidInput_RedirectToActionHallCreate()
+        public async Task Create_RouteTypeInvalidInput_RedirectToActionCreateHall()
         {
             // Arrange
             var mockService = new Mock<IHallService>();
@@ -102,7 +102,7 @@ namespace test
         #region Delete
 
         [Fact]
-        public async Task Delete_IDVaildInput_RedirectToActionHallCreate()
+        public async Task Delete_IdValidInput_RedirectToActionCreateHall()
         {
             // Arrange
             var mockService = new Mock<IHallService>();
@@ -121,7 +121,7 @@ namespace test
         }
 
         [Fact]
-        public async Task Delete_InputNullasID_RedirectToActionHallCreate()
+        public async Task Delete_InvalidNullAsId_RedirectToActionCreateHall()
         {
             // Arrange
             var mockService = new Mock<IHallService>();
