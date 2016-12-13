@@ -17,6 +17,7 @@ using electric_mouse.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.Options;
+using electric_mouse.Services.Interfaces;
 
 namespace electric_mouse
 {
@@ -69,7 +70,8 @@ namespace electric_mouse
                     .AddTransient<ISmsSender, AuthMessageSender>()
                     .AddTransient<FacebookAPI>()
                     .AddTransient<AttachmentHandler>()
-                    .AddTransient<ISectionService, SectionService>();
+                    .AddTransient<ISectionService, SectionService>()
+                    .AddTransient<IDifficultyService, DifficultyService>();
             
             services.AddSingleton<LanguageCache>();
         }

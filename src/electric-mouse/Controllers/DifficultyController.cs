@@ -1,35 +1,33 @@
-using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using electric_mouse.Data;
-using electric_mouse.Models;
 using electric_mouse.Models.RouteItems;
 using electric_mouse.Models.DifficultyViewModels;
 using electric_mouse.Services;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
+using electric_mouse.Services.Interfaces;
+using System.Text.RegularExpressions;
 
 namespace electric_mouse.Controllers
 {
     [Authorize(Roles = RoleHandler.Admin)]
     public class DifficultyController : Controller
     {
-        private ApplicationDbContext _dbContext;
-        private UserManager<ApplicationUser> _manager;
+        private readonly IDifficultyService _difficultyService;
+        
 
-        public DifficultyController(ApplicationDbContext dbContext, UserManager<ApplicationUser> manager)
+        public DifficultyController(IDifficultyService difficultyService)
         {
-            _dbContext = dbContext;
-            _manager = manager;
+            _difficultyService = difficultyService;
         }
 
 
         public IActionResult Create()
         {
-            IQueryable<RouteDifficulty> difficulty = _dbContext.RouteDifficulties;
-            DifficultyCreateViewModel model = new DifficultyCreateViewModel { Difficulties = difficulty.ToList() };
+            DifficultyCreateViewModel model = new DifficultyCreateViewModel
+            {
+                Difficulties = _difficultyService.GetAllDifficulties()
+            };
 
             return View(model);
         }
@@ -38,33 +36,30 @@ namespace electric_mouse.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(DifficultyCreateViewModel model)
         {
-            ApplicationUser admin = await _manager.GetUserAsync(User);
-            if (await _manager.IsInRoleAsync(admin, Services.RoleHandler.Admin))
+            if (!string.IsNullOrEmpty(model.Name) 
+                && !string.IsNullOrEmpty(model.Color)
+                && IsHexColorString(model.Color))
             {
-                if (!string.IsNullOrEmpty(model.Name))
-                {
-                    _dbContext.RouteDifficulties.Add(new RouteDifficulty { Name = model.Name, ColorHex = model.Color});
-                    _dbContext.SaveChanges();
-                }
+                _difficultyService.AddDifficulty(model.Name, model.Color);
             }
             
             return RedirectToAction(nameof(Create), "Difficulty");
+        }
+        private bool IsHexColorString(string color)
+        {
+            if (Regex.IsMatch(color, @"^[a-fA-F0-9#]+$") && color.Length < 8)
+            {
+                return true;
+            }
+            return false;
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(DifficultyCreateViewModel model)
         {
-            ApplicationUser admin = await _manager.GetUserAsync(User);
-            if (await _manager.IsInRoleAsync(admin, Services.RoleHandler.Admin))
-            {
-                RouteDifficulty diff = _dbContext.RouteDifficulties.First(d => d.RouteDifficultyID == model.ID);
+            _difficultyService.RemoveDifficulty(model.ID);
 
-                _dbContext.RouteDifficulties.Remove(diff);
-                _dbContext.SaveChanges();
-
-            }
-            
             return RedirectToAction(nameof(Create), "Difficulty");
         }
     }
