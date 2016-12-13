@@ -35,7 +35,6 @@ namespace electric_mouse.Controllers
 
         public RouteController
             (
-            ApplicationDbContext dbContext, 
             UserManager<ApplicationUser> userManager, 
             SignInManager<ApplicationUser> signInManager, 
             ILoggerFactory logger,
@@ -44,7 +43,6 @@ namespace electric_mouse.Controllers
             RouteService routeService
             )
         {
-            _dbContext = dbContext;
             _userManager = userManager;
             _signInManager = signInManager;
             _logger = logger.CreateLogger<RouteController>();
@@ -189,7 +187,7 @@ namespace electric_mouse.Controllers
 		    bool userIsLoggedIn = User != null;
 		    bool userIsOwner = userIsLoggedIn && comment.ApplicationUserRefId == User.Id;
 		    bool deletionRights = userIsOwner || UserIsAdmin;
-		    ApplicationUser user = _dbContext.Users.First(u => u.Id == comment.ApplicationUserRefId);
+	        ApplicationUser user = _routeService.GetUserById(comment.ApplicationUserRefId);
 		    CommentViewModel result = new CommentViewModel
 		    {
 			    CommentID = comment.CommentID,
@@ -215,14 +213,10 @@ namespace electric_mouse.Controllers
 
             Route route = _routeService.GetRouteWithDifficultyById(id);
 
-            RouteSectionRelation rs = _dbContext.RouteSectionRelations.First(t => t.RouteID == route.ID);
-	        RouteSection section = _dbContext.RouteSections.First(t => rs.RouteSectionID == t.RouteSectionID);
-	        RouteHall hall = _dbContext.RouteHalls.First(p => p.RouteHallID == section.RouteHallID);
+            RouteSection section = _routeService.GetRouteSectionThatRouteIsIn(id);
+            RouteHall hall = _routeService.GetRouteHallById(section.RouteHallID);
 
-            List<ApplicationUser> creators = _dbContext.RouteUserRelations
-	            .Where(r => r.Route == route)
-	            .Select(r => r.User)
-	            .ToList();
+            List<ApplicationUser> creators = _routeService.GetRouteCreators(id);
 
             bool creatorOrAdmin = false;
 
@@ -235,28 +229,22 @@ namespace electric_mouse.Controllers
 	            creatorOrAdmin = creators.Contains(user) || (await _userManager.IsInRoleAsync(user, RoleHandler.Admin));
             }
 
-            List<Comment> allComments = _dbContext.Comments
-                .Where(x => x.RouteID == id)
+            List<Comment> allCommentsInRoute = _routeService.GetCommentsInRoute(id);
+            List<Comment> topLevelComments = allCommentsInRoute
+                .Where(x => x.OriginalPostID == 0)
                 .ToList();
-	        List<Comment> topLevelComments = allComments
-		        .Where(x => x.OriginalPostID == 0)
-		        .ToList();
 
 	        foreach (Comment comment in topLevelComments)
 	        {
-		        comments.Add(FetchCommentData(comment, allComments, user, userIsAdmin));
+		        comments.Add(FetchCommentData(comment, allCommentsInRoute, user, userIsAdmin));
 	        }
 	        comments = comments.OrderByDescending<CommentViewModel, DateTime>(c => c.Date).ToList();
 
             // Get all the images related to the route
-            AttachmentPathRelation[] attachments = _dbContext.AttachmentPathRelations.Include(relation => relation.RouteAttachment)
-                .Where(attachment => attachment.RouteAttachment.RouteID == id)
-                .ToArray();
-            string[] imagePaths = attachments?.Select(attachment => attachment.ImagePath)
-                                             .ToArray();
+            string[] imagePaths = _routeService.GetAllImagePathsInRoute(id);
 
             // Get the video url from the route attachment
-            string url = _dbContext.RouteAttachments.First(att => att.RouteID == id).VideoUrl;
+            string url = _routeService.GetVideoUrlInRoute(id);
 
             RouteDetailViewModel model = new RouteDetailViewModel
             {
@@ -274,8 +262,6 @@ namespace electric_mouse.Controllers
 	        return model;
         }
 
-
-
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = RoleHandler.Post)]
@@ -284,86 +270,59 @@ namespace electric_mouse.Controllers
             //Cannot be null as Role requires user being logged in
             ApplicationUser user = await _userManager.GetUserAsync(User);
             if (
-                await _dbContext.RouteUserRelations.AnyAsync(x => x.RouteRefId == id && x.ApplicationUserRefId == user.Id) ||
+                await _routeService.IsRouteCreatedByUser(id, user.Id) ||
                 await _userManager.IsInRoleAsync(user, "Administrator"))
             {
-                _logger.LogInformation("Deleting route with id = {id}", id);
+                HttpContext.Response.StatusCode = (int) HttpStatusCode.Forbidden;
 
-                Route route = await _dbContext.Routes.FirstOrDefaultAsync<Route>(x => x.ID == id);
-                route.Archived = true;
-                await _dbContext.SaveChangesAsync();
-                return RedirectToAction("List"); //TODO: return to earlier search
+                return Content("You don't have access to this action. 403 Forbidden");
             }
+            _logger.LogInformation("Deleting route with id = {id}", id);
 
+            _routeService.ArchiveRoute(id);
 
-            HttpContext.Response.StatusCode = (int) HttpStatusCode.Forbidden;
-
-            return Content("You don't have access to this action. 403 Forbidden");
+            return RedirectToAction("List"); //TODO: return to earlier search
         }
 
         [Authorize(Roles = RoleHandler.Post)]
         public async Task<IActionResult> Update(int id)
         {
             ApplicationUser user = await _userManager.GetUserAsync(User);
-            if (
-                await
-                    _dbContext.RouteUserRelations.AnyAsync(x => x.RouteRefId == id && x.ApplicationUserRefId == user.Id) ||
-                await _userManager.IsInRoleAsync(user, "Administrator"))
+            if (!(await _routeService.IsRouteCreatedByUser(id, user.Id) ||
+                  await _userManager.IsInRoleAsync(user, "Administrator")))
             {
+                HttpContext.Response.StatusCode = (int) HttpStatusCode.Forbidden;
 
-                Route route = await _dbContext.Routes.FirstOrDefaultAsync(x => x.ID == id);
-                IQueryable<RouteHall> routeHalls = _dbContext.RouteHalls.Include(s => s.Sections);
-                IQueryable<RouteSection> routeSections = _dbContext.RouteSections;
-                int hall = _dbContext
-                    .RouteSectionRelations
-                    .Where(rel => rel.RouteID == route.ID)
-                    .Include(rel => rel.RouteSection)
-                    .Select(x => x.RouteSection.RouteHallID)
-                    .First();
-
-                List<int> selectedSections = _dbContext.RouteSectionRelations.Where(x => x.RouteID == id).Select(x => x.RouteSectionID).ToList();
-                List<ApplicationUser> Builders = await _dbContext
-                    .RouteUserRelations
-                    .Where(x => x.Route == route)
-                    .Include(x => x.User)
-                    .Select(x => x.User)
-                    .ToListAsync();
-
-                List<string> builderIDs = Builders.Select(x => x.Id).ToList();
-
-                // Get all the images related to the route
-                IList<AttachmentPathRelation> relations = _dbContext.AttachmentPathRelations
-	                .Include(relation => relation.RouteAttachment)
-	                .Where(x => x.RouteAttachment.RouteID == id)
-	                .ToList();
-
-                Tuple<string, int>[] imagePaths = relations?.Select(attachment => new Tuple<string, int>(attachment.ImagePath, attachment.AttachmentPathRelationID))
-                                                 .ToArray();
-
-                RouteCreateViewModel model = new RouteCreateViewModel
-                {
-                    Halls = routeHalls.Where(h=> h.Archived == false).ToList(),
-                    Difficulties = _dbContext.RouteDifficulties.ToList(),
-                    Sections = routeSections.ToList(),
-                    Date = route.Date.ToString("yyyy-MM-dd"),
-                    GripColor = route.GripColour,
-                    Note = route.Note,
-                    RouteDifficultyID = route.RouteDifficultyID,
-                    RouteHallID = hall,
-                    RouteID = route.RouteID,
-                    UpdateID = id,
-                    RouteSectionID = selectedSections,
-                    BuilderList = Builders,
-                    Builders = builderIDs,
-                    Images = imagePaths,
-                    Attachment = _dbContext.RouteAttachments.FirstOrDefault(att => att.RouteID == id)
-                };
-
-                return View("Create", model);
+                return Content("You don't have access to this action. 403 Forbidden");
             }
-            HttpContext.Response.StatusCode = (int) HttpStatusCode.Forbidden;
+            
+            Route route = await _routeService.GetRouteByIdAsync(id);
+            List<ApplicationUser> builders = _routeService.GetRouteCreators(route.ID);
+            List<string> builderIDs = builders.Select(u => u.Id).ToList();
+            
+            // Get all the images related to the route
+            Tuple<string, int>[] imagePathsWithIds = _routeService.GetImagePathsWithIds(id);
 
-            return Content("You don't have access to this action. 403 Forbidden");
+            RouteCreateViewModel model = new RouteCreateViewModel
+            {
+                Halls = _routeService.GetAllActiveRouteHalls(),
+                Difficulties = _routeService.GetAllRouteDifficulties(),
+                Sections = _routeService.GetAllRouteSections(),
+                Date = route.Date.ToString("yyyy-MM-dd"),
+                GripColor = route.GripColour,
+                Note = route.Note,
+                RouteDifficultyID = route.RouteDifficultyID,
+                RouteHallID = _routeService.GetRouteHallIdWhereThereRouteIs(route.ID),
+                RouteID = route.RouteID,
+                UpdateID = id,
+                RouteSectionID = _routeService.GetRouteSectionsIdsWhereRouteIs(route.ID),
+                BuilderList = builders,
+                Builders = builderIDs,
+                Images = imagePathsWithIds,
+                Attachment = _routeService.GetRouteAttachmentInRoute(route.ID)
+            };
+
+            return View("Create", model);
         }
 
         [HttpPost]
@@ -371,74 +330,43 @@ namespace electric_mouse.Controllers
         [Authorize(Roles = RoleHandler.Post)]
         public async Task<IActionResult> Update(RouteCreateViewModel model)
         {
-            
             //Cannot be null as Role requires user being logged in
             ApplicationUser user = await _userManager.GetUserAsync(User);
             if (
                 !(ModelState.IsValid && (
-                await _dbContext.RouteUserRelations.AnyAsync(x => x.RouteRefId == model.UpdateID && x.ApplicationUserRefId == user.Id) ||
+                await _routeService.IsRouteCreatedByUser(model.UpdateID, user.Id) ||
                 await _userManager.IsInRoleAsync(user, "Administrator"))))
             {
                 HttpContext.Response.StatusCode = (int)HttpStatusCode.Forbidden;
 
                 return Content("You don't have access to this action. 403 Forbidden");
             }
-
-            Route route = await _dbContext.Routes.FirstOrDefaultAsync(x => x.ID == model.UpdateID);
-
+            
+            Route route = _routeService.GetRouteById(model.UpdateID);
             route.RouteID = model.RouteID;
             route.Note = model.Note;
             route.GripColour = model.GripColor;
             route.RouteDifficultyID = model.RouteDifficultyID;
             route.Date = DateTime.ParseExact(model.Date, "dd-MM-yyyy", CultureInfo.InvariantCulture);
 
-            {
-                List<RouteSectionRelation> inDb = await _dbContext.RouteSectionRelations.Where(x => x.RouteID == model.UpdateID).ToListAsync();
+            // Remove and add sections (update)
+            _routeService.RemoveSectionsFromRoute(model.UpdateID, model.RouteSectionID.ToArray());
+            _routeService.AddSectionToRoute(model.UpdateID, model.RouteSectionID.ToArray());
 
-                List<RouteSectionRelation> toRemove = inDb.Where(x => !model.RouteSectionID.Contains(x.RouteSectionID)).ToList();
-                List<int> toAddInt = model.RouteSectionID.Where(x => !inDb.Any(y => y.RouteSectionID == x)).ToList();
-                List<RouteSectionRelation> toAdd = toAddInt.Select(x => new RouteSectionRelation { Route = route, RouteSectionID = x }).ToList();
+            // Remove and add builders (update)
+            _routeService.RemoveBuildersFromRoute(model.UpdateID, model.Builders.ToArray());
+            _routeService.AddBuildersToRoute(model.UpdateID, model.Builders.ToArray());
 
-
-                _dbContext.RouteSectionRelations.RemoveRange(toRemove);
-                _dbContext.RouteSectionRelations.AddRange(toAdd);
-            }
-            {
-                List<RouteApplicationUserRelation> inDb = await _dbContext.RouteUserRelations.Where(x => x.RouteRefId == model.UpdateID).ToListAsync();
-
-                List<RouteApplicationUserRelation> toRemove = inDb.Where(x => !model.Builders.Contains(x.ApplicationUserRefId)).ToList();
-                List<string> toAddId = model.Builders.Where(x => !inDb.Any(y => y.ApplicationUserRefId == x)).ToList();
-                List<RouteApplicationUserRelation> toAdd = toAddId.Select(x => new RouteApplicationUserRelation { Route = route, ApplicationUserRefId = x }).ToList();
-
-                _dbContext.RouteUserRelations.RemoveRange(toRemove);
-                _dbContext.RouteUserRelations.AddRange(toAdd);
-            }
-
-            #region Attachment related code
-            // Get the path relations that should be deleted
-            List<AttachmentPathRelation> pathRelationsToRemove = _dbContext.AttachmentPathRelations.Where(relation => model.ImagePathRelationID.Contains(relation.AttachmentPathRelationID)).ToList();
-            // Get the paths to the images on the server that should be deleted
-            List<string> imagesToDelete = pathRelationsToRemove.Select(relation => relation.ImagePath).ToList();
-
-            // Delete the path relations
-            _dbContext.AttachmentPathRelations.RemoveRange(pathRelationsToRemove);
-
-            // Delete the images on the server
-            foreach (string path in imagesToDelete)
-            {
-                System.IO.File.Delete(Path.Combine(_environment.WebRootPath, path));
-            }
+            // Remove images if the user deleted them on website
+            _routeService.RemoveImagesFromRoute(_environment.WebRootPath, model.ImagePathRelationID.ToArray());
 
             // If the video url is updated we want to update this in the attachment
-            RouteAttachment attachment = _dbContext.RouteAttachments.First(att => att.RouteAttachmentID == model.AttachmentID);
-            attachment.VideoUrl = model.VideoUrl;
+            _routeService.UpdateVideoUrlInAttachment(model.AttachmentID, model.VideoUrl);
 
             // Upload the new images to the server
             string[] relativeImagePaths = await UploadImages();
-            // TODO: add the updated imagepaths to the database with UpdateAttachment
-            #endregion
-
-            await _dbContext.SaveChangesAsync();
+            _routeService.UpdateImageAttachments(model.AttachmentID, relativeImagePaths);
+            
             return RedirectToAction("List");
         }
 

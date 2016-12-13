@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using electric_mouse.Data;
@@ -33,12 +34,14 @@ namespace electric_mouse.Services
             if (string.IsNullOrEmpty(date) || difficultyId == null)
                 return;
 
-            routeToAdd.Date = DateTime.ParseExact(date, "dd-MM-yyyy", CultureInfo.InvariantCulture);
+            routeToAdd.Date = ParseDate(date);
             routeToAdd.Difficulty = GetRouteDifficultyById(difficultyId);
 
             _dbContext.Routes.Add(routeToAdd);
             _dbContext.SaveChanges();
         }
+
+        private DateTime ParseDate(string date) => DateTime.ParseExact(date, "dd-MM-yyyy", CultureInfo.InvariantCulture);
 
         /// <summary>
         /// Adds the given route to the given sections by their sectionId.
@@ -48,9 +51,7 @@ namespace electric_mouse.Services
         public void AddRouteToSections(Route route, List<int> sectionIds)
         {
             if (sectionIds == null)
-            {
                 return;
-            }
 
             foreach (var sectionId in sectionIds)
             {
@@ -89,9 +90,29 @@ namespace electric_mouse.Services
             _dbContext.SaveChanges();
         }
 
-        public void UpdateAttachment(int routeId, string videoUrl, string[] relativeImagePaths)
+        public async void UpdateImageAttachments(int attachmentId, params string[] relativeImagePaths)
         {
-            
+            RouteAttachment attachmentToAddImagesTo =
+                _dbContext.RouteAttachments.First(attachment => attachment.RouteAttachmentID == attachmentId);
+
+            foreach (string relativeImagePath in relativeImagePaths)
+            {
+                _dbContext.AttachmentPathRelations.Add(new AttachmentPathRelation
+                {
+                    ImagePath = relativeImagePath,
+                    RouteAttachment = attachmentToAddImagesTo
+                });
+            }
+
+            await _dbContext.SaveChangesAsync();
+        }
+
+        public async void UpdateVideoUrlInAttachment(int attachmentId, string videoUrl)
+        {
+            RouteAttachment attachment = _dbContext.RouteAttachments.First(att => att.RouteAttachmentID == attachmentId);
+            attachment.VideoUrl = videoUrl;
+
+            await _dbContext.SaveChangesAsync();
         }
 
         /// <summary>
@@ -100,6 +121,9 @@ namespace electric_mouse.Services
         public List<RouteSection> GetAllActiveRouteSections() => _dbContext.RouteSections
                                                                      .Where(section => section.Archived == false)
                                                                      .ToList();
+
+        // TODO: Move to SectionService
+        public List<RouteSection> GetAllRouteSections() => _dbContext.RouteSections.ToList();
 
         /// <summary>
         /// Gets all the route halls that are not archived. It includes the hall's sections as well.
@@ -122,13 +146,14 @@ namespace electric_mouse.Services
                                                                            .First(difficulty => difficulty.RouteDifficultyID == id);
 
         
-        private void AddBuilderToRoute(Route route, ApplicationUser builderToAdd)
+        private async void AddBuilderToRoute(Route route, ApplicationUser builderToAdd)
         {
             _dbContext.RouteUserRelations.Add(new RouteApplicationUserRelation
             {
                 User = builderToAdd,
                 Route = route
             });
+            await _dbContext.SaveChangesAsync();
         }
 
         /// <summary>
@@ -139,7 +164,6 @@ namespace electric_mouse.Services
         public void AddBuildersToRoute(Route route, params ApplicationUser[] buildersToAdd)
         {
             buildersToAdd.ToList().ForEach(user => AddBuilderToRoute(route, user));
-            _dbContext.SaveChanges();
         }
 
         public Route GetRouteWithDifficultyById(int routeId) => _dbContext.Routes
@@ -164,11 +188,8 @@ namespace electric_mouse.Services
                 routes = routes.Where(route => route.Type == type);
 
             if (!string.IsNullOrEmpty(creator))
-                routes = routes.Where
-                    (
-                        route => route.Creators
-                                      .Any(userRelation => userRelation.ApplicationUserRefId == creator)
-                    );
+                routes = routes.Where(route => route.Creators
+                                      .Any(userRelation => userRelation.ApplicationUserRefId == creator));
 
             List<Route> routeList = routes.ToList();
             routeList.ForEach(route => route.Sections = GetRouteSectionsByRouteId(route.ID));
@@ -215,5 +236,257 @@ namespace electric_mouse.Services
         }
 
         public Route GetRouteById(int routeId) => _dbContext.Routes.First(route => route.ID == routeId);
+
+        /// <summary>
+        /// Gets the route by id async. Returns null if the route was not found.
+        /// </summary>
+        /// <param name="routeId">The id of the route.</param>
+        public async Task<Route> GetRouteByIdAsync(int routeId) => await _dbContext.Routes.FirstOrDefaultAsync(route => route.ID == routeId);
+
+        /// <summary>
+        /// Checks whether the route is created by the specified user. It searches through the RouteUserRelations to find a matching routeId and userId.
+        /// </summary>
+        /// <param name="routeId">The id of the route.</param>
+        /// <param name="userId">The id of the user.</param>
+        public async Task<bool> IsRouteCreatedByUser(int routeId, string userId)
+        {
+            return await _dbContext.RouteUserRelations
+                                   .AnyAsync(relation => relation.RouteRefId == routeId
+                                                         && relation.ApplicationUserRefId == userId);
+        }
+        
+        /// <summary>
+        /// Gets the routeHall by its hallId.
+        /// </summary>
+        public RouteHall GetRouteHallById(int hallId) => _dbContext.RouteHalls.First(p => p.RouteHallID == hallId);
+
+        /// <summary>
+        /// Gets the routeSection that the route is in.
+        /// </summary>
+        public RouteSection GetRouteSectionThatRouteIsIn(int routeId)
+        {
+            RouteSectionRelation rs = _dbContext.RouteSectionRelations.First(t => t.RouteID == routeId);
+
+            return _dbContext.RouteSections.First(t => rs.RouteSectionID == t.RouteSectionID);
+        }
+
+        /// <summary>
+        /// Gets all the users that the route was created by.
+        /// </summary>
+        /// <param name="routeId">The route id.</param>
+        public List<ApplicationUser> GetRouteCreators(int routeId)
+        {
+            return _dbContext.RouteUserRelations
+                             .Where(relation => relation.Route.ID == routeId)
+                             .Select(relation => relation.User)
+                             .ToList();
+        }
+
+        //TODO: Move to CommentService
+        public List<Comment> GetCommentsInRoute(int routeId)
+        {
+            return _dbContext.Comments
+                             .Where(comment => comment.RouteID == routeId)
+                             .ToList();
+        }
+
+        //TODO: Move to AttachmentService
+        public string[] GetAllImagePathsInRoute(int routeId)
+        {
+            AttachmentPathRelation[] attachments =
+                _dbContext.AttachmentPathRelations
+                          .Include(relation => relation.RouteAttachment)
+                          .Where(attachment => attachment.RouteAttachment.RouteID == routeId)
+                          .ToArray();
+
+            return attachments?.Select(attachment => attachment.ImagePath)
+                              .ToArray();
+        }
+
+        //TODO: Move to AttachmentService
+        public string GetVideoUrlInRoute(int routeId)
+        {
+            return _dbContext.RouteAttachments.First(att => att.RouteID == routeId).VideoUrl;
+        }
+
+        //TODO: Move to AttachmentService
+        /// <summary>
+        /// Gets the attachment connected to the route. Is null if none is found.
+        /// </summary>
+        /// <param name="routeId">The route id.</param>
+        public RouteAttachment GetRouteAttachmentInRoute(int routeId)
+        {
+            return _dbContext.RouteAttachments.FirstOrDefault(att => att.RouteID == routeId);
+        }
+
+        // TODO: Move to UserService
+        public ApplicationUser GetUserById(string userId)
+        {
+            return _dbContext.Users.First(u => u.Id == userId);
+        }
+
+        /// <summary>
+        /// Archives the given route by id.
+        /// </summary>
+        /// <param name="routeId">The id of the route.</param>
+        public async void ArchiveRoute(int routeId)
+        {
+            Route route = await GetRouteByIdAsync(routeId);
+            route.Archived = true;
+
+            await _dbContext.SaveChangesAsync();
+        }
+
+        // TODO: Move to HallService
+        public int GetRouteHallIdWhereThereRouteIs(int routeId)
+        {
+            return _dbContext.RouteSectionRelations
+                                 .Include(rel => rel.RouteSection)
+                                 .Where(rel => rel.RouteID == routeId)
+                                 .Select(rel => rel.RouteSection.RouteHallID)
+                                 .First();
+        }
+
+        // TODO: Move to SectionService
+        public List<int> GetRouteSectionsIdsWhereRouteIs(int routeId)
+        {
+            return _dbContext.RouteSectionRelations
+                                                   .Where(relation => relation.RouteID == routeId)
+                                                   .Select(relation => relation.RouteSectionID)
+                                                   .ToList();
+        }
+
+
+        /// <summary>
+        /// Gets all image paths of the images related to the attachment of the route. The paths are tupled with their attachment id.
+        /// </summary>
+        /// <param name="routeId">The id of the route.</param>
+        // TODO: Move to AttachmentService
+        public Tuple<string, int>[] GetImagePathsWithIds(int routeId)
+        {
+            List<AttachmentPathRelation> relations = _dbContext.AttachmentPathRelations
+                                                                .Include(relation => relation.RouteAttachment)
+                                                                .Where(relation => relation.RouteAttachment.RouteID == routeId)
+                                                                .ToList();
+
+            IEnumerable<Tuple<string, int>> imagePathsWithIds =
+                relations?.Select(
+                    attachment => new Tuple<string, int>(attachment.ImagePath, attachment.AttachmentPathRelationID));
+
+            return imagePathsWithIds.ToArray();
+        }
+
+        /// <summary>
+        /// Removes the given sections from the route, by removing the section relations.
+        /// </summary>
+        /// <param name="routeId">The id of the route.</param>
+        /// <param name="sectionsToRemove">The ids of the sections that are to be removed.</param>
+        public async void RemoveSectionsFromRoute(int routeId, params int[] sectionsToRemove)
+        {
+            IQueryable<RouteSectionRelation> sectionsRelatedToRoute =
+                GetSectionRelationsRelatedToRoute(routeId);
+
+            List<RouteSectionRelation> sectionsToRemoveFromRoute = await sectionsRelatedToRoute.
+                Where(relation => !sectionsToRemove.Contains(relation.RouteSectionID)).ToListAsync();
+
+            _dbContext.RouteSectionRelations.RemoveRange(sectionsToRemoveFromRoute);
+            await _dbContext.SaveChangesAsync();
+        }
+
+        /// <summary>
+        /// Adds the given sections to the route.
+        /// </summary>
+        /// <param name="routeId">The id of the route.</param>
+        /// <param name="sectionsToAdd">The ids of the sections that are to be added.</param>
+        public async void AddSectionToRoute(int routeId, params int[] sectionsToAdd)
+        {
+            IQueryable<RouteSectionRelation> sectionsRelatedToRoute =
+                GetSectionRelationsRelatedToRoute(routeId);
+
+            List<int> sectionsToAddToRoute = sectionsToAdd
+                .Where(id => !sectionsRelatedToRoute.Any(relation => relation.RouteSectionID == id))
+                .ToList();
+
+            List<RouteSectionRelation> relationsToAdd = sectionsToAddToRoute.Select(sectionId => new RouteSectionRelation
+            {
+                Route = GetRouteById(routeId),
+                RouteSectionID = sectionId
+            }).ToList();
+
+            _dbContext.RouteSectionRelations.AddRange(relationsToAdd);
+            await _dbContext.SaveChangesAsync();
+        }
+
+        public async void RemoveBuildersFromRoute(int routeId, params string[] buildersToRemove)
+        {
+            IQueryable<RouteApplicationUserRelation> usersRelatedToRoute =
+                GetUsersRelatedToRoute(routeId);
+
+            List<RouteApplicationUserRelation> usersToRemove = usersRelatedToRoute
+                    .Where(relation => !buildersToRemove.Contains(relation.ApplicationUserRefId))
+                    .ToList();
+
+            _dbContext.RouteUserRelations.RemoveRange(usersToRemove);
+            await _dbContext.SaveChangesAsync();
+        }
+
+        public async void AddBuildersToRoute(int routeId, params string[] buildersToAdd)
+        {
+            IQueryable<RouteApplicationUserRelation> usersRelatedToRoute =
+                GetUsersRelatedToRoute(routeId);
+
+            List<string> usersToAdd =
+                buildersToAdd.Where(userId => !usersRelatedToRoute
+                                 .Any(relation => relation.ApplicationUserRefId == userId))
+                             .ToList();
+
+            List<RouteApplicationUserRelation> relationsToAdd = usersToAdd
+                .Select(userId => new RouteApplicationUserRelation
+                {
+                    Route = GetRouteById(routeId),
+                    ApplicationUserRefId = userId
+                }).ToList();
+
+            _dbContext.RouteUserRelations.AddRange(relationsToAdd);
+            await _dbContext.SaveChangesAsync();
+        }
+
+        private IQueryable<RouteApplicationUserRelation> GetUsersRelatedToRoute(int routeId)
+        {
+            return _dbContext.RouteUserRelations
+                             .Where(relation => relation.RouteRefId == routeId;
+        }
+
+        private IQueryable<RouteSectionRelation> GetSectionRelationsRelatedToRoute(int routeId)
+        {
+            return _dbContext.RouteSectionRelations
+                          .Where(relation => relation.RouteID == routeId);
+        }
+
+        /// <summary>
+        /// Removes the image relation to the route and deletes the image on the server.
+        /// </summary>
+        /// <param name="imagePathRelationIds"></param>
+        /// <param name="webRootPath"></param>
+        // TODO: Move to AttachmentService
+        public async void RemoveImagesFromRoute(string webRootPath, params int[] imagePathRelationIds)
+        {
+            // Get the path relations that should be deleted
+            List<AttachmentPathRelation> pathRelationsToRemove = _dbContext.AttachmentPathRelations
+                .Where(relation => imagePathRelationIds.Contains(relation.AttachmentPathRelationID))
+                .ToList();
+
+            // Get the paths to the images on the server that should be deleted
+            List<string> imagesOnServerToRemove = pathRelationsToRemove.Select(relation => relation.ImagePath).ToList();
+
+            // Delete the path relations
+            _dbContext.AttachmentPathRelations.RemoveRange(pathRelationsToRemove);
+            await _dbContext.SaveChangesAsync();
+
+            foreach (string path in imagesOnServerToRemove)
+            {
+                System.IO.File.Delete(Path.Combine(webRootPath, path));
+            }
+        }
     }
 }
