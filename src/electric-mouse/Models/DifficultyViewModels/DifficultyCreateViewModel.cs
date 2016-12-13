@@ -8,6 +8,6 @@ namespace electric_mouse.Models.DifficultyViewModels
         public IList<RouteDifficulty> Difficulties { get; set; }
         public string Color { get; set; }
         public string Name { get; set; }
-        public int ID { get; set; }
+        public int? ID { get; set; }
     }
 }

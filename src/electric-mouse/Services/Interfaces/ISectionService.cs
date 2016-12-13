@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using electric_mouse.Models.RouteItems;
 
-namespace electric_mouse.Services
+namespace electric_mouse.Services.Interfaces
 {
     public interface ISectionService
     {
