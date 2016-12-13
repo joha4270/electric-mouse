@@ -23,9 +23,9 @@ namespace electric_mouse.Services
         public List<RouteHall> GetActiveHalls()
         {
             return _dbContext.RouteHalls
-                    .Where(hall => hall.Archived == false)
-                    .Include(hall => hall.Sections)
-                    .ToList();
+                .Include(hall => hall.Sections)
+                .Where(hall => hall.Archived == false)
+                .ToList();
         }
 
 
@@ -45,7 +45,7 @@ namespace electric_mouse.Services
             _dbContext.SaveChanges();  
         }
 
-        public void DeleteHall( int? id)
+        public void DeleteHall(int? id)
         {
             var hall = _dbContext.RouteHalls
                 .Include(s => s.Sections)

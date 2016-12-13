@@ -52,7 +52,7 @@ namespace electric_mouse.Controllers
         [HttpPost]
         public async Task<IActionResult> Delete(HallCreateViewModel model)
         {
-            if (model.ID!=null)
+            if (model.ID != null)
             {
                 _hallService.DeleteHall(model.ID);
             }
