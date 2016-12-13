@@ -9,12 +9,13 @@ using electric_mouse.Models;
 using electric_mouse.Models.Relations;
 using electric_mouse.Models.RouteItems;
 using electric_mouse.Models.RouteViewModels;
+using electric_mouse.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Models;
 
 namespace electric_mouse.Services
 {
-    public class RouteService
+    public class RouteService : IRouteService
     {
         private readonly ApplicationDbContext _dbContext;
 
@@ -454,7 +455,7 @@ namespace electric_mouse.Services
         private IQueryable<RouteApplicationUserRelation> GetUsersRelatedToRoute(int routeId)
         {
             return _dbContext.RouteUserRelations
-                             .Where(relation => relation.RouteRefId == routeId;
+                             .Where(relation => relation.RouteRefId == routeId);
         }
 
         private IQueryable<RouteSectionRelation> GetSectionRelationsRelatedToRoute(int routeId)

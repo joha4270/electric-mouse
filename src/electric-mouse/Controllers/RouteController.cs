@@ -4,20 +4,15 @@ using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
-using electric_mouse.Data;
 using electric_mouse.Models;
-using electric_mouse.Models.Api;
 using electric_mouse.Models.RouteItems;
 using electric_mouse.Models.RouteViewModels;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Authorization;
 using electric_mouse.Services;
 using Microsoft.AspNetCore.Hosting;
-using System.IO;
-using electric_mouse.Models.Relations;
+using electric_mouse.Services.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Models;
 
@@ -25,28 +20,24 @@ namespace electric_mouse.Controllers
 {
     public class RouteController : Controller
     {
-        private ApplicationDbContext _dbContext;
-        private readonly UserManager<ApplicationUser> _userManager;
-        private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly ILogger _logger;
         private readonly IHostingEnvironment _environment;
-        private readonly AttachmentHandler _attachmentHandler;
-        private readonly RouteService _routeService;
+        private readonly IUserService _userService;
+        private readonly IAttachmentHandler _attachmentHandler;
+        private readonly IRouteService _routeService;
 
         public RouteController
             (
-            UserManager<ApplicationUser> userManager, 
-            SignInManager<ApplicationUser> signInManager, 
             ILoggerFactory logger,
-            IHostingEnvironment environment, 
-            AttachmentHandler attachmentHandler,
-            RouteService routeService
+            IHostingEnvironment environment,
+            IUserService userService, 
+            IAttachmentHandler attachmentHandler,
+            IRouteService routeService
             )
         {
-            _userManager = userManager;
-            _signInManager = signInManager;
             _logger = logger.CreateLogger<RouteController>();
             _environment = environment;
+            _userService = userService;
             _attachmentHandler = attachmentHandler;
             _routeService = routeService;
         }
@@ -55,7 +46,7 @@ namespace electric_mouse.Controllers
         // RouteCreate name instead? - We'll have to implement hall etc create seperately
         public async Task<IActionResult> Create()
         {
-            ApplicationUser user = await _userManager.GetUserAsync(User);
+            ApplicationUser user = await _userService.GetUserAsync(User);
 
             RouteCreateViewModel model = new RouteCreateViewModel
             {
@@ -99,7 +90,7 @@ namespace electric_mouse.Controllers
                         (
                             model.Builders
                                 .Distinct()
-                                .Select(userId => _userManager.FindByIdAsync(userId))
+                                .Select(userId => _userService.FindByIdAsync(userId))
                         )
                 )
                 .Where(user => user != null);
@@ -222,11 +213,11 @@ namespace electric_mouse.Controllers
 
 	        ApplicationUser user = null; // TODO: This makes no sense
 	        bool userIsAdmin = false;
-            if (_signInManager.IsSignedIn(User))
+            if (_userService.IsSignedIn(User))
             {
-                user = await _userManager.GetUserAsync(User);
-	            userIsAdmin = await _userManager.IsInRoleAsync(user, "Administrator");
-	            creatorOrAdmin = creators.Contains(user) || (await _userManager.IsInRoleAsync(user, RoleHandler.Admin));
+                user = await _userService.GetUserAsync(User);
+                userIsAdmin = await _userService.IsInRoleAsync(user, RoleHandler.Admin);
+                creatorOrAdmin = creators.Contains(user) || (await _userService.IsInRoleAsync(user, RoleHandler.Admin));
             }
 
             List<Comment> allCommentsInRoute = _routeService.GetCommentsInRoute(id);
@@ -256,7 +247,7 @@ namespace electric_mouse.Controllers
                 Comments = comments,
                 Images = imagePaths,
                 VideoUrl = url,
-                UserIsLoggedIn = _signInManager.IsSignedIn(User) // TODO: This makes no sense
+                UserIsLoggedIn = _userService.IsSignedIn(User) // TODO: This makes no sense
             };
 
 	        return model;
@@ -268,10 +259,9 @@ namespace electric_mouse.Controllers
         public async Task<IActionResult> Archive(int id)
         {
             //Cannot be null as Role requires user being logged in
-            ApplicationUser user = await _userManager.GetUserAsync(User);
-            if (
-                await _routeService.IsRouteCreatedByUser(id, user.Id) ||
-                await _userManager.IsInRoleAsync(user, "Administrator"))
+            ApplicationUser user = await _userService.GetUserAsync(User);
+            if (!(await _routeService.IsRouteCreatedByUser(id, user.Id) ||
+                await _userService.IsInRoleAsync(user, RoleHandler.Admin)))
             {
                 HttpContext.Response.StatusCode = (int) HttpStatusCode.Forbidden;
 
@@ -287,9 +277,9 @@ namespace electric_mouse.Controllers
         [Authorize(Roles = RoleHandler.Post)]
         public async Task<IActionResult> Update(int id)
         {
-            ApplicationUser user = await _userManager.GetUserAsync(User);
+            ApplicationUser user = await _userService.GetUserAsync(User);
             if (!(await _routeService.IsRouteCreatedByUser(id, user.Id) ||
-                  await _userManager.IsInRoleAsync(user, "Administrator")))
+                  await _userService.IsInRoleAsync(user, RoleHandler.Admin)))
             {
                 HttpContext.Response.StatusCode = (int) HttpStatusCode.Forbidden;
 
@@ -331,11 +321,11 @@ namespace electric_mouse.Controllers
         public async Task<IActionResult> Update(RouteCreateViewModel model)
         {
             //Cannot be null as Role requires user being logged in
-            ApplicationUser user = await _userManager.GetUserAsync(User);
+            ApplicationUser user = await _userService.GetUserAsync(User);
             if (
                 !(ModelState.IsValid && (
                 await _routeService.IsRouteCreatedByUser(model.UpdateID, user.Id) ||
-                await _userManager.IsInRoleAsync(user, "Administrator"))))
+                await _userService.IsInRoleAsync(user, RoleHandler.Admin))))
             {
                 HttpContext.Response.StatusCode = (int)HttpStatusCode.Forbidden;
 
@@ -374,8 +364,8 @@ namespace electric_mouse.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteRoute(int id)
         {
-            ApplicationUser admin = await _userManager.GetUserAsync(User);
-            if (await _userManager.IsInRoleAsync(admin, RoleHandler.Admin))
+            ApplicationUser admin = await _userService.GetUserAsync(User);
+            if (await _userService.IsInRoleAsync(admin, RoleHandler.Admin))
                 _routeService.RemoveRoute(id);;
 
             return RedirectToAction(nameof(List), "Route", new { archived = "true" });
@@ -385,8 +375,8 @@ namespace electric_mouse.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> MakeActive(int id)
         {
-            ApplicationUser admin = await _userManager.GetUserAsync(User);
-            if (await _userManager.IsInRoleAsync(admin, RoleHandler.Admin))
+            ApplicationUser admin = await _userService.GetUserAsync(User);
+            if (await _userService.IsInRoleAsync(admin, RoleHandler.Admin))
             {
                 _routeService.ActivateRoute(id);
             }

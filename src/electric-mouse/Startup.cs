@@ -14,6 +14,7 @@ using Microsoft.Extensions.Logging;
 using electric_mouse.Data;
 using electric_mouse.Models;
 using electric_mouse.Services;
+using electric_mouse.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.Options;
@@ -69,8 +70,6 @@ namespace electric_mouse
                     .AddTransient<ISmsSender, AuthMessageSender>()
                     .AddTransient<FacebookAPI>()
                     .AddTransient<AttachmentHandler>()
-                    .AddTransient<IDifficultyService, DifficultyService>()
-                    .AddTransient<IHallService, HallService>()
                     .AddTransient<ICommentService, CommentService>()
                     .AddTransient<ISectionService, SectionService>();
             
