@@ -8,6 +8,6 @@ namespace electric_mouse.Services.Interfaces
     {
         void AddHall(string name, RouteType type);
         List<RouteHall> GetActiveHalls();
-        void DeleteHall(int id);
+        void DeleteHall(int? id);
     }
 }

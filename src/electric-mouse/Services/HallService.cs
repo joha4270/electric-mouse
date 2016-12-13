@@ -31,24 +31,23 @@ namespace electric_mouse.Services
 
         public void AddHall(string name, RouteType type)
         {
-            if (!string.IsNullOrEmpty(name))
+            
+            type--;
+            RouteHall hall = new RouteHall
             {
-                type--;
-                RouteHall hall = new RouteHall
-                {
-                    Name = name,
-                    Sections = new List<RouteSection>()
-                };
+                Name = name,
+                Sections = new List<RouteSection>()
+            };
 
-                if (type >= 0)
-                    hall.ExpectedType = type;
+            if (type >= 0)
+                hall.ExpectedType = type;
 
-                _dbContext.RouteHalls.Add(hall);
-                _dbContext.SaveChanges();
-            }
+            _dbContext.RouteHalls.Add(hall);
+            _dbContext.SaveChanges();
+            
         }
 
-        public void DeleteHall( int id)
+        public void DeleteHall( int? id)
         {
             var hall = _dbContext.RouteHalls
                 .Include(s => s.Sections)

@@ -35,7 +35,10 @@ namespace electric_mouse.Controllers
         [HttpPost]
         public async Task<IActionResult> Create(HallCreateViewModel model)
         {
-            _hallService.AddHall(model.Name,model.Type); 
+            if (!string.IsNullOrEmpty(model.Name)&& ((int)model.Type<= 2))
+            {
+                _hallService.AddHall(model.Name, model.Type);
+            }
 
             return RedirectToAction(nameof(Create), "Hall");
         }
@@ -43,7 +46,10 @@ namespace electric_mouse.Controllers
         [HttpPost]
         public async Task<IActionResult> Delete(HallCreateViewModel model)
         {
-            _hallService.DeleteHall(model.ID);
+            if (model.ID!=null)
+            {
+                _hallService.DeleteHall(model.ID);
+            }
 
             return RedirectToAction(nameof(Create), "Hall");
         }
