@@ -36,6 +36,7 @@ namespace electric_mouse.Controllers
         [HttpPost]
         public async Task<IActionResult> Create(HallCreateViewModel model)
         {
+            // Checks if string is empty and checks if RouteType is less or equal to the max value of the enum RouteType
             if (!string.IsNullOrEmpty(model.Name)
                 && ((int) model.Type <= Enum.GetValues(typeof(RouteType))
                 .Cast<RouteType>()
