@@ -42,6 +42,11 @@ namespace electric_mouse.Controllers
         {
             return _signInManager.IsSignedIn(principal);
         }
+
+        public Task<ApplicationUser> FindByIdAsync(string userId)
+        {
+            return _userManager.FindByIdAsync(userId);
+        }
     }
 
     public interface IUserService
@@ -49,6 +54,7 @@ namespace electric_mouse.Controllers
         Task<ApplicationUser> GetUserAsync(ClaimsPrincipal principal);
         Task<bool> IsInRoleAsync(ApplicationUser user, string role);
         bool IsSignedIn(ClaimsPrincipal principal);
+        Task<ApplicationUser> FindByIdAsync(string userId);
     }
 
     public class CommentsController : Controller
