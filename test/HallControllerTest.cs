@@ -14,8 +14,7 @@ using Xunit;
 namespace test
 {
     public class HallControllerTest
-    {
-      
+    {      
 
         [Fact]
         public void List()
@@ -38,10 +37,10 @@ namespace test
         }
 
 
-        #region Create tests
+        #region Create Tests
 
         [Fact]
-        public async Task Create_Checks_If_Normal_input_works()
+        public async Task Create_vaild_Input_NameAndType_Returns_RedirectToActionResult()
         {
             // Arrange
             var mockService = new Mock<IHallService>();
@@ -59,10 +58,8 @@ namespace test
             mockService.Verify(service => service.AddHall(It.IsAny<string>(), It.IsAny<RouteType>()), Times.Once); 
         }
 
-
-
         [Fact]
-        public async Task AddHall_Name_Is_Empty_String()
+        public async Task Create_NameIsInvalid()
         {
             // Arrange
             var mockService = new Mock<IHallService>();
@@ -82,7 +79,7 @@ namespace test
 
 
         [Fact]
-        public async Task AddHall_Create_RoutType_invilid_input()
+        public async Task Create_RoutTypeInvilidInput()
         {
             // Arrange
             var mockService = new Mock<IHallService>();
@@ -102,10 +99,10 @@ namespace test
 
         #endregion
 
-        #region Delete_Hall
+        #region Delete
 
         [Fact]
-        public async Task Delete_hall_Checks_If_Normal_input_works()
+        public async Task Delete_IDVaildInput()
         {
             // Arrange
             var mockService = new Mock<IHallService>();
@@ -124,7 +121,7 @@ namespace test
         }
 
         [Fact]
-        public async Task Delete_hall_inputnullasID()
+        public async Task Delete_InputNullasID()
         {
             // Arrange
             var mockService = new Mock<IHallService>();

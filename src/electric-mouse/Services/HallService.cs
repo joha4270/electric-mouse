@@ -22,16 +22,15 @@ namespace electric_mouse.Services
 
         public List<RouteHall> GetActiveHalls()
         {
-            IQueryable<RouteHall> halls = _dbContext.RouteHalls
-                .Where(hall => hall.Archived == false)
-                .Include(hall => hall.Sections);
-            return halls.ToList();
+            return _dbContext.RouteHalls
+                    .Where(hall => hall.Archived == false)
+                    .Include(hall => hall.Sections)
+                    .ToList();
         }
 
 
         public void AddHall(string name, RouteType type)
         {
-            
             type--;
             RouteHall hall = new RouteHall
             {
@@ -43,8 +42,7 @@ namespace electric_mouse.Services
                 hall.ExpectedType = type;
 
             _dbContext.RouteHalls.Add(hall);
-            _dbContext.SaveChanges();
-            
+            _dbContext.SaveChanges();  
         }
 
         public void DeleteHall( int? id)

@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using electric_mouse.Services.Interfaces;
+using Models;
 
 namespace electric_mouse.Controllers
 {
@@ -35,7 +36,11 @@ namespace electric_mouse.Controllers
         [HttpPost]
         public async Task<IActionResult> Create(HallCreateViewModel model)
         {
-            if (!string.IsNullOrEmpty(model.Name)&& ((int)model.Type<= 2))
+            if (!string.IsNullOrEmpty(model.Name)
+                && ((int) model.Type <= Enum.GetValues(typeof(RouteType))
+                .Cast<RouteType>()
+                .Distinct()
+                .Count()))
             {
                 _hallService.AddHall(model.Name, model.Type);
             }
