@@ -45,18 +45,10 @@ namespace electric_mouse
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            // Add framework services.
-            //services.AddDbContext<ApplicationDbContext>(options =>
-            //    options.UseSqlite(Configuration.GetConnectionString("DefaultConnection")));
-
-            //services.AddDbContext<RouteContext>(options =>
-            //    options.UseSqlite(Configuration.GetConnectionString("DefaultConnection")));
 
             services.AddEntityFramework()
                 .AddDbContext<ApplicationDbContext>(options =>
                         options.UseSqlite(Configuration.GetConnectionString("DefaultConnection")));
-                /*.AddDbContext<RouteContext>(options =>
-                options.UseSqlite(Configuration.GetConnectionString("DefaultConnection")));*/
 
             services.AddIdentity<ApplicationUser, IdentityRole>()
                 .AddEntityFrameworkStores<ApplicationDbContext>()
@@ -67,12 +59,13 @@ namespace electric_mouse
 
             // Add application services.
             services.AddTransient<IEmailSender, AuthMessageSender>()
-                    .AddTransient<ISmsSender, AuthMessageSender>()
-                    .AddTransient<FacebookAPI>()
-                    .AddTransient<AttachmentHandler>()
-                    .AddTransient<IDifficultyService, DifficultyService>()
-                    .AddTransient<IHallService, HallService>()
-                    .AddTransient<ISectionService, SectionService>();
+	            .AddTransient<ISmsSender, AuthMessageSender>()
+	            .AddTransient<FacebookAPI>()
+	            .AddTransient<AttachmentHandler>()
+	            .AddTransient<IApiService, ApiService>()
+	            .AddTransient<IDifficultyService, DifficultyService>()
+	            .AddTransient<IHallService, HallService>()
+	            .AddTransient<ISectionService, SectionService>();
             
             services.AddSingleton<LanguageCache>();
         }
