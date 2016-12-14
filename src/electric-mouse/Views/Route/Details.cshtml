@@ -43,7 +43,7 @@
         <div class="col s3"><h1>@Model.Route.RouteID</h1></div>
         <div class="col s9">@(Model.Hall.Name + (Model.Hall.Archived? strings["Hall_Archived"] : ""))</div>
         <div class="col s9" style="font-size:0.75em; padding-top: 5px">@strings["Route_Section"]</div>
-        <div class="col s9">@Model.Section.Name</div>
+        <div class="col s9">@string.Join(", ", Model.Sections.Select(x => x.Name))</div>
     </div>
     <div class="row small_margin">
         <div class="col s3" style="font-size:0.75em;">@strings["Route_Difficulty"]</div>
