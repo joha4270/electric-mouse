@@ -9,6 +9,8 @@ using electric_mouse.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using electric_mouse.Services.Interfaces;
+using Models;
 
 namespace electric_mouse.Controllers
 {
@@ -17,39 +19,31 @@ namespace electric_mouse.Controllers
     {
         private ApplicationDbContext _dbContext;
 
-        public HallController(ApplicationDbContext dbContext)
+        private IHallService _hallService;
+
+        public HallController(IHallService hallService )
         {
-            _dbContext = dbContext;
+            
+            _hallService = hallService;
         }
 
         public IActionResult Create()
-        {
-            IQueryable<RouteHall> halls = _dbContext.RouteHalls
-                .Where(hall => hall.Archived == false)
-                .Include(s => s.Sections);
-            
-            HallCreateViewModel model = new HallCreateViewModel { Halls = halls.ToList() };
+        {    
+            HallCreateViewModel model = new HallCreateViewModel { Halls = _hallService.GetActiveHalls() };
             return View(model);
         }
 
         [HttpPost]
         public async Task<IActionResult> Create(HallCreateViewModel model)
         {
-            if (!string.IsNullOrEmpty(model.Name))
+            // Checks if string is empty and checks if RouteType is less or equal to the max value of the enum RouteType
+            if (!string.IsNullOrEmpty(model.Name)
+                && ((int) model.Type <= Enum.GetValues(typeof(RouteType))
+                .Cast<RouteType>()
+                .Distinct()
+                .Count()))
             {
-                model.Type--;
-                RouteHall hall = new RouteHall
-                {
-                    Name = model.Name,
-                    Sections = new List<RouteSection>()
-                };
-
-                if (model.Type >= 0)
-                {
-                    hall.ExpectedType = model.Type;
-                }
-                _dbContext.RouteHalls.Add(hall);
-                _dbContext.SaveChanges();
+                _hallService.AddHall(model.Name, model.Type);
             }
 
             return RedirectToAction(nameof(Create), "Hall");
@@ -58,12 +52,9 @@ namespace electric_mouse.Controllers
         [HttpPost]
         public async Task<IActionResult> Delete(HallCreateViewModel model)
         {
-            var hall = _dbContext.RouteHalls.Include(s => s.Sections).First(h => h.RouteHallID == model.ID);
-
-            if (hall.Sections?.Count(s => s.Archived == false) <= 0)
+            if (model.ID != null)
             {
-                hall.Archived = true;
-                _dbContext.SaveChanges();
+                _hallService.DeleteHall(model.ID);
             }
 
             return RedirectToAction(nameof(Create), "Hall");

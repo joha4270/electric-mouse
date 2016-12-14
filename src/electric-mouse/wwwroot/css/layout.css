@@ -5,18 +5,18 @@ html {
 
   img { max-width: 100%; }
 
-	@media only screen and (max-width: 700px), (min-width: 576px) and (max-width: 800px) {
-		.app_note {display: none;}
-		/*.container {width: 100% !important;}*/
-	}
+@media only screen and (max-width: 700px), (min-width: 576px) and (max-width: 800px) {
+  .app_id {display: none;}
+  /*.container {width: 100% !important;}*/
+}
 
-	@media only screen and (max-width: 576px) {
-		.app_date {display: none;}
-		.container th {text-align: center;}
-	}
-  @media only screen and (max-width: 425px) {
-    .app_color {display: none;}
-  }
+@media only screen and (max-width: 576px) {
+  .app_section {display: none;}
+  .container th {text-align: center;}
+}
+@media only screen and (max-width: 425px) {
+  .app_note {display: none;}
+}
 
 @media only screen and (min-width: 993px) {
   .container {width: 80%;}
