@@ -90,7 +90,7 @@ namespace electric_mouse.Controllers
                 )
                 .Where(user => user != null);
 
-            _routeService.AddBuildersToRoute(route, builders.ToArray());
+            _routeService.AddBuildersToRoute(route, builders.ToList());
             
             // Add the image(s) and imagepaths to the database, and the videourl
             string[] relativeImagePaths = await UploadImages();
@@ -334,15 +334,15 @@ namespace electric_mouse.Controllers
             route.Date = DateTime.ParseExact(model.Date, "dd-MM-yyyy", CultureInfo.InvariantCulture);
 
             // Remove and add sections (update)
-            _routeService.RemoveSectionsFromRoute(model.UpdateID, model.RouteSectionID.ToArray());
-            _routeService.AddSectionToRoute(model.UpdateID, model.RouteSectionID.ToArray());
+            _routeService.RemoveSectionsFromRoute(model.UpdateID, model.RouteSectionID);
+            _routeService.AddSectionToRoute(model.UpdateID, model.RouteSectionID);
 
             // Remove and add builders (update)
-            _routeService.RemoveBuildersFromRoute(model.UpdateID, model.Builders.ToArray());
-            _routeService.AddBuildersToRoute(model.UpdateID, model.Builders.ToArray());
+            _routeService.RemoveBuildersFromRoute(model.UpdateID, model.Builders);
+            _routeService.AddBuildersToRoute(model.UpdateID, model.Builders);
 
             // Remove images if the user deleted them on website
-            _routeService.RemoveImagesFromRoute(_environment.WebRootPath, model.ImagePathRelationID.ToArray());
+            _routeService.RemoveImagesFromRoute(_environment.WebRootPath, model.ImagePathRelationID);
 
             // If the video url is updated we want to update this in the attachment
             _routeService.UpdateVideoUrlInAttachment(model.AttachmentID, model.VideoUrl);

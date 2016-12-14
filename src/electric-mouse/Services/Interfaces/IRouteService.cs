@@ -67,7 +67,7 @@ namespace electric_mouse.Services.Interfaces
         /// </summary>
         /// <param name="route">The route to which the builder is added.</param>
         /// <param name="buildersToAdd">The builders that is to be added to the route.</param>
-        void AddBuildersToRoute(Route route, params ApplicationUser[] buildersToAdd);
+        void AddBuildersToRoute(Route route, IList<ApplicationUser> buildersToAdd);
 
         Route GetRouteWithDifficultyById(int routeId);
 
@@ -146,17 +146,17 @@ namespace electric_mouse.Services.Interfaces
         /// </summary>
         /// <param name="routeId">The id of the route.</param>
         /// <param name="sectionsToRemove">The ids of the sections that are to be removed.</param>
-        void RemoveSectionsFromRoute(int routeId, params int[] sectionsToRemove);
+        void RemoveSectionsFromRoute(int routeId, IList<int> sectionsToRemove);
 
         /// <summary>
         /// Adds the given sections to the route.
         /// </summary>
         /// <param name="routeId">The id of the route.</param>
         /// <param name="sectionsToAdd">The ids of the sections that are to be added.</param>
-        void AddSectionToRoute(int routeId, params int[] sectionsToAdd);
+        void AddSectionToRoute(int routeId, IList<int> sectionsToAdd);
 
-        void RemoveBuildersFromRoute(int routeId, params string[] buildersToRemove);
-        void AddBuildersToRoute(int routeId, params string[] buildersToAdd);
+        void RemoveBuildersFromRoute(int routeId, IList<string> buildersToRemove);
+        void AddBuildersToRoute(int routeId, IList<string> buildersToAdd);
 
         /// <summary>
         /// Removes the image relation to the route and deletes the image on the server.
@@ -164,6 +164,6 @@ namespace electric_mouse.Services.Interfaces
         /// <param name="imagePathRelationIds"></param>
         /// <param name="webRootPath"></param>
         // TODO: Move to AttachmentService
-        void RemoveImagesFromRoute(string webRootPath, params int[] imagePathRelationIds);
+        void RemoveImagesFromRoute(string webRootPath, IList<int> imagePathRelationIds);
     }
 }

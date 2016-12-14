@@ -162,7 +162,7 @@ namespace electric_mouse.Services
         /// </summary>
         /// <param name="route">The route to which the builder is added.</param>
         /// <param name="buildersToAdd">The builders that is to be added to the route.</param>
-        public void AddBuildersToRoute(Route route, params ApplicationUser[] buildersToAdd)
+        public void AddBuildersToRoute(Route route, IList<ApplicationUser> buildersToAdd)
         {
             buildersToAdd.ToList().ForEach(user => AddBuilderToRoute(route, user));
         }
@@ -382,7 +382,7 @@ namespace electric_mouse.Services
         /// </summary>
         /// <param name="routeId">The id of the route.</param>
         /// <param name="sectionsToRemove">The ids of the sections that are to be removed.</param>
-        public async void RemoveSectionsFromRoute(int routeId, params int[] sectionsToRemove)
+        public async void RemoveSectionsFromRoute(int routeId, IList<int> sectionsToRemove)
         {
             IQueryable<RouteSectionRelation> sectionsRelatedToRoute =
                 GetSectionRelationsRelatedToRoute(routeId);
@@ -399,7 +399,7 @@ namespace electric_mouse.Services
         /// </summary>
         /// <param name="routeId">The id of the route.</param>
         /// <param name="sectionsToAdd">The ids of the sections that are to be added.</param>
-        public async void AddSectionToRoute(int routeId, params int[] sectionsToAdd)
+        public async void AddSectionToRoute(int routeId, IList<int> sectionsToAdd)
         {
             IQueryable<RouteSectionRelation> sectionsRelatedToRoute =
                 GetSectionRelationsRelatedToRoute(routeId);
@@ -418,7 +418,7 @@ namespace electric_mouse.Services
             await _dbContext.SaveChangesAsync();
         }
 
-        public async void RemoveBuildersFromRoute(int routeId, params string[] buildersToRemove)
+        public async void RemoveBuildersFromRoute(int routeId, IList<string> buildersToRemove)
         {
             IQueryable<RouteApplicationUserRelation> usersRelatedToRoute =
                 GetUsersRelatedToRoute(routeId);
@@ -431,7 +431,7 @@ namespace electric_mouse.Services
             await _dbContext.SaveChangesAsync();
         }
 
-        public async void AddBuildersToRoute(int routeId, params string[] buildersToAdd)
+        public async void AddBuildersToRoute(int routeId, IList<string> buildersToAdd)
         {
             IQueryable<RouteApplicationUserRelation> usersRelatedToRoute =
                 GetUsersRelatedToRoute(routeId);
@@ -470,7 +470,7 @@ namespace electric_mouse.Services
         /// <param name="imagePathRelationIds"></param>
         /// <param name="webRootPath"></param>
         // TODO: Move to AttachmentService
-        public async void RemoveImagesFromRoute(string webRootPath, params int[] imagePathRelationIds)
+        public async void RemoveImagesFromRoute(string webRootPath, IList<int> imagePathRelationIds)
         {
             // Get the path relations that should be deleted
             List<AttachmentPathRelation> pathRelationsToRemove = _dbContext.AttachmentPathRelations
