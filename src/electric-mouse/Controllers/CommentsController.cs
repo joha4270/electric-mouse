@@ -13,50 +13,14 @@ using System.Net;
 using System.Security.Claims;
 using electric_mouse.Services.Interfaces;
 
-// For more information on enabling MVC for empty projects, visit http://go.microsoft.com/fwlink/?LinkID=397860
-
 namespace electric_mouse.Controllers
 {
-    public class UserService : IUserService
-    {
-        private readonly UserManager<ApplicationUser> _userManager;
-        private readonly SignInManager<ApplicationUser> _signInManager;
-
-        public UserService(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager)
-        {
-            _userManager = userManager;
-            _signInManager = signInManager;
-        }
-
-        public Task<ApplicationUser> GetUserAsync(ClaimsPrincipal principal)
-        {
-            return _userManager.GetUserAsync(principal);
-        }
-
-        public Task<bool> IsInRoleAsync(ApplicationUser user, string role)
-        {
-            return _userManager.IsInRoleAsync(user, role);
-        }
-
-        public bool IsSignedIn(ClaimsPrincipal principal)
-        {
-            return _signInManager.IsSignedIn(principal);
-        }
-    }
-
-    public interface IUserService
-    {
-        Task<ApplicationUser> GetUserAsync(ClaimsPrincipal principal);
-        Task<bool> IsInRoleAsync(ApplicationUser user, string role);
-        bool IsSignedIn(ClaimsPrincipal principal);
-    }
-
     public class CommentsController : Controller
     {
-        private IUserService _userService;
+        private readonly IUserService _userService;
         private readonly ICommentService _commentService;
 
-		public CommentsController (IUserService userService, ICommentService commentService)
+		public CommentsController(IUserService userService, ICommentService commentService)
 		{
             _commentService = commentService;
 		    _userService = userService;
@@ -66,41 +30,41 @@ namespace electric_mouse.Controllers
 		[HttpPost]
 		[ValidateAntiForgeryToken]
 		[Authorize(Roles = RoleHandler.Post)]
-		public async Task<IActionResult> Reply (CommentViewModel model)
+		public async Task<IActionResult> Reply(CommentViewModel model)
 		{
 			ApplicationUser user = await _userService.GetUserAsync(User);
             _commentService.AddComment(user, model.RouteID, model.CommentID, model.Content);
-			return RedirectToAction(nameof(RouteController.List), "Route");
+
+			return RedirectToAction(nameof(RouteController.Details), "Route", new { id = model.RouteID });
 		}
 
 
 		[HttpPost]
 		[ValidateAntiForgeryToken]
 		[Authorize(Roles = RoleHandler.Post)]
-		public async Task<IActionResult> AddComment (int routeID, string content)
+		public async Task<IActionResult> AddComment(int routeID, string content)
 		{
             ApplicationUser user = await _userService.GetUserAsync(User);
             _commentService.AddComment(user, routeID, 0, content);
-			return RedirectToAction(nameof(RouteController.List), "Route");
+
+			return RedirectToAction(nameof(RouteController.Details), "Route", new { id = routeID});
 		}
 
-
-		public async Task<IActionResult> Delete (CommentViewModel model)
+	    [HttpPost]
+	    [ValidateAntiForgeryToken]
+	    public async Task<IActionResult> Delete(CommentViewModel model)
 		{
-			ApplicationUser user = null;
-			bool userIsAdmin = false;
-			bool userIsOwner = false;
 			if (_userService.IsSignedIn(User))
 			{
-				user = await _userService.GetUserAsync(User);
-				userIsAdmin = await _userService.IsInRoleAsync(user, "Administrator");
-				userIsOwner = user.Id == model.ApplicationUserRefId;
-			}
+				ApplicationUser user = await _userService.GetUserAsync(User);
+				bool userIsAdmin = await _userService.IsInRoleAsync(user, RoleHandler.Admin);
+				bool userIsOwner = user.Id == model.ApplicationUserRefId;
 
-			if (userIsOwner || userIsAdmin)
-			{
-                _commentService.DeleteComment(model.CommentID);
-				return RedirectToAction(nameof(RouteController.Details), "Route", new { id = 1 });
+				if (userIsOwner || userIsAdmin)
+				{
+					_commentService.DeleteComment(model.CommentID);
+					return RedirectToAction(nameof(RouteController.Details), "Route", new { id = model.RouteID });
+				}
 			}
 
 			HttpContext.Response.StatusCode = (int) HttpStatusCode.Forbidden;

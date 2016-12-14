@@ -31,7 +31,7 @@ namespace test
             var redirectToActionResult = Assert.IsType<RedirectToActionResult>(result);
             Assert.Equal("Route", redirectToActionResult.ControllerName);
             Assert.Equal("List", redirectToActionResult.ActionName);
-            mockService.Verify(service => service.AddComment(It.IsAny< ApplicationUser>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>()), Times.Once); // checks that the sectionService.AddSection was called once.
+            mockService.Verify(service => service.AddComment(It.IsAny< ApplicationUser>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>()), Times.Once);
         }
 
         [Theory]
@@ -51,7 +51,7 @@ namespace test
             var redirectToActionResult = Assert.IsType<RedirectToActionResult>(result);
             Assert.Equal("Route", redirectToActionResult.ControllerName);
             Assert.Equal("List", redirectToActionResult.ActionName);
-            mockService.Verify(service => service.AddComment(It.IsAny<ApplicationUser>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>()), Times.Once); // checks that the sectionService.AddSection was called once.
+            mockService.Verify(service => service.AddComment(It.IsAny<ApplicationUser>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>()), Times.Once);
         }
 
         [Fact]
@@ -70,7 +70,7 @@ namespace test
             var redirectToActionResult = Assert.IsType<RedirectToActionResult>(result);
             Assert.Equal("Route", redirectToActionResult.ControllerName);
             Assert.Equal("List", redirectToActionResult.ActionName);
-            mockService.Verify(service => service.DeleteComment(It.Is<int>(i => i == 1)), Times.Once); // checks that the sectionService.AddSection was called once.
+            mockService.Verify(service => service.DeleteComment(It.Is<int>(i => i == 1)), Times.Once);
         }
 
     }

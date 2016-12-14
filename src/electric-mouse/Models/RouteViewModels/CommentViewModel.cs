@@ -19,9 +19,5 @@ namespace electric_mouse.Models
 		public bool UserIsLoggedIn { get; set; }
 		public bool EditRights { get; set; }
 		public bool DeletionRights { get; set; }
-		public CommentViewModel ()
-		{
-
-		}
 	}
 }
