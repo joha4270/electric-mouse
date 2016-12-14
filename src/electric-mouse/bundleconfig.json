@@ -1,0 +1,30 @@
+﻿[
+  {
+    "outputFileName": "wwwroot/css/layout.min.css",
+    // An array of relative input file paths. Globbing patterns supported
+    "inputFiles": [
+	    "wwwroot/css/layout.css",
+		"wwwroot/css/jquery.filter.css",
+	    "wwwroot/css/bootstrap-social.css",
+		"wwwroot/css/themes/jquery.filer-dragdropbox-theme.css",
+		"wwwroot/css/materialize-tags.css",
+		"wwwroot/spectrum.css",
+		"wwwroot/fonts/jquery.filer-icons/jquery-filer.css"
+    ]
+  },
+  {
+    "outputFileName": "wwwroot/js/code.min.js",
+    "inputFiles": [
+		"wwwroot/js/code.js",
+		"wwwroot/js/jquery.filer.min.js",
+		"wwwroot/js/spectrum.js"
+    ],
+    // Optionally specify minification options
+    "minify": {
+      "enabled": true,
+      "renameLocals": true
+    },
+    // Optinally generate .map file
+    "sourceMap": false
+  }
+]
