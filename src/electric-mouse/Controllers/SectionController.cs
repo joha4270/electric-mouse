@@ -15,7 +15,7 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace electric_mouse.Controllers
 {
-    [Authorize(Roles= RoleHandler.Admin)]
+    [Authorize(Roles = RoleHandler.Admin)]
     public class SectionController : Controller
     {
         private readonly ISectionService _sectionService;

@@ -69,7 +69,7 @@ namespace electric_mouse
             services.AddTransient<IEmailSender, AuthMessageSender>()
                     .AddTransient<ISmsSender, AuthMessageSender>()
                     .AddTransient<FacebookAPI>()
-                    .AddTransient<AttachmentHandler>()
+                    .AddTransient<IAttachmentHandler, AttachmentHandler>()
                     .AddTransient<ICommentService, CommentService>()
                     .AddTransient<ISectionService, SectionService>();
             

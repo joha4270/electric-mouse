@@ -20,7 +20,6 @@ namespace electric_mouse.Controllers
 {
     public class RouteController : Controller
     {
-        private readonly ILogger _logger;
         private readonly IHostingEnvironment _environment;
         private readonly IUserService _userService;
         private readonly IAttachmentHandler _attachmentHandler;
@@ -28,14 +27,12 @@ namespace electric_mouse.Controllers
 
         public RouteController
             (
-            ILoggerFactory logger,
             IHostingEnvironment environment,
             IUserService userService, 
             IAttachmentHandler attachmentHandler,
             IRouteService routeService
             )
         {
-            _logger = logger.CreateLogger<RouteController>();
             _environment = environment;
             _userService = userService;
             _attachmentHandler = attachmentHandler;
@@ -68,8 +65,6 @@ namespace electric_mouse.Controllers
         [Authorize(Roles = RoleHandler.Post)]
         public async Task<IActionResult> Create(RouteCreateViewModel model)
         {
-            _logger.LogInformation("Received following users [{users}]", string.Join(", ", model.Builders));
-            
             // Create Route
             Route route = new Route
             {
@@ -267,7 +262,6 @@ namespace electric_mouse.Controllers
 
                 return Content("You don't have access to this action. 403 Forbidden");
             }
-            _logger.LogInformation("Deleting route with id = {id}", id);
 
             _routeService.ArchiveRoute(id);
 

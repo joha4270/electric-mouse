@@ -17,49 +17,9 @@ using electric_mouse.Services.Interfaces;
 
 namespace electric_mouse.Controllers
 {
-    public class UserService : IUserService
-    {
-        private readonly UserManager<ApplicationUser> _userManager;
-        private readonly SignInManager<ApplicationUser> _signInManager;
-
-        public UserService(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager)
-        {
-            _userManager = userManager;
-            _signInManager = signInManager;
-        }
-
-        public Task<ApplicationUser> GetUserAsync(ClaimsPrincipal principal)
-        {
-            return _userManager.GetUserAsync(principal);
-        }
-
-        public Task<bool> IsInRoleAsync(ApplicationUser user, string role)
-        {
-            return _userManager.IsInRoleAsync(user, role);
-        }
-
-        public bool IsSignedIn(ClaimsPrincipal principal)
-        {
-            return _signInManager.IsSignedIn(principal);
-        }
-
-        public Task<ApplicationUser> FindByIdAsync(string userId)
-        {
-            return _userManager.FindByIdAsync(userId);
-        }
-    }
-
-    public interface IUserService
-    {
-        Task<ApplicationUser> GetUserAsync(ClaimsPrincipal principal);
-        Task<bool> IsInRoleAsync(ApplicationUser user, string role);
-        bool IsSignedIn(ClaimsPrincipal principal);
-        Task<ApplicationUser> FindByIdAsync(string userId);
-    }
-
     public class CommentsController : Controller
     {
-        private IUserService _userService;
+        private readonly IUserService _userService;
         private readonly ICommentService _commentService;
 
 		public CommentsController (IUserService userService, ICommentService commentService)

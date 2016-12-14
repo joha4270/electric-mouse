@@ -10,12 +10,12 @@ namespace test
             // Arrange
             int a = 2;
             int b = 2;
-            int expected = 4;
 
             // Act
             int actual = Add(a, b);
 
             // Assert
+            int expected = 4;
             Assert.Equal(expected, actual);
         }
 
