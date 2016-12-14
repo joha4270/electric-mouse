@@ -107,7 +107,12 @@ namespace electric_mouse.Services.Interfaces
         /// </summary>
         RouteSection GetRouteSectionThatRouteIsIn(int routeId);
 
-        /// <summary>
+	    /// <summary>
+	    /// Gets the routeSection that the route is in.
+	    /// </summary>
+	    List<RouteSection> GetRouteSectionsThatRouteIsIn(int routeId);
+
+	    /// <summary>
         /// Gets all the users that the route was created by.
         /// </summary>
         /// <param name="routeId">The route id.</param>

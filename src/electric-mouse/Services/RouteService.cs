@@ -271,7 +271,15 @@ namespace electric_mouse.Services
             return _dbContext.RouteSections.First(t => rs.RouteSectionID == t.RouteSectionID);
         }
 
-        /// <summary>
+	    /// <summary>
+	    /// Gets the routeSection that the route is in.
+	    /// </summary>
+	    public List<RouteSection> GetRouteSectionsThatRouteIsIn(int routeId)
+	    {
+		    return GetRouteSectionsByRouteId(routeId);
+	    }
+
+	    /// <summary>
         /// Gets all the users that the route was created by.
         /// </summary>
         /// <param name="routeId">The route id.</param>

@@ -199,8 +199,8 @@ namespace electric_mouse.Controllers
 
             Route route = _routeService.GetRouteWithDifficultyById(id);
 
-            RouteSection section = _routeService.GetRouteSectionThatRouteIsIn(id);
-            RouteHall hall = _routeService.GetRouteHallById(section.RouteHallID);
+            List<RouteSection> sections = _routeService.GetRouteSectionsThatRouteIsIn(id);
+            RouteHall hall = _routeService.GetRouteHallById(sections.First().RouteHallID);
 
             List<ApplicationUser> creators = _routeService.GetRouteCreators(id);
 
@@ -235,7 +235,7 @@ namespace electric_mouse.Controllers
             RouteDetailViewModel model = new RouteDetailViewModel
             {
                 Route = route,
-                Section = section,
+                Sections = sections,
                 Hall = hall,
                 Creators = creators,
                 EditRights = creatorOrAdmin,
