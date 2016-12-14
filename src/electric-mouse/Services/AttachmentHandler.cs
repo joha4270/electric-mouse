@@ -6,10 +6,11 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using electric_mouse.Services.Interfaces;
 
 namespace electric_mouse.Services
 {
-    public class AttachmentHandler
+    public class AttachmentHandler : IAttachmentHandler
     {
         
         /// <summary>

@@ -10,31 +10,22 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 using electric_mouse.Services;
 using System.Net;
+using System.Security.Claims;
+using electric_mouse.Services.Interfaces;
 
 // For more information on enabling MVC for empty projects, visit http://go.microsoft.com/fwlink/?LinkID=397860
 
 namespace electric_mouse.Controllers
 {
-	public class CommentsController : Controller
-	{
-		private ApplicationDbContext _dbContext;
-		private readonly UserManager<ApplicationUser> _userManager;
-		private readonly SignInManager<ApplicationUser> _signInManager;
-		private readonly ILogger _logger;
+    public class CommentsController : Controller
+    {
+        private readonly IUserService _userService;
+        private readonly ICommentService _commentService;
 
-		public CommentsController (ApplicationDbContext dbContext, UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, ILoggerFactory logger)
+		public CommentsController (IUserService userService, ICommentService commentService)
 		{
-			_dbContext = dbContext;
-			_userManager = userManager;
-			_signInManager = signInManager;
-			_logger = logger.CreateLogger<CommentsController>();
-		}
-
-
-		// GET: /<controller>/
-		public IActionResult Index()
-		{
-			return View();
+            _commentService = commentService;
+		    _userService = userService;
 		}
 
 
@@ -43,16 +34,8 @@ namespace electric_mouse.Controllers
 		[Authorize(Roles = RoleHandler.Post)]
 		public async Task<IActionResult> Reply (CommentViewModel model)
 		{
-			ApplicationUser user = await _userManager.GetUserAsync(User);
-			_dbContext.Comments.Add(new Comment
-			{
-				RouteID = model.RouteID,
-				OriginalPostID = model.CommentID,
-				User = user,
-				Date = DateTime.Now,
-				Content = model.Content
-			});
-			_dbContext.SaveChanges();
+			ApplicationUser user = await _userService.GetUserAsync(User);
+            _commentService.AddComment(user, model.RouteID, model.CommentID, model.Content);
 			return RedirectToAction(nameof(RouteController.List), "Route");
 		}
 
@@ -60,15 +43,10 @@ namespace electric_mouse.Controllers
 		[HttpPost]
 		[ValidateAntiForgeryToken]
 		[Authorize(Roles = RoleHandler.Post)]
-		public async Task<IActionResult> AddComment (int RouteID, string Content)
+		public async Task<IActionResult> AddComment (int routeID, string content)
 		{
-			CommentViewModel result = new CommentViewModel
-			{
-				RouteID = RouteID,
-				Content = Content
-			};
-			await Reply(result);
-
+            ApplicationUser user = await _userService.GetUserAsync(User);
+            _commentService.AddComment(user, routeID, 0, content);
 			return RedirectToAction(nameof(RouteController.List), "Route");
 		}
 
@@ -78,20 +56,16 @@ namespace electric_mouse.Controllers
 			ApplicationUser user = null;
 			bool userIsAdmin = false;
 			bool userIsOwner = false;
-			if (_signInManager.IsSignedIn(User))
+			if (_userService.IsSignedIn(User))
 			{
-				user = await _userManager.GetUserAsync(User);
-				userIsAdmin = await _userManager.IsInRoleAsync(user, "Administrator");
+				user = await _userService.GetUserAsync(User);
+				userIsAdmin = await _userService.IsInRoleAsync(user, "Administrator");
 				userIsOwner = user.Id == model.ApplicationUserRefId;
 			}
 
 			if (userIsOwner || userIsAdmin)
 			{
-				Comment comment = _dbContext.Comments.First(c => c.CommentID == model.CommentID);
-				comment.Deleted = true;
-				comment.DeletionDate = DateTime.Now;
-				_dbContext.SaveChanges();
-
+                _commentService.DeleteComment(model.CommentID);
 				return RedirectToAction(nameof(RouteController.Details), "Route", new { id = 1 });
 			}
 

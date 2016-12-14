@@ -64,6 +64,10 @@ namespace electric_mouse
 	            .AddTransient<AttachmentHandler>()
 	            .AddTransient<IApiService, ApiService>()
 	            .AddTransient<IDifficultyService, DifficultyService>()
+	        	.AddTransient<ICommentService, CommentService>()
+	        	.AddTransient<IRouteService, RouteService>()
+	        	.AddTransient<IUserService, UserService>()
+	        	.AddTransient<IAttachmentHandler, AttachmentHandler>()
 	            .AddTransient<IHallService, HallService>()
 	            .AddTransient<ISectionService, SectionService>();
             
