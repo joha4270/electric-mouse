@@ -1,34 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Moq;
 using Xunit;
 using electric_mouse.Controllers;
-using electric_mouse.Data;
 using electric_mouse.Models.RouteItems;
 using electric_mouse.Models.RouteViewModels;
-using electric_mouse.Services;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Models;
-using System.Collections;
-using System.Linq.Expressions;
-using Microsoft.EntityFrameworkCore.Query;
 using electric_mouse.Services.Interfaces;
 
 namespace test
 {
     public class SectionControllerTest
     {
-        [Fact]
-        public void GetAllRouteSections_ThreeSectionsInDatabase_ListCountIsThree()
-        {
-            // Ignore this test for now.
-            // Use in memory testing (integration testing)
-            Assert.True(false);
-        }
-
         #region Create tests
         [Fact]
         public async Task Create_SectionNameValidAndHallIDValid_SectionAddedAndRedirectsToListAction()

@@ -9,7 +9,7 @@ namespace electric_mouse.Models.RouteViewModels
     public class RouteDetailViewModel
     {
         public RouteHall Hall { get; set; }
-        public RouteSection Section { get; set; }
+        public List<RouteSection> Sections { get; set; }
         public Route Route { get; set; }
 
         public List<ApplicationUser> Creators { get; set; }
