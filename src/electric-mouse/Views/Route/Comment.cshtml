@@ -26,6 +26,7 @@
 		  <form asp-controller="Comments" asp-action="Delete" style="display:inline" method="post">
 		    <input asp-for="ApplicationUserRefId" type="hidden" value="@Model.ApplicationUserRefId" />
 		    <input asp-for="CommentID" type="hidden" value="@Model.CommentID" />
+		    <input asp-for="RouteID" type="hidden" value="@Model.RouteID" />
 		    <span> · </span>
 		    <a href="javascript:void(0)" onclick="$(this).closest('form').submit()">@strings["Delete"]</a>
 		  </form>

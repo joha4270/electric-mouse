@@ -30,13 +30,13 @@ namespace test
             // Assert
             var redirectToActionResult = Assert.IsType<RedirectToActionResult>(result);
             Assert.Equal("Route", redirectToActionResult.ControllerName);
-            Assert.Equal("List", redirectToActionResult.ActionName);
-            mockService.Verify(service => service.AddComment(It.IsAny< ApplicationUser>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>()), Times.Once); // checks that the sectionService.AddSection was called once.
+            Assert.Equal("Details", redirectToActionResult.ActionName);
+            mockService.Verify(service => service.AddComment(It.IsAny< ApplicationUser>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>()), Times.Once);
         }
 
         [Theory]
         [InlineData(1, "Nice route")]
-        [InlineData(2, "Keep them comming")]
+        [InlineData(2, "Keep them coming")]
         public async void Add_InputsAreValid_AddedToDatabaseAndRedirectsToRouteListAction(int id, string content)
         {
             // Arrange
@@ -50,8 +50,8 @@ namespace test
             // Assert
             var redirectToActionResult = Assert.IsType<RedirectToActionResult>(result);
             Assert.Equal("Route", redirectToActionResult.ControllerName);
-            Assert.Equal("List", redirectToActionResult.ActionName);
-            mockService.Verify(service => service.AddComment(It.IsAny<ApplicationUser>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>()), Times.Once); // checks that the sectionService.AddSection was called once.
+            Assert.Equal("Details", redirectToActionResult.ActionName);
+            mockService.Verify(service => service.AddComment(It.IsAny<ApplicationUser>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>()), Times.Once);
         }
 
         [Fact]
@@ -61,7 +61,7 @@ namespace test
             var mockService = new Mock<ICommentService>();
             var userService = new Mock<IUserService>();
             CommentsController controller = new CommentsController(userService.Object, mockService.Object);
-            var commentViewModel = new CommentViewModel { CommentID = 1, };
+            var commentViewModel = new CommentViewModel { CommentID = 1 };
 
             // Act
             var result = await controller.Delete(commentViewModel);
@@ -69,8 +69,8 @@ namespace test
             // Assert
             var redirectToActionResult = Assert.IsType<RedirectToActionResult>(result);
             Assert.Equal("Route", redirectToActionResult.ControllerName);
-            Assert.Equal("List", redirectToActionResult.ActionName);
-            mockService.Verify(service => service.DeleteComment(It.Is<int>(i => i == 1)), Times.Once); // checks that the sectionService.AddSection was called once.
+            Assert.Equal("Details", redirectToActionResult.ActionName);
+            mockService.Verify(service => service.DeleteComment(It.Is<int>(i => i == 1)), Times.Once);
         }
 
     }
